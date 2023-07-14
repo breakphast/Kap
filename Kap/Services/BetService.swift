@@ -1,0 +1,45 @@
+//
+//  BetService.swift
+//  Kap
+//
+//  Created by Desmond Fitch on 7/13/23.
+//
+
+import Foundation
+
+class BetService {
+    var games: [Game] = []
+
+    func fetchGames() async throws {
+        do {
+            let data = try await loadData(from: "nflData.json")
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .iso8601
+            let gamesData = try decoder.decode([GameElement].self, from: data)
+            games = gamesData.map { Game(gameElement: $0) }
+        } catch {
+            throw error
+        }
+    }
+
+    private func loadData(from filename: String) async throws -> Data {
+        guard let url = Bundle.main.url(forResource: filename, withExtension: nil) else {
+            fatalError("Failed to locate \(filename) in bundle.")
+        }
+
+        do {
+            let data = try Data(contentsOf: url)
+            return data
+        } catch {
+            throw error
+        }
+    }
+
+    func makeBet(for game: Game, betOption: BetOption) {
+        // Logic to make a bet with a certain game and bet option
+    }
+    
+    func makeParlay(for games: [Game], betOptions: [BetOption]) {
+        // Logic to make a parlay bet with certain games and bet options
+    }
+}
