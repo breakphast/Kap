@@ -41,14 +41,16 @@ class Season {
 
 class Week {
     let id: UUID
+    let weekNumber: Int
     let season: Season
     var games: [Game]
     var bets: [[Bet]]
     var parlays: [Parlay]
     var isComplete: Bool
     
-    init(id: UUID, season: Season, games: [Game], bets: [[Bet]], parlays: [Parlay], isComplete: Bool) {
+    init(id: UUID, weekNumber: Int, season: Season, games: [Game], bets: [[Bet]], parlays: [Parlay], isComplete: Bool) {
         self.id = id
+        self.weekNumber = weekNumber
         self.season = season
         self.games = games
         self.bets = bets
@@ -73,6 +75,25 @@ class Player {
         self.name = name
         self.bets = bets
         self.parlays = parlays
-        self.points = points
+        self.points = [
+            0: 0,
+            1: 0,
+            2: 0,
+            3: 0,
+            4: 0,
+            5: 0,
+            6: 0,
+            7: 0,
+            8: 0,
+            9: 0,
+            10: 0,
+            11: 0,
+            12: 0,
+            13: 0,
+            14: 0,
+            15: 0,
+            16: 0
+        ]
+
     }
 }

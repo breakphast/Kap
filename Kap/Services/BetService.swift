@@ -35,8 +35,9 @@ class BetService {
         }
     }
 
-    func makeBet(for game: Game, betOption: BetOption) {
-        // Logic to make a bet with a certain game and bet option
+    func makeBet(for game: Game, betOption: BetOption, player: Player) {
+        let bet = Bet(id: UUID(), userID: player.user.userID, betOptionID: betOption.id, game: game, type: betOption.betType, result: .win, odds: betOption.odds)
+        player.bets.append([bet])
     }
     
     func makeParlay(for games: [Game], betOptions: [BetOption]) {

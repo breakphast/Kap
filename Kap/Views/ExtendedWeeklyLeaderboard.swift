@@ -10,6 +10,7 @@ import SwiftUI
 struct ExtendedWeeklyLeaderboard: View {
     @State var mainPlayers = [Player]()
     @State private var games = [Game]()
+    @State private var players: [Player] = []
     
     var body: some View { 
         VStack(spacing: 24) {
@@ -20,9 +21,17 @@ struct ExtendedWeeklyLeaderboard: View {
             
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 12) {
-                    ForEach(games, id: \.id) { game in
-                        Text(game.awayTeam + " @ " + game.homeTeam)
-                            .font(.caption.bold())
+                    ForEach(Array(players.enumerated()), id: \.1.id) { index, player in
+                        HStack {
+                            Text("\(index + 1)")
+                                .font(.headline.bold())
+                                .foregroundStyle(.secondary)
+                            Text(player.name)
+                                .font(.headline.bold())
+                            Text("\(player.points[0] ?? 0)")
+                                .foregroundStyle(player.points[0] ?? 0 > 0 ? .green : .red)
+                                .bold()
+                        }
                     }
                 }
             }
@@ -43,6 +52,13 @@ struct ExtendedWeeklyLeaderboard: View {
                 let games = try await GameService().getGames()
                 let weeklyGames = games.chunked(into: 16)
                 self.games = weeklyGames[0]
+                
+                for player in league.players {
+                    let _ = AppDataViewModel().generateRandomBets(from: self.games, betCount: 6, player: player)
+                }
+                
+                let pla = league.players.sorted { $0.points[0] ?? 0 > $1.points[0] ?? 0}
+                self.players = pla
             } catch {
                 print("Failed to get games: \(error)")
             }

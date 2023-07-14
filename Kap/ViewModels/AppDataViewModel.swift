@@ -17,6 +17,7 @@ import SwiftUI
     var bets: [Bet] = []
     var parlays: [Parlay] = []
     var weeklyGames: [[Game]] = [[]]
+    var currentWeek = 0
     
     init() {
         Task {
@@ -33,32 +34,34 @@ import SwiftUI
             User(userID: UUID(), email: "desmond@gmail.com", password: "123456", name: "ThePhast", leagues: []),
             User(userID: UUID(), email: "desmond@gmail.com", password: "123456", name: "RingoMingo", leagues: []),
             User(userID: UUID(), email: "desmond@gmail.com", password: "123456", name: "Harch", leagues: []),
-            User(userID: UUID(), email: "desmond@gmail.com", password: "123456", name: "Brokeee", leagues: [])
+            User(userID: UUID(), email: "desmond@gmail.com", password: "123456", name: "Brokeee", leagues: []),
+            User(userID: UUID(), email: "desmond@gmail.com", password: "123456", name: "Mingy", leagues: []),
+            User(userID: UUID(), email: "desmond@gmail.com", password: "123456", name: "HeyHey", leagues: []),
+            User(userID: UUID(), email: "desmond@gmail.com", password: "123456", name: "Ralph Lawrence", leagues: []),
+            User(userID: UUID(), email: "desmond@gmail.com", password: "123456", name: "ThePhast", leagues: []),
+            User(userID: UUID(), email: "desmond@gmail.com", password: "123456", name: "PolioIt", leagues: []),
+            User(userID: UUID(), email: "desmond@gmail.com", password: "123456", name: "Bandszs", leagues: [])
         ]
     }
     
     func goTest() async -> Week {
         let league = createLeague(name: "BIG JOHN SILVER", players: [])
-        let week = await createWeek(season: createSeason(league: league, year: 2023), league: league, weekNumber: 0)
+        let week = await createWeek(season: createSeason(league: league, year: 2023), league: league, weekNumber: currentWeek)
         
         return week
     }
     
     func createWeek(season: Season, league: League, weekNumber: Int) async -> Week {
-        let week = Week(id: UUID(), season: season, games: [], bets: [[]], parlays: [], isComplete: false)
+        let week = Week(id: UUID(), weekNumber: weekNumber, season: season, games: [], bets: [[]], parlays: [], isComplete: false)
         do {
             let games = try await GameService().getGames()
-            week.games = games.chunked(into: 16)[weekNumber]
+            week.games = games.chunked(into: 16)[0]
         } catch {
             print("Failed to get games: \(error)")
         }
         
         for player in league.players {
             week.bets.append(generateRandomBets(from: week.games, betCount: 6, player: player))
-            
-            if let parlay = createParlayWithinOddsRange(for: player, from: week.games) {
-                week.parlays.append(parlay)
-            }
         }
         
         return week
@@ -74,6 +77,8 @@ import SwiftUI
                let chosenBet = chosenGame.betOptions.randomElement() {
                 let bet = Bet(id: UUID(), userID: player.user.userID, betOptionID: chosenBet.id, game: chosenGame, type: allBetTypes.randomElement()!, result: allBetResults.randomElement()!, odds: chosenBet.odds)
                 bets.append(bet)
+                
+                player.points[currentWeek]! += bet.points!
             }
         }
         
@@ -102,7 +107,13 @@ import SwiftUI
             }
         }
         
-        return Parlay(id: UUID(), userID: player.user.userID, bets: parlayBets, result: allBetResults.randomElement()!)
+        let parlay = Parlay(id: UUID(), userID: player.user.userID, bets: parlayBets, result: allBetResults.randomElement()!)
+        player.parlays.append(parlay)
+        if parlay.totalPoints != 0 {
+            player.points[0]! += parlay.totalPoints
+        }
+        
+        return parlay
     }
     
     func createLeague(name: String, players: [Player]) -> League {

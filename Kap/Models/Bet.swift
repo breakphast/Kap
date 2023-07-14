@@ -77,6 +77,7 @@ struct Bet {
     let odds: Int
     var points: Int?
     let stake = 100.0
+    let betString: String
     
     init(id: UUID, userID: UUID, betOptionID: UUID, game: Game, type: BetType, result: BetResult?, odds: Int) {
         self.id = id
@@ -86,6 +87,7 @@ struct Bet {
         self.type = type
         self.result = result
         self.odds = odds
+        self.betString = game.betOptions.first { $0.id == betOptionID }?.betString ?? ""
         self.points = calculatePoints(bet: self)
     }
     
