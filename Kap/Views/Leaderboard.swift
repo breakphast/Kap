@@ -10,6 +10,7 @@ import SwiftUI
 struct Leaderboard: View {
     @State private var games = [Game]()
     @State private var players: [Player] = []
+    let viewModel = AppDataViewModel()
     
     var body: some View {
         NavigationStack {
@@ -25,7 +26,7 @@ struct Leaderboard: View {
                                         .font(.title3.bold())
                                     
                                     ZStack(alignment: .leading) {
-                                        if abs(player.points[0] ?? 0) > 30 || index == 0 {
+                                        if index == Int.random(in: 0 ..< players.count) || index == 0 {
                                             RoundedRectangle(cornerRadius: 20)
                                                 .fill(Color.clear)
                                                 .frame(minWidth: 0, maxWidth: .infinity)
@@ -78,31 +79,8 @@ struct Leaderboard: View {
                         }
                     }
                     .task {
-                        do {
-                            let league = AppDataViewModel().createLeague(name: "BIG JOHN SILVER", players: [])
-                            let season = AppDataViewModel().createSeason(league: league, year: 2023)
-                            var weeks = [Week]()
-                            
-                            let week = await AppDataViewModel().createWeek(season: season, league: season.league, weekNumber: 0)
-                            let week2 = await AppDataViewModel().createWeek(season: season, league: season.league, weekNumber: 1)
-                            weeks.append(week)
-                            weeks.append(week2)
-                            
-                            season.weeks = weeks
-                            
-                            let games = try await GameService().getGames()
-                            let weeklyGames = games.chunked(into: 16)
-                            self.games = weeklyGames[0]
-                            
-                            for player in league.players {
-                                let _ = AppDataViewModel().generateRandomBets(from: self.games, betCount: 6, player: player)
-                                let _ = AppDataViewModel().createParlayWithinOddsRange(for: player, from: self.games)
-                            }
-                            
-                            self.players = league.players.sorted { $0.points[0] ?? 0 > $1.points[0] ?? 0 }
-                        } catch {
-                            print("Failed to get games: \(error)")
-                        }
+                        self.players = await viewModel.getLeaderboardData()
+                        BetService().makeBet(for: viewModel.games[0], betOption: viewModel.games[0].betOptions[0], player: players[0])
                     }
                 }
             }

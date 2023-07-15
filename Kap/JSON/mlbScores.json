@@ -1,0 +1,62 @@
+[
+    {
+        "id": "151549f3b754a3d9c5590f44f679f33d",
+        "sport_key": "baseball_mlb",
+        "sport_title": "MLB",
+        "commence_time": "2023-07-14T22:12:32Z",
+        "completed": true,
+        "home_team": "Philadelphia Phillies",
+        "away_team": "San Diego Padres",
+        "scores": [
+            {
+                "name": "Philadelphia Phillies",
+                "score": "3"
+            },
+            {
+                "name": "San Diego Padres",
+                "score": "8"
+            }
+        ],
+        "last_update": "2023-07-15T10:15:57Z"
+    },
+    {
+        "id": "2b904f4b6728e2a31a8bddb31f05c466",
+        "sport_key": "baseball_mlb",
+        "sport_title": "MLB",
+        "commence_time": "2023-07-14T23:05:00Z",
+        "completed": true,
+        "home_team": "Pittsburgh Pirates",
+        "away_team": "San Francisco Giants",
+        "scores": [
+            {
+                "name": "Pittsburgh Pirates",
+                "score": "4"
+            },
+            {
+                "name": "San Francisco Giants",
+                "score": "6"
+            }
+        ],
+        "last_update": "2023-07-15T10:15:57Z"
+    },
+    {
+        "id": "d4b31fa45285762aae414ea824400c0e",
+        "sport_key": "baseball_mlb",
+        "sport_title": "MLB",
+        "commence_time": "2023-07-14T23:07:50Z",
+        "completed": true,
+        "home_team": "Toronto Blue Jays",
+        "away_team": "Arizona Diamondbacks",
+        "scores": [
+            {
+                "name": "Toronto Blue Jays",
+                "score": "7"
+            },
+            {
+                "name": "Arizona Diamondbacks",
+                "score": "2"
+            }
+        ],
+        "last_update": "2023-07-15T10:15:57Z"
+    }
+]

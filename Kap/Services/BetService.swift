@@ -12,7 +12,7 @@ class BetService {
 
     func fetchGames() async throws {
         do {
-            let data = try await loadData(from: "nflData.json")
+            let data = try await loadData(from: "mlbData.json")
             let decoder = JSONDecoder()
             decoder.dateDecodingStrategy = .iso8601
             let gamesData = try decoder.decode([GameElement].self, from: data)
@@ -37,7 +37,7 @@ class BetService {
 
     func makeBet(for game: Game, betOption: BetOption, player: Player) {
         let bet = Bet(id: UUID(), userID: player.user.userID, betOptionID: betOption.id, game: game, type: betOption.betType, result: .win, odds: betOption.odds)
-        player.bets.append([bet])
+        player.bets[0].append(bet)
     }
     
     func makeParlay(for games: [Game], betOptions: [BetOption]) {

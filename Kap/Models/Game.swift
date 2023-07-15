@@ -19,6 +19,9 @@ class Game {
     var awayMoneyLine: Int
     var over: Double
     var under: Double
+    var completed: Bool
+    var homeScore: String?
+    var awayScore: String?
     
     init(gameElement: GameElement) {
         var homeSpreadTemp: Double = 0.0
@@ -28,7 +31,7 @@ class Game {
         var overTemp: Double = 0.0
         var underTemp: Double = 0.0
 
-        if let fanduel = gameElement.bookmakers.first(where: { $0.key == .fanduel }) {
+        if let fanduel = gameElement.bookmakers?.first(where: { $0.key == .fanduel }) {
             fanduel.markets.forEach { market in
                 switch market.key {
                 case .h2H:
@@ -58,7 +61,7 @@ class Game {
                 }
             }
         }
-
+        
         // Initializing properties
         self.id = gameElement.id
         self.homeTeam = gameElement.homeTeam
@@ -70,6 +73,17 @@ class Game {
         self.awaySpread = awaySpreadTemp
         self.over = overTemp
         self.under = underTemp
+        self.completed = gameElement.completed ?? false
+        if let scores = gameElement.scores {
+            for score in scores {
+                if score.name == self.homeTeam {
+                    self.homeScore = score.score
+                } else if score.name == self.awayTeam {
+                    self.awayScore = score.score
+                }
+            }
+        }
+        
         self.betOptions = createBetOptions()
     }
     
@@ -93,18 +107,27 @@ struct GameElement: Codable {
     let sportKey: SportKey
     let sportTitle: SportTitle
     let commenceTime: Date
+    let completed: Bool?
     let homeTeam, awayTeam: String
-    let bookmakers: [Bookmaker]
+    let bookmakers: [Bookmaker]?
+    let scores: [Score]?
 
     enum CodingKeys: String, CodingKey {
         case id
         case sportKey = "sport_key"
         case sportTitle = "sport_title"
         case commenceTime = "commence_time"
+        case completed
         case homeTeam = "home_team"
         case awayTeam = "away_team"
         case bookmakers
+        case scores
     }
+}
+
+struct Score: Codable {
+    let name: String
+    let score: String
 }
 
 // MARK: - Bookmaker
@@ -156,9 +179,9 @@ enum Title: String, Codable {
 }
 
 enum SportKey: String, Codable {
-    case americanfootballNfl = "americanfootball_nfl"
+    case baseball_mlb = "baseball_mlb"
 }
 
 enum SportTitle: String, Codable {
-    case nfl = "NFL"
+    case mlb = "MLB"
 }

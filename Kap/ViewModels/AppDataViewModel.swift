@@ -20,16 +20,6 @@ import SwiftUI
     var currentWeek = 0
     
     init() {
-        Task {
-            do {
-                let games = try await GameService().getGames()
-                weeklyGames = games.chunked(into: 16)
-                self.games = weeklyGames[0]
-            } catch {
-                print("Failed to get games: \(error)")
-            }
-        }
-        
         self.users = [
             User(userID: UUID(), email: "desmond@gmail.com", password: "123456", name: "ThePhast", leagues: []),
             User(userID: UUID(), email: "desmond@gmail.com", password: "123456", name: "RingoMingo", leagues: []),
@@ -38,10 +28,40 @@ import SwiftUI
             User(userID: UUID(), email: "desmond@gmail.com", password: "123456", name: "Mingy", leagues: []),
             User(userID: UUID(), email: "desmond@gmail.com", password: "123456", name: "HeyHey", leagues: []),
             User(userID: UUID(), email: "desmond@gmail.com", password: "123456", name: "Ralph Lawrence", leagues: []),
-            User(userID: UUID(), email: "desmond@gmail.com", password: "123456", name: "ThePhast", leagues: []),
+            User(userID: UUID(), email: "desmond@gmail.com", password: "123456", name: "Rakes", leagues: []),
             User(userID: UUID(), email: "desmond@gmail.com", password: "123456", name: "PolioIt", leagues: []),
             User(userID: UUID(), email: "desmond@gmail.com", password: "123456", name: "Bandszs", leagues: [])
         ]
+    }
+    
+    func getLeaderboardData() async -> [Player] {
+        do {
+            let league = AppDataViewModel().createLeague(name: "BIG JOHN SILVER", players: [])
+            let season = AppDataViewModel().createSeason(league: league, year: 2023)
+            var weeks = [Week]()
+            
+            let week = await AppDataViewModel().createWeek(season: season, league: season.league, weekNumber: 0)
+            let week2 = await AppDataViewModel().createWeek(season: season, league: season.league, weekNumber: 1)
+            weeks.append(week)
+            weeks.append(week2)
+            
+            season.weeks = weeks
+            
+            let games = try await GameService().getGames()
+            let weeklyGames = games.chunked(into: 16)
+            self.games = weeklyGames[0]
+            
+            for player in league.players {
+                let _ = AppDataViewModel().generateRandomBets(from: self.games, betCount: 6, player: player)
+                let _ = AppDataViewModel().createParlayWithinOddsRange(for: player, from: self.games)
+            }
+            
+            self.players = league.players.sorted { $0.points[0] ?? 0 > $1.points[0] ?? 0 }
+        } catch {
+            print("Failed to get games: \(error)")
+        }
+        
+        return self.players
     }
     
     func goTest() async -> Week {
@@ -81,7 +101,6 @@ import SwiftUI
                 player.points[currentWeek]! += bet.points!
             }
         }
-        
         return bets
     }
     

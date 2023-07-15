@@ -1,0 +1,191 @@
+[
+    {
+        "id": "151549f3b754a3d9c5590f44f679f33d",
+        "sport_key": "baseball_mlb",
+        "sport_title": "MLB",
+        "commence_time": "2023-07-15T17:05:00Z",
+        "home_team": "Philadelphia Phillies",
+        "away_team": "San Diego Padres",
+        "bookmakers": [
+            {
+                "key": "fanduel",
+                "title": "FanDuel",
+                "last_update": "2023-07-15T17:11:56Z",
+                "markets": [
+                    {
+                        "key": "h2h",
+                        "last_update": "2023-07-15T17:11:56Z",
+                        "outcomes": [
+                            {
+                                "name": "Philadelphia Phillies",
+                                "price": 148
+                            },
+                            {
+                                "name": "San Diego Padres",
+                                "price": -190
+                            }
+                        ]
+                    },
+                    {
+                        "key": "spreads",
+                        "last_update": "2023-07-15T17:11:56Z",
+                        "outcomes": [
+                            {
+                                "name": "Philadelphia Phillies",
+                                "price": -108,
+                                "point": 1.5
+                            },
+                            {
+                                "name": "San Diego Padres",
+                                "price": -118,
+                                "point": -1.5
+                            }
+                        ]
+                    },
+                    {
+                        "key": "totals",
+                        "last_update": "2023-07-15T17:11:56Z",
+                        "outcomes": [
+                            {
+                                "name": "Over",
+                                "price": -104,
+                                "point": 9.5
+                            },
+                            {
+                                "name": "Under",
+                                "price": -120,
+                                "point": 9.5
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "2b904f4b6728e2a31a8bddb31f05c466",
+        "sport_key": "baseball_mlb",
+        "sport_title": "MLB",
+        "commence_time": "2023-07-15T18:10:00Z",
+        "home_team": "Kansas City Royals",
+        "away_team": "Tampa Bay Rays",
+        "bookmakers": [
+            {
+                "key": "fanduel",
+                "title": "FanDuel",
+                "last_update": "2023-07-15T17:12:37Z",
+                "markets": [
+                    {
+                        "key": "h2h",
+                        "last_update": "2023-07-15T17:12:37Z",
+                        "outcomes": [
+                            {
+                                "name": "Kansas City Royals",
+                                "price": 215
+                            },
+                            {
+                                "name": "Tampa Bay Rays",
+                                "price": -260
+                            }
+                        ]
+                    },
+                    {
+                        "key": "spreads",
+                        "last_update": "2023-07-15T17:12:37Z",
+                        "outcomes": [
+                            {
+                                "name": "Kansas City Royals",
+                                "price": 130,
+                                "point": 1.5
+                            },
+                            {
+                                "name": "Tampa Bay Rays",
+                                "price": -156,
+                                "point": -1.5
+                            }
+                        ]
+                    },
+                    {
+                        "key": "totals",
+                        "last_update": "2023-07-15T17:12:37Z",
+                        "outcomes": [
+                            {
+                                "name": "Over",
+                                "price": -102,
+                                "point": 9.5
+                            },
+                            {
+                                "name": "Under",
+                                "price": -120,
+                                "point": 9.5
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "d4b31fa45285762aae414ea824400c0e",
+        "sport_key": "baseball_mlb",
+        "sport_title": "MLB",
+        "commence_time": "2023-07-15T19:07:00Z",
+        "home_team": "Toronto Blue Jays",
+        "away_team": "Arizona Diamondbacks",
+        "bookmakers": [
+            {
+                "key": "fanduel",
+                "title": "FanDuel",
+                "last_update": "2023-07-15T17:12:37Z",
+                "markets": [
+                    {
+                        "key": "h2h",
+                        "last_update": "2023-07-15T17:12:37Z",
+                        "outcomes": [
+                            {
+                                "name": "Arizona Diamondbacks",
+                                "price": 102
+                            },
+                            {
+                                "name": "Toronto Blue Jays",
+                                "price": -120
+                            }
+                        ]
+                    },
+                    {
+                        "key": "spreads",
+                        "last_update": "2023-07-15T17:12:37Z",
+                        "outcomes": [
+                            {
+                                "name": "Arizona Diamondbacks",
+                                "price": -196,
+                                "point": 1.5
+                            },
+                            {
+                                "name": "Toronto Blue Jays",
+                                "price": 162,
+                                "point": -1.5
+                            }
+                        ]
+                    },
+                    {
+                        "key": "totals",
+                        "last_update": "2023-07-15T17:12:37Z",
+                        "outcomes": [
+                            {
+                                "name": "Over",
+                                "price": -102,
+                                "point": 8.5
+                            },
+                            {
+                                "name": "Under",
+                                "price": -120,
+                                "point": 8.5
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+]
