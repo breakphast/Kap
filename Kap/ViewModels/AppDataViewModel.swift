@@ -53,7 +53,7 @@ import SwiftUI
             
             for player in league.players {
                 let _ = AppDataViewModel().generateRandomBets(from: self.games, betCount: 6, player: player)
-                let _ = AppDataViewModel().createParlayWithinOddsRange(for: player, from: self.games)
+//                let _ = AppDataViewModel().createParlayWithinOddsRange(for: player, from: self.games)
             }
             
             self.players = league.players.sorted { $0.points[0] ?? 0 > $1.points[0] ?? 0 }
@@ -114,7 +114,7 @@ import SwiftUI
         var parlayOdds = calculateParlayOdds(bets: parlayBets)
         let allBetResults: [BetResult] = [.win, .loss, .pending]
         
-        while parlayOdds < 400 || parlayOdds > 1000 {
+        while parlayOdds < 400 || parlayOdds > 800 {
             if parlayBets.count <= 2 {
                 // can't create a valid parlay with less than 2 bets
                 return nil
@@ -131,7 +131,6 @@ import SwiftUI
         if parlay.totalPoints != 0 {
             player.points[0]! += parlay.totalPoints
         }
-        
         return parlay
     }
     

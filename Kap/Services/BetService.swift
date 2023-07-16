@@ -9,6 +9,7 @@ import Foundation
 
 class BetService {
     var games: [Game] = []
+    let viewModel = AppDataViewModel()
 
     func fetchGames() async throws {
         do {
@@ -40,7 +41,7 @@ class BetService {
         player.bets[0].append(bet)
     }
     
-    func makeParlay(for games: [Game], betOptions: [BetOption]) {
-        // Logic to make a parlay bet with certain games and bet options
+    func makeParlay(for games: [Game], player: Player) {
+        let parlay = viewModel.createParlayWithinOddsRange(for: player, from: games)
     }
 }
