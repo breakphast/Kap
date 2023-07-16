@@ -1,86 +1,94 @@
-////
-////  Home.swift
-////  Kap
-////
-////  Created by Desmond Fitch on 7/12/23.
-////
 //
-//import SwiftUI
+//  Home.swift
+//  Kap
 //
-//struct Home: View {
-//    @State private var league = AppDataViewModel().leagues.first
-//    
-//    var body: some View {
-//        VStack {
-//            Text(league?.name ?? "")
-//                .bold()
-//            
-//            VStack(alignment: .leading) {
-//                HStack {
-//                    ZStack {
-//                        RoundedRectangle(cornerRadius: 10)
-//                            .foregroundColor(.blue.opacity(0.8)) // Assuming you have defined a color extension for light blue
-//                        
-//                        Text("Leaderboard")
-//                            .font(.title3)
-//                            .foregroundColor(.white)
-//                    }
-//                    .frame(height: 200)
-//                    
-//                    Spacer()
-//                    
-//                    ZStack {
-//                        RoundedRectangle(cornerRadius: 10)
-//                            .foregroundColor(.green.opacity(0.8)) // Assuming you have defined a color extension for light blue
-//                        
-//                        Text("Profile")
-//                            .font(.title3)
-//                            .foregroundColor(.white)
-//                    }
-//                    .frame(height: 200)
-//                }
-//                
-//                ZStack {
-//                    RoundedRectangle(cornerRadius: 10)
-//                        .foregroundColor(.red.opacity(0.8)) // Assuming you have defined a color extension for light blue
-//                    
-//                    Text("Mini Board & Upcoming games")
-//                        .font(.title3)
-//                        .foregroundColor(.white)
-//                }
-//                .frame(height: 200)
-//                
-//                HStack {
-//                    ZStack {
-//                        RoundedRectangle(cornerRadius: 10)
-//                            .foregroundColor(.yellow.opacity(0.8)) // Assuming you have defined a color extension for light blue
-//                        
-//                        Text("Stats & News")
-//                            .font(.title3)
-//                            .foregroundColor(.white)
-//                    }
-//                    .frame(height: 200)
-//                    
-//                    Spacer()
-//                    
-//                    ZStack {
-//                        RoundedRectangle(cornerRadius: 10)
-//                            .foregroundColor(.purple.opacity(0.8)) // Assuming you have defined a color extension for light blue
-//                        
-//                        Text("Active Bets")
-//                            .font(.title3)
-//                            .foregroundColor(.white)
-//                    }
-//                    .frame(height: 200)
-//                }
-//            }
-//            .frame(maxWidth: .infinity, alignment: .leading)
-//            .padding(24)
-//        }
-//        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-//    }
-//}
+//  Created by Desmond Fitch on 7/12/23.
 //
-//#Preview {
-//    Home()
-//}
+
+import SwiftUI
+
+struct Home: View {    
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color("onyx").ignoresSafeArea()
+                
+                VStack {
+                    Text("Devsmond's League")
+                        .bold()
+                    
+                    VStack(alignment: .leading) {
+                        HStack {
+                            NavigationLink(destination: Leaderboard()) {
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .foregroundColor(.blue.opacity(0.8)) // Assuming you have defined a color extension for light blue
+                                    
+                                    Text("Leaderboard")
+                                        .font(.title2.bold())
+                                        .foregroundColor(.white)
+                                }
+                            }
+                            .frame(height: 200)
+                            
+                            Spacer()
+                            
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 10)
+                                    .foregroundColor(.green.opacity(0.8)) // Assuming you have defined a color extension for light blue
+                                
+                                Text("Profile")
+                                    .font(.title3)
+                                    .foregroundColor(.white)
+                            }
+                            .frame(height: 200)
+                        }
+                        
+                        NavigationLink(destination: Board()) {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 10)
+                                    .foregroundColor(.red.opacity(0.8)) // Assuming you have defined a color extension for light blue
+                                
+                                Text("BOARD")
+                                    .font(.title2.bold())
+                                    .foregroundColor(.white)
+                            }
+                        }
+                        .frame(height: 200)
+                        
+                        HStack {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 10)
+                                    .foregroundColor(.yellow.opacity(0.8)) // Assuming you have defined a color extension for light blue
+                                
+                                Text("Stats & News")
+                                    .font(.title3)
+                                    .foregroundColor(.white)
+                            }
+                            .frame(height: 200)
+                            
+                            Spacer()
+                            
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 10)
+                                    .foregroundColor(.purple.opacity(0.8)) // Assuming you have defined a color extension for light blue
+                                
+                                Text("Active Bets")
+                                    .font(.title3)
+                                    .foregroundColor(.white)
+                            }
+                            .frame(height: 200)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(24)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    }
+}
+
+#Preview {
+    Home()
+}

@@ -39,6 +39,7 @@ class BetService {
     func makeBet(for game: Game, betOption: BetOption, player: Player) {
         let bet = Bet(id: UUID(), userID: player.user.userID, betOptionID: betOption.id, game: game, type: betOption.betType, result: .win, odds: betOption.odds)
         player.bets[0].append(bet)
+        print("Bet placed: ", bet)
     }
     
     func makeParlay(for games: [Game], player: Player) {

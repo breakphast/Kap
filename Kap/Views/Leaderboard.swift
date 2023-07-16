@@ -86,6 +86,7 @@ struct Leaderboard: View {
                         BetService().makeParlay(for: viewModel.games, player: players[1])
                     }
                 }
+                .padding(.top, 24)
             }
             .fontDesign(.rounded)
         }

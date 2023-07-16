@@ -8,19 +8,35 @@
 import SwiftUI
 
 struct CustomButton: View {
-    var betOption: String
+    var betOption: BetOption
+    var buttonText: String
     var action: () -> Void
+    @State var confirmBet = false
     
     var body: some View {
-        Button(action: action) {
+        Button(action: {
+            withAnimation {
+                if confirmBet {
+                    self.action()
+                    self.confirmBet.toggle()
+                } else {
+                    self.confirmBet.toggle()
+                }
+            }
+        }) {
             ZStack {
-                Color.yellow
-                Text(betOption)
-                    .font(.caption2.bold())
-                    .fontDesign(.rounded)
-                    .foregroundStyle(.black)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(2)
+                confirmBet ? Color("onyxLight") : Color.yellow
+                if confirmBet {
+                    Image(systemName: "checkmark")
+                        .foregroundStyle(.yellow)
+                } else {
+                    Text(buttonText)
+                        .font(.caption2.bold())
+                        .fontDesign(.rounded)
+                        .foregroundStyle(Color("onyx"))
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                }
             }
         }
         .frame(height: 40)

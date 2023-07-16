@@ -102,7 +102,10 @@ struct Bet {
         guard let homeScore = Int(bet.game.homeScore ?? ""), let awayScore = Int(bet.game.awayScore ?? "") else {
             return .pending
         }
-        let selectedTeam = bet.game.betOptions.first(where: { $0.id == bet.betOptionID })?.selectedTeam
+        
+        guard let betOption = bet.game.betOptions.first(where: { $0.id == bet.betOptionID }), let selectedTeam = betOption.selectedTeam else {
+            return .pending
+        }
         
         switch bet.type {
         case .moneyline:

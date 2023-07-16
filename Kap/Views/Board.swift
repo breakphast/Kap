@@ -32,14 +32,16 @@ struct Board: View {
                                 
                                 Spacer()
                                 
-                                let options = [0, 2, 4, 1, 3, 5].compactMap { index in
+                                let options = [1, 3, 4, 0, 2, 5].compactMap { index in
                                     game.betOptions.indices.contains(index) ? game.betOptions[index] : nil
                                 }
                                 
                                 LazyVGrid(columns: columns, spacing: 10) {
                                     ForEach(options, id: \.id) { betOption in
-                                        CustomButton(betOption: betOption.betString) {
-                                            BetService().makeBet(for: game, betOption: betOption, player: players[3])
+                                        CustomButton(betOption: betOption, buttonText: betOption.betString) {
+                                            withAnimation {
+                                                BetService().makeBet(for: game, betOption: betOption, player: players[3])
+                                            }
                                         }
                                     }
                                 }
@@ -52,16 +54,15 @@ struct Board: View {
                     .padding(.horizontal)
                     .toolbar {
                         ToolbarItem(placement: .principal) {
-                            Text("Leaderboard")
+                            Text("Board")
                                 .font(.system(size: 32, weight: .bold, design: .rounded))
                         }
                     }
                     .task {
                         self.players = await viewModel.getLeaderboardData()
-                        BetService().makeBet(for: viewModel.games[0], betOption: viewModel.games[0].betOptions[0], player: players[0])
-                        BetService().makeParlay(for: viewModel.games, player: players[1])
                     }
                 }
+                .padding(.top, 24)
             }
             .fontDesign(.rounded)
         }
