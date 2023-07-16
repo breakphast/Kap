@@ -11,11 +11,13 @@ struct Leaderboard: View {
     @State private var games = [Game]()
     @State private var players: [Player] = []
     let viewModel = AppDataViewModel()
+    let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 3)
     
     var body: some View {
         NavigationStack {
             ZStack(alignment: .bottom) {
                 Color("onyx").ignoresSafeArea()
+                
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 16) {
                         ForEach(Array(players.enumerated()), id: \.1.id) { index, player in

@@ -42,6 +42,6 @@ class BetService {
     }
     
     func makeParlay(for games: [Game], player: Player) {
-        let parlay = viewModel.createParlayWithinOddsRange(for: player, from: games)
+        let _ = viewModel.createParlayWithinOddsRange(for: player, from: games)
     }
 }

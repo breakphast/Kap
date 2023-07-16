@@ -22,6 +22,10 @@ class Game {
     var completed: Bool
     var homeScore: String?
     var awayScore: String?
+    var homeSpreadPriceTemp: Double
+    var awaySpreadPriceTemp: Double
+    var overPriceTemp: Double
+    var underPriceTemp: Double
     
     init(gameElement: GameElement) {
         var homeSpreadTemp: Double = 0.0
@@ -30,6 +34,10 @@ class Game {
         var awayMoneyLineTemp: Int = 0
         var overTemp: Double = 0.0
         var underTemp: Double = 0.0
+        var homeSpreadPriceTemp: Double = 0.0
+        var awaySpreadPriceTemp: Double = 0.0
+        var overPriceTemp: Double = 0.0
+        var underPriceTemp: Double = 0.0
 
         if let fanduel = gameElement.bookmakers?.first(where: { $0.key == .fanduel }) {
             fanduel.markets.forEach { market in
@@ -46,16 +54,20 @@ class Game {
                     market.outcomes.forEach { outcome in
                         if outcome.name == gameElement.homeTeam {
                             homeSpreadTemp = outcome.point ?? 0.0
+                            homeSpreadPriceTemp = Double(outcome.price)
                         } else if outcome.name == gameElement.awayTeam {
                             awaySpreadTemp = outcome.point ?? 0.0
+                            awaySpreadPriceTemp = Double(outcome.price)
                         }
                     }
                 case .totals:
                     market.outcomes.forEach { outcome in
                         if outcome.name == "Over" {
                             overTemp = outcome.point ?? 0.0
+                            overPriceTemp = Double(outcome.price)
                         } else if outcome.name == "Under" {
                             underTemp = outcome.point ?? 0.0
+                            underPriceTemp = Double(outcome.price)
                         }
                     }
                 }
@@ -83,17 +95,21 @@ class Game {
                 }
             }
         }
+        self.homeSpreadPriceTemp = homeSpreadPriceTemp
+        self.awaySpreadPriceTemp = awaySpreadPriceTemp
+        self.overPriceTemp = overPriceTemp
+        self.underPriceTemp = underPriceTemp
         
         self.betOptions = createBetOptions()
     }
     
     func createBetOptions() -> [BetOption] {
-        let homeSpreadBet = BetOption(gameID: id, betType: .spread, odds: homeMoneyLine, spread: homeSpread, over: over, under: under, selectedTeam: homeTeam)
-        let awaySpreadBet = BetOption(gameID: id, betType: .spread, odds: awayMoneyLine, spread: awaySpread, over: over, under: under, selectedTeam: awayTeam)
+        let homeSpreadBet = BetOption(gameID: id, betType: .spread, odds: Int(homeSpreadPriceTemp), spread: homeSpread, over: over, under: under, selectedTeam: homeTeam)
+        let awaySpreadBet = BetOption(gameID: id, betType: .spread, odds: Int(awaySpreadPriceTemp), spread: awaySpread, over: over, under: under, selectedTeam: awayTeam)
         let homeMoneyLineBet = BetOption(gameID: id, betType: .moneyline, odds: homeMoneyLine, over: over, under: under, selectedTeam: homeTeam)
         let awayMoneyLineBet = BetOption(gameID: id, betType: .moneyline, odds: awayMoneyLine, over: over, under: under, selectedTeam: awayTeam)
-        let overBet = BetOption(gameID: id, betType: .over, odds: homeMoneyLine, over: over, under: under, selectedTeam: homeTeam)
-        let underBet = BetOption(gameID: id, betType: .under, odds: awayMoneyLine, over: over, under: under, selectedTeam: homeTeam)
+        let overBet = BetOption(gameID: id, betType: .over, odds: Int(overPriceTemp), over: over, under: under, selectedTeam: homeTeam)
+        let underBet = BetOption(gameID: id, betType: .under, odds: Int(underPriceTemp), over: over, under: under, selectedTeam: homeTeam)
         
         return [homeSpreadBet, awaySpreadBet, homeMoneyLineBet, awayMoneyLineBet, overBet, underBet]
     }

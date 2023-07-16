@@ -11,7 +11,7 @@ import SwiftUI
 struct KapApp: App {
     var body: some Scene {
         WindowGroup {
-            Leaderboard()
+            Board()
         }
     }
 }

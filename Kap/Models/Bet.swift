@@ -47,22 +47,16 @@ struct BetOption {
         case .spread:
             if let spread = spread {
                 let formattedSpread = spread > 0 ? "+\(spread)" : "\(spread)"
-                betString = "\(formattedSpread) \(formattedOdds)"
+                betString = "\(formattedSpread)\n\(formattedOdds)"
             } else {
                 betString = ""
             }
         case .moneyline:
             betString = formattedOdds
         case .over:
-            betString = "O\(over) \(formattedOdds)"
+            betString = "O \(over)\n\(formattedOdds)"
         case .under:
-            betString = "U\(under) \(formattedOdds)"
-        }
-        
-        if betType == .spread || betType == .moneyline {
-            if let selectedTeam = selectedTeam {
-                betString = "\(selectedTeam) \(betString)"
-            }
+            betString = "U \(under)\n\(formattedOdds)"
         }
     }
 }
@@ -96,9 +90,12 @@ struct Bet {
         
         if bet.odds > 0 { // Positive American odds
             points = Double(bet.odds) / 100.0 * Double(basePoints)
-        } else { // Negative American odds
+        } else if bet.odds < 0 { // Negative American odds
             points = 100.0 / Double(abs(bet.odds)) * Double(basePoints)
+        } else {
+            return 0
         }
+        
         return bet.result == .win ? Int(round(points)) : Int(round(-points)) / 2
     }
 }
