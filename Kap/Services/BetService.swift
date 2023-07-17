@@ -6,10 +6,12 @@
 //
 
 import Foundation
+import Observation
+import SwiftUI
 
-class BetService {
+@Observable class BetService {
     var games: [Game] = []
-    let viewModel = AppDataViewModel()
+    var viewModel = AppDataViewModel()
 
     func fetchGames() async throws {
         do {
@@ -36,10 +38,15 @@ class BetService {
         }
     }
 
-    func makeBet(for game: Game, betOption: BetOption, player: Player) {
-        let bet = Bet(id: UUID(), userID: player.user.userID, betOptionID: betOption.id, game: game, type: betOption.betType, result: .win, odds: betOption.odds)
+    func makeBet(for game: Game, betOption: BetOption, player: Player) -> Bet {
+        if let betOption = game.betOptions.first(where: { $0.id == betOption.id }) {
+            
+        }
+        let allBetResults: [BetResult] = [.win, .loss, .pending]
+        let bet = Bet(id: UUID(), userID: player.user.userID, betOptionID: betOption.id, game: game, type: betOption.betType, result: allBetResults.randomElement(), odds: betOption.odds, selectedTeam: betOption.selectedTeam)
         player.bets[0].append(bet)
-        print("Bet placed: ", bet)
+        viewModel.bets.append(bet)
+        return bet
     }
     
     func makeParlay(for games: [Game], player: Player) {

@@ -6,8 +6,11 @@
 //
 
 import SwiftUI
+import Observation
 
-struct Home: View {    
+struct Home: View {
+    @Environment(\.viewModel) private var viewModel
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -69,19 +72,26 @@ struct Home: View {
                             
                             Spacer()
                             
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 10)
-                                    .foregroundColor(.purple.opacity(0.8)) // Assuming you have defined a color extension for light blue
-                                
-                                Text("Active Bets")
-                                    .font(.title3)
-                                    .foregroundColor(.white)
+                            NavigationLink(destination: Betslip()) {
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .foregroundColor(.purple.opacity(0.8)) // Assuming you have defined a color extension for light blue
+                                    
+                                    Text("BETSLIP")
+                                        .font(.title3.bold())
+                                        .foregroundColor(.white)
+                                }
                             }
                             .frame(height: 200)
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(24)
+                }
+            }
+            .task {
+                if viewModel.leagues.isEmpty {
+                   let _ = await viewModel.getLeaderboardData()
                 }
             }
         }
@@ -91,4 +101,15 @@ struct Home: View {
 
 #Preview {
     Home()
+}
+
+extension EnvironmentValues {
+    var viewModel: AppDataViewModel {
+        get { self[ViewModelKey.self] }
+        set { self[ViewModelKey.self] = newValue }
+    }
+}
+
+private struct ViewModelKey: EnvironmentKey {
+    static var defaultValue: AppDataViewModel = AppDataViewModel()
 }

@@ -10,8 +10,9 @@ import SwiftUI
 struct CustomButton: View {
     var betOption: BetOption
     var buttonText: String
-    var action: () -> Void
+    @State var viewModel: AppDataViewModel
     @State var confirmBet = false
+    var action: () -> Void
     
     var body: some View {
         Button(action: {
@@ -19,16 +20,22 @@ struct CustomButton: View {
                 if confirmBet {
                     self.action()
                     self.confirmBet.toggle()
+                    viewModel.activeButtons.removeAll(where: { $0.uuidString == betOption.id.uuidString })
                 } else {
                     self.confirmBet.toggle()
+                    viewModel.activeButtons.append(betOption.id)
                 }
             }
         }) {
             ZStack {
                 confirmBet ? Color("onyxLight") : Color.yellow
                 if confirmBet {
-                    Image(systemName: "checkmark")
+                    Text(buttonText)
+                        .font(.caption2.bold())
+                        .fontDesign(.rounded)
                         .foregroundStyle(.yellow)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
                 } else {
                     Text(buttonText)
                         .font(.caption2.bold())

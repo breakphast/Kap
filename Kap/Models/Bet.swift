@@ -6,6 +6,8 @@
 //
 
 import Foundation
+import SwiftUI
+import Observation
 
 enum BetType: String {
     case spread = "Spread"
@@ -20,7 +22,7 @@ enum BetResult: String {
     case pending = "Pending"
 }
 
-struct BetOption {
+@Observable class BetOption {
     let id: UUID
     let gameID: String
     let betType: BetType
@@ -30,8 +32,9 @@ struct BetOption {
     var under: Double
     var betString: String
     var selectedTeam: String?
+    var confirmBet: Bool
     
-    init(gameID: String, betType: BetType, odds: Int, spread: Double? = nil, over: Double, under: Double, selectedTeam: String? = nil) {
+    init(gameID: String, betType: BetType, odds: Int, spread: Double? = nil, over: Double, under: Double, selectedTeam: String? = nil, confirmBet: Bool = false) {
         self.id = UUID()
         self.gameID = gameID
         self.betType = betType
@@ -40,6 +43,7 @@ struct BetOption {
         self.over = over
         self.under = under
         self.selectedTeam = selectedTeam
+        self.confirmBet = confirmBet
         
         let formattedOdds = odds > 0 ? "+\(odds)" : "\(odds)"
         
@@ -61,7 +65,7 @@ struct BetOption {
     }
 }
 
-struct Bet {
+@Observable class Bet {
     let id: UUID
     let userID: UUID
     let betOptionID: UUID
@@ -72,8 +76,9 @@ struct Bet {
     var points: Int?
     let stake = 100.0
     let betString: String
+    let selectedTeam: String?
     
-    init(id: UUID, userID: UUID, betOptionID: UUID, game: Game, type: BetType, result: BetResult?, odds: Int) {
+    init(id: UUID, userID: UUID, betOptionID: UUID, game: Game, type: BetType, result: BetResult?, odds: Int, selectedTeam: String?) {
         self.id = id
         self.userID = userID
         self.betOptionID = betOptionID
@@ -82,6 +87,7 @@ struct Bet {
         self.result = result
         self.odds = odds
         self.betString = game.betOptions.first { $0.id == betOptionID }?.betString ?? ""
+        self.selectedTeam = selectedTeam
         self.points = calculatePoints(bet: self)
     }
     

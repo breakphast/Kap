@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Observation
 
 @Observable class AppDataViewModel {
     var users: [User] = []
@@ -18,6 +19,7 @@ import SwiftUI
     var parlays: [Parlay] = []
     var weeklyGames: [[Game]] = [[]]
     var currentWeek = 0
+    var activeButtons: [UUID] = []
     
     init() {
         self.users = [
@@ -53,7 +55,6 @@ import SwiftUI
             
             for player in league.players {
                 let _ = AppDataViewModel().generateRandomBets(from: self.games, betCount: 6, player: player)
-//                let _ = AppDataViewModel().createParlayWithinOddsRange(for: player, from: self.games)
             }
             
             self.players = league.players.sorted { $0.points[0] ?? 0 > $1.points[0] ?? 0 }
@@ -95,12 +96,15 @@ import SwiftUI
         for _ in 0..<betCount {
             if let chosenGame = games.randomElement(),
                let chosenBet = chosenGame.betOptions.randomElement() {
-                let bet = Bet(id: UUID(), userID: player.user.userID, betOptionID: chosenBet.id, game: chosenGame, type: allBetTypes.randomElement()!, result: allBetResults.randomElement()!, odds: chosenBet.odds)
-                bets.append(bet)
+                if let betOption = chosenGame.betOptions.first(where: { $0.id == chosenBet.id }) {
+                    let bet = Bet(id: UUID(), userID: player.user.userID, betOptionID: chosenBet.id, game: chosenGame, type: allBetTypes.randomElement()!, result: allBetResults.randomElement()!, odds: chosenBet.odds, selectedTeam: betOption.selectedTeam)
+                    bets.append(bet)
+                    player.points[currentWeek]! += bet.points!
+                }
                 
-                player.points[currentWeek]! += bet.points!
             }
         }
+        self.bets = bets
         return bets
     }
     

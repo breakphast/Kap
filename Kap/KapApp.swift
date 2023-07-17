@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct KapApp: App {
+    @State private var viewModel = AppDataViewModel()
+    
     var body: some Scene {
         WindowGroup {
             Home()
+                .environment(\.viewModel, viewModel)
         }
     }
 }

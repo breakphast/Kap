@@ -10,13 +10,38 @@ import SwiftUI
 struct Board: View {
     @State private var games = [Game]()
     @State private var players: [Player] = []
-    let viewModel = AppDataViewModel()
     let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 3)
+    @Environment(\.viewModel) private var viewModel
     
     var body: some View {
         NavigationStack {
             ZStack(alignment: .bottom) {
                 Color("onyx").ignoresSafeArea()
+                
+                if viewModel.activeButtons.count > 0 {
+                    Button {
+                        
+                    } label: {
+                        ZStack {
+                            Color("onyxLightish")
+                            HStack(spacing: 8) {
+                                Text("Betslip")
+                                
+                                Image(systemName: "arrowshape.right.fill")
+                            }
+                            .font(.title3.bold())
+                            .fontDesign(.rounded)
+                            .foregroundStyle(.yellow)
+                            .multilineTextAlignment(.leading)
+                            .lineLimit(2)
+                        }
+                        .frame(height: 60)
+                        .cornerRadius(20)
+                        .padding(.horizontal, 40)
+                        .shadow(radius: 10)
+                    }
+                    .zIndex(100)
+                }
                 
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 16) {
@@ -38,9 +63,10 @@ struct Board: View {
                                 
                                 LazyVGrid(columns: columns, spacing: 10) {
                                     ForEach(options, id: \.id) { betOption in
-                                        CustomButton(betOption: betOption, buttonText: betOption.betString) {
+                                        CustomButton(betOption: betOption, buttonText: betOption.betString, viewModel: viewModel) {
                                             withAnimation {
-                                                BetService().makeBet(for: game, betOption: betOption, player: players[3])
+                                                let bet = BetService().makeBet(for: game, betOption: betOption, player: players[3])
+                                                viewModel.bets.append(bet)
                                             }
                                         }
                                     }
@@ -59,7 +85,9 @@ struct Board: View {
                         }
                     }
                     .task {
-                        self.players = await viewModel.getLeaderboardData()
+                        if self.players.isEmpty {
+                            self.players = await viewModel.getLeaderboardData()
+                        }
                     }
                 }
                 .padding(.top, 24)

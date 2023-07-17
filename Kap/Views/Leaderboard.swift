@@ -10,7 +10,7 @@ import SwiftUI
 struct Leaderboard: View {
     @State private var games = [Game]()
     @State private var players: [Player] = []
-    let viewModel = AppDataViewModel()
+    @Environment(\.viewModel) private var viewModel
     let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 3)
     
     var body: some View {

@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		3E5D8D232A639B5300634DBE /* Board.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E5D8D222A639B5300634DBE /* Board.swift */; };
 		3E5D8D252A63A4F100634DBE /* CustomButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E5D8D242A63A4F100634DBE /* CustomButton.swift */; };
+		3E5D8D272A64718C00634DBE /* Betslip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E5D8D262A64718C00634DBE /* Betslip.swift */; };
 		3EA650412A5F7565007CA5ED /* KapApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EA650402A5F7565007CA5ED /* KapApp.swift */; };
 		3EA650452A5F7568007CA5ED /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3EA650442A5F7568007CA5ED /* Assets.xcassets */; };
 		3EA650482A5F7568007CA5ED /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3EA650472A5F7568007CA5ED /* Preview Assets.xcassets */; };
@@ -30,6 +31,7 @@
 /* Begin PBXFileReference section */
 		3E5D8D222A639B5300634DBE /* Board.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Board.swift; sourceTree = "<group>"; };
 		3E5D8D242A63A4F100634DBE /* CustomButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomButton.swift; sourceTree = "<group>"; };
+		3E5D8D262A64718C00634DBE /* Betslip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Betslip.swift; sourceTree = "<group>"; };
 		3EA6503D2A5F7565007CA5ED /* Kap.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Kap.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3EA650402A5F7565007CA5ED /* KapApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KapApp.swift; sourceTree = "<group>"; };
 		3EA650442A5F7568007CA5ED /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -122,6 +124,7 @@
 		3EE35E612A60DC550026F952 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				3E5D8D262A64718C00634DBE /* Betslip.swift */,
 				3E5D8D222A639B5300634DBE /* Board.swift */,
 				3EE35E692A61C8C00026F952 /* Leaderboard.swift */,
 				3EA650512A5F7D55007CA5ED /* ExtendedWeeklyLeaderboard.swift */,
@@ -226,6 +229,7 @@
 				3EE35E5D2A60D7FB0026F952 /* Game.swift in Sources */,
 				3EA650522A5F7D55007CA5ED /* ExtendedWeeklyLeaderboard.swift in Sources */,
 				3E5D8D252A63A4F100634DBE /* CustomButton.swift in Sources */,
+				3E5D8D272A64718C00634DBE /* Betslip.swift in Sources */,
 				3EE35E552A60D77A0026F952 /* User.swift in Sources */,
 				3EE35E532A5F86CB0026F952 /* Home.swift in Sources */,
 				3E5D8D232A639B5300634DBE /* Board.swift in Sources */,
