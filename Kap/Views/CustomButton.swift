@@ -10,17 +10,25 @@ import SwiftUI
 struct CustomButton: View {
     var betOption: BetOption
     var buttonText: String
-    @State var viewModel: AppDataViewModel
+    @Environment(\.viewModel) private var viewModel
     @State var confirmBet = false
+    @Binding var parlayMode: Bool
+    @Environment(\.dismiss) var dismiss
     var action: () -> Void
     
     var body: some View {
         Button(action: {
             withAnimation {
+                
+                if parlayMode {
+                    self.action()
+                }
+                
                 if confirmBet {
                     self.action()
                     self.confirmBet.toggle()
                     viewModel.activeButtons.removeAll(where: { $0.uuidString == betOption.id.uuidString })
+                    
                 } else {
                     self.confirmBet.toggle()
                     viewModel.activeButtons.append(betOption.id)

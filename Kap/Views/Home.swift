@@ -22,7 +22,7 @@ struct Home: View {
                     
                     VStack(alignment: .leading) {
                         HStack {
-                            NavigationLink(destination: Leaderboard()) {
+                            NavigationLink(destination: Betslip()) {
                                 ZStack {
                                     RoundedRectangle(cornerRadius: 10)
                                         .foregroundColor(.blue.opacity(0.8)) // Assuming you have defined a color extension for light blue
@@ -72,7 +72,7 @@ struct Home: View {
                             
                             Spacer()
                             
-                            NavigationLink(destination: Betslip()) {
+                            NavigationLink(destination: SelectedBetsView()) {
                                 ZStack {
                                     RoundedRectangle(cornerRadius: 10)
                                         .foregroundColor(.purple.opacity(0.8)) // Assuming you have defined a color extension for light blue

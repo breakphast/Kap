@@ -22,9 +22,9 @@ class Parlay {
         self.bets = bets
         self.totalOdds = calculateParlayOdds(bets: bets)
         self.result = result
-        self.totalPoints = calculateParlayPoints(odds: totalOdds, result: result)
+        self.totalPoints = calculateParlayPoints(odds: totalOdds, result: .win)
         self.betString = bets.map { bet in
-            let betOption = bet.game.betOptions.first(where: { $0.id == bet.betOptionID })
+            let betOption = bets.first(where: { $0.id == bet.betOptionID })
             return betOption?.betString ?? "No bet string"
         }.joined(separator: ", ")
     }

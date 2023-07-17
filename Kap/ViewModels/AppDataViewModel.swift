@@ -20,6 +20,7 @@ import Observation
     var weeklyGames: [[Game]] = [[]]
     var currentWeek = 0
     var activeButtons: [UUID] = []
+    var parlaySelections: [BetOption] = []
     
     init() {
         self.users = [
@@ -65,13 +66,6 @@ import Observation
         return self.players
     }
     
-    func goTest() async -> Week {
-        let league = createLeague(name: "BIG JOHN SILVER", players: [])
-        let week = await createWeek(season: createSeason(league: league, year: 2023), league: league, weekNumber: currentWeek)
-        
-        return week
-    }
-    
     func createWeek(season: Season, league: League, weekNumber: Int) async -> Week {
         let week = Week(id: UUID(), weekNumber: weekNumber, season: season, games: [], bets: [[]], parlays: [], isComplete: false)
         do {
@@ -112,25 +106,26 @@ import Observation
         return Int.random(in: range)
     }
     
-    func createParlayWithinOddsRange(for player: Player, from games: [Game]) -> Parlay? {
-        let betCount = generateRandomNumberInRange(range: 2...6) // assuming parlays consist of 2-6 bets
-        var parlayBets = generateRandomBets(from: games, betCount: betCount, player: player)
-        var parlayOdds = calculateParlayOdds(bets: parlayBets)
+    func createParlayWithinOddsRange(for player: Player, from bets: [Bet]) -> Parlay {
+//        let betCount = generateRandomNumberInRange(range: 2...6) // assuming parlays consist of 2-6 bets
+//        var parlayBets = generateRandomBets(from: bets, betCount: betCount, player: player)
+        
+        var parlayOdds = calculateParlayOdds(bets: bets)
         let allBetResults: [BetResult] = [.win, .loss, .pending]
         
-        while parlayOdds < 400 || parlayOdds > 800 {
-            if parlayBets.count <= 2 {
-                // can't create a valid parlay with less than 2 bets
-                return nil
-            }
-            // remove bet with lowest absolute odds and recalculate
-            if let minBet = parlayBets.min(by: { abs($0.odds) < abs($1.odds) }) {
-                parlayBets = parlayBets.filter { $0.id != minBet.id }
-                parlayOdds = calculateParlayOdds(bets: parlayBets)
-            }
-        }
+//        while parlayOdds < 400 || parlayOdds > 800 {
+//            if parlayBets.count <= 2 {
+//                // can't create a valid parlay with less than 2 bets
+//                return nil
+//            }
+//            // remove bet with lowest absolute odds and recalculate
+//            if let minBet = parlayBets.min(by: { abs($0.odds) < abs($1.odds) }) {
+//                parlayBets = parlayBets.filter { $0.id != minBet.id }
+//                parlayOdds = calculateParlayOdds(bets: parlayBets)
+//            }
+//        }
         
-        let parlay = Parlay(id: UUID(), userID: player.user.userID, bets: parlayBets, result: allBetResults.randomElement()!)
+        let parlay = Parlay(id: UUID(), userID: player.user.userID, bets: bets, result: allBetResults.randomElement()!)
         player.parlays.append(parlay)
         if parlay.totalPoints != 0 {
             player.points[0]! += parlay.totalPoints

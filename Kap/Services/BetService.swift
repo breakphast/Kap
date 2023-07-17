@@ -39,9 +39,6 @@ import SwiftUI
     }
 
     func makeBet(for game: Game, betOption: BetOption, player: Player) -> Bet {
-        if let betOption = game.betOptions.first(where: { $0.id == betOption.id }) {
-            
-        }
         let allBetResults: [BetResult] = [.win, .loss, .pending]
         let bet = Bet(id: UUID(), userID: player.user.userID, betOptionID: betOption.id, game: game, type: betOption.betType, result: allBetResults.randomElement(), odds: betOption.odds, selectedTeam: betOption.selectedTeam)
         player.bets[0].append(bet)
@@ -49,7 +46,8 @@ import SwiftUI
         return bet
     }
     
-    func makeParlay(for games: [Game], player: Player) {
-        let _ = viewModel.createParlayWithinOddsRange(for: player, from: games)
+    func makeParlay(for bets: [Bet], player: Player) -> Parlay {
+        let parlay = viewModel.createParlayWithinOddsRange(for: player, from: bets)
+        return parlay
     }
 }
