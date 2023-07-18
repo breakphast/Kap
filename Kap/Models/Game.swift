@@ -104,12 +104,12 @@ class Game {
     }
     
     func createBetOptions() -> [BetOption] {
-        let homeSpreadBet = BetOption(gameID: id, betType: .spread, odds: Int(homeSpreadPriceTemp), spread: homeSpread, over: over, under: under, selectedTeam: homeTeam)
-        let awaySpreadBet = BetOption(gameID: id, betType: .spread, odds: Int(awaySpreadPriceTemp), spread: awaySpread, over: over, under: under, selectedTeam: awayTeam)
-        let homeMoneyLineBet = BetOption(gameID: id, betType: .moneyline, odds: homeMoneyLine, over: over, under: under, selectedTeam: homeTeam)
-        let awayMoneyLineBet = BetOption(gameID: id, betType: .moneyline, odds: awayMoneyLine, over: over, under: under, selectedTeam: awayTeam)
-        let overBet = BetOption(gameID: id, betType: .over, odds: Int(overPriceTemp), over: over, under: under, selectedTeam: homeTeam)
-        let underBet = BetOption(gameID: id, betType: .under, odds: Int(underPriceTemp), over: over, under: under, selectedTeam: homeTeam)
+        let homeSpreadBet = BetOption(game: self, betType: .spread, odds: Int(homeSpreadPriceTemp), spread: homeSpread, over: over, under: under, selectedTeam: homeTeam)
+        let awaySpreadBet = BetOption(game: self, betType: .spread, odds: Int(awaySpreadPriceTemp), spread: awaySpread, over: over, under: under, selectedTeam: awayTeam)
+        let homeMoneyLineBet = BetOption(game: self, betType: .moneyline, odds: homeMoneyLine, over: over, under: under, selectedTeam: homeTeam)
+        let awayMoneyLineBet = BetOption(game: self, betType: .moneyline, odds: awayMoneyLine, over: over, under: under, selectedTeam: awayTeam)
+        let overBet = BetOption(game: self, betType: .over, odds: Int(overPriceTemp), over: over, under: under, selectedTeam: homeTeam)
+        let underBet = BetOption(game: self, betType: .under, odds: Int(underPriceTemp), over: over, under: under, selectedTeam: homeTeam)
         
         return [homeSpreadBet, awaySpreadBet, homeMoneyLineBet, awayMoneyLineBet, overBet, underBet]
     }

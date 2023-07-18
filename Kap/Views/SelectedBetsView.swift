@@ -11,6 +11,7 @@ import Observation
 struct SelectedBetsView: View {
     let results: [Image] = [Image(systemName: "checkmark"), Image(systemName: "x.circle")]
     @Environment(\.viewModel) private var viewModel
+    @Environment(\.dismiss) var dismiss
     
     var body: some View {
         ZStack {
@@ -18,15 +19,21 @@ struct SelectedBetsView: View {
             
             ScrollView {
                 VStack(spacing: 20) {
-                    ForEach(viewModel.parlays, id: \.id) { parlay in
+                    ForEach(viewModel.activeParlays, id: \.id) { parlay in
                         ParlayView2(parlay: parlay)
                     }
                 }
+                .navigationBarBackButtonHidden()
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 18, weight: .bold, design: .rounded))
+                            .onTapGesture {
+                                dismiss()
+                            }
+                    }
+                }
             }
-        }
-        .onAppear {
-            print(viewModel.parlays)
-            print(viewModel.bets.count)
         }
     }
 }
@@ -57,13 +64,13 @@ struct ParlayView2: View {
                         
                         ScrollView(showsIndicators: false) {
                             VStack(alignment: .leading) {
-                                Text("Chicago Bears ML")
-                                Text("Baltimore Ravens ML")
-                                Text("Las Vegas Raiders +7.5")
-                                Text("Panthers @ Patriots O54.5")
-                                Text("Chicago Bears ML")
+                                ForEach(parlay.bets, id: \.id) { bet in
+                                    Text(bet.betString)
+                                        .lineLimit(1)
+                                }
                             }
-                            .font(.caption2.bold())
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
                         }
                         .frame(height: 60)
                         
@@ -76,12 +83,13 @@ struct ParlayView2: View {
                                 .frame(width: 80, height: 1)
                                 .foregroundStyle(.secondary)
                         }
-
+                        
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                 .padding(24)
+                .padding([.bottom, .trailing], 12)
             }
             .fontDesign(.rounded)
             .foregroundStyle(.white)
@@ -89,17 +97,17 @@ struct ParlayView2: View {
             
             VStack {
                 Button {
-                    let parlay = BetService().makeParlay(for: viewModel.bets, player: viewModel.players[0])
-                    viewModel.parlays.append(parlay)
+                    let parlay = viewModel.activeParlays
+                    viewModel.parlays.append(parlay[0])
                     viewModel.activeButtons = [UUID]()
-                    viewModel.parlaySelections = []
+                    viewModel.activeParlays = []
                 } label: {
                     ZStack {
                         Color.onyxLight
                         Text("Place Bet")
                             .font(.caption.bold())
                             .fontDesign(.rounded)
-                            .foregroundStyle(.green)
+                            .foregroundStyle(.yellow)
                             .lineLimit(2)
                     }
                     .frame(width: 80, height: 40)
@@ -112,11 +120,11 @@ struct ParlayView2: View {
                     
                 } label: {
                     ZStack {
-                        Color.onyxLight
+                        Color.redd.opacity(0.8)
                         Text("Cancel Bet")
                             .font(.caption.bold())
                             .fontDesign(.rounded)
-                            .foregroundStyle(Color.redd)
+                            .foregroundStyle(.white)
                             .lineLimit(2)
                     }
                     .frame(width: 80, height: 40)
@@ -126,11 +134,11 @@ struct ParlayView2: View {
                 .zIndex(100)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-            .padding()
+            .padding(24)
         }
         .frame(height: 200)
         .cornerRadius(20)
-        .padding(.horizontal, 20)
+        .padding(20)
         .shadow(radius: 10)
     }
 }

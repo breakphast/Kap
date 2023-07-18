@@ -24,7 +24,7 @@ enum BetResult: String {
 
 @Observable class BetOption {
     let id: UUID
-    let gameID: String
+    let game: Game
     let betType: BetType
     var odds: Int
     var spread: Double?
@@ -34,9 +34,9 @@ enum BetResult: String {
     var selectedTeam: String?
     var confirmBet: Bool
     
-    init(gameID: String, betType: BetType, odds: Int, spread: Double? = nil, over: Double, under: Double, selectedTeam: String? = nil, confirmBet: Bool = false) {
+    init(game: Game, betType: BetType, odds: Int, spread: Double? = nil, over: Double, under: Double, selectedTeam: String? = nil, confirmBet: Bool = false) {
         self.id = UUID()
-        self.gameID = gameID
+        self.game = game
         self.betType = betType
         self.odds = odds
         self.spread = spread
@@ -67,8 +67,7 @@ enum BetResult: String {
 
 @Observable class Bet {
     let id: UUID
-    let userID: UUID
-    let betOptionID: UUID
+    let betOption: BetOption
     let game: Game
     let type: BetType
     let result: BetResult?
@@ -78,16 +77,33 @@ enum BetResult: String {
     let betString: String
     let selectedTeam: String?
     
-    init(id: UUID, userID: UUID, betOptionID: UUID, game: Game, type: BetType, result: BetResult?, odds: Int, selectedTeam: String?) {
+    init(id: UUID, betOption: BetOption, game: Game, type: BetType, result: BetResult?, odds: Int, selectedTeam: String?) {
         self.id = id
-        self.userID = userID
-        self.betOptionID = betOptionID
+        self.betOption = betOption
         self.game = game
         self.type = type
         self.result = result
         self.odds = odds
-        self.betString = game.betOptions.first { $0.id == betOptionID }?.betString ?? ""
         self.selectedTeam = selectedTeam
+        
+        let formattedOdds = odds > 0 ? "+\(odds)" : "\(odds)"
+        
+        switch type {
+        case .spread:
+            if let spread = betOption.spread {
+                let formattedSpread = spread > 0 ? "+\(spread)" : "\(spread)"
+                betString = "\(selectedTeam ?? "") \(formattedSpread)"
+            } else {
+                betString = ""
+            }
+        case .moneyline:
+            betString = "\(selectedTeam ?? "") ML"
+        case .over:
+            betString = "\(betOption.game.awayTeam) @ \(betOption.game.homeTeam) O\(betOption.over)"
+        case .under:
+            betString = "\(betOption.game.awayTeam) @ \(betOption.game.homeTeam) U\(betOption.under)"
+        }
+        
         self.points = calculatePoints(bet: self)
     }
     
@@ -109,7 +125,7 @@ enum BetResult: String {
             return .pending
         }
         
-        guard let betOption = bet.game.betOptions.first(where: { $0.id == bet.betOptionID }), let selectedTeam = betOption.selectedTeam else {
+        guard let betOption = bet.game.betOptions.first(where: { $0.id == betOption.id }), let selectedTeam = betOption.selectedTeam else {
             return .pending
         }
         
@@ -123,17 +139,17 @@ enum BetResult: String {
                 return homeScore < awayScore ? .win : .loss
             }
         case .spread:
-            let spread = bet.game.betOptions.first(where: { $0.id == bet.betOptionID })?.spread ?? 0.0
+            let spread = bet.game.betOptions.first(where: { $0.id == betOption.id })?.spread ?? 0.0
             if selectedTeam == bet.game.homeTeam {
                 return Double(homeScore) + spread > Double(awayScore) ? .win : .loss
             } else if selectedTeam == bet.game.awayTeam {
                 return Double(awayScore) + spread > Double(homeScore) ? .win : .loss
             }
         case .over:
-            let over = bet.game.betOptions.first(where: { $0.id == bet.betOptionID })?.over ?? 0.0
+            let over = bet.game.betOptions.first(where: { $0.id == betOption.id })?.over ?? 0.0
             return Double(homeScore + awayScore) > over ? .win : .loss
         case .under:
-            let under = bet.game.betOptions.first(where: { $0.id == bet.betOptionID })?.under ?? 0.0
+            let under = bet.game.betOptions.first(where: { $0.id == betOption.id })?.under ?? 0.0
             return Double(homeScore + awayScore) < under ? .win : .loss
         }
         

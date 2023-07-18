@@ -38,11 +38,10 @@ import SwiftUI
         }
     }
 
-    func makeBet(for game: Game, betOption: BetOption, player: Player) -> Bet {
+    func makeBet(for game: Game, betOption: BetOption) -> Bet {
         let allBetResults: [BetResult] = [.win, .loss, .pending]
-        let bet = Bet(id: UUID(), userID: player.user.userID, betOptionID: betOption.id, game: game, type: betOption.betType, result: allBetResults.randomElement(), odds: betOption.odds, selectedTeam: betOption.selectedTeam)
-        player.bets[0].append(bet)
-        viewModel.bets.append(bet)
+        let bet = Bet(id: UUID(), betOption: betOption, game: game, type: betOption.betType, result: allBetResults.randomElement(), odds: betOption.odds, selectedTeam: betOption.selectedTeam)
+        
         return bet
     }
     

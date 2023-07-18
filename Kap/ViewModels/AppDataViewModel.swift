@@ -20,7 +20,8 @@ import Observation
     var weeklyGames: [[Game]] = [[]]
     var currentWeek = 0
     var activeButtons: [UUID] = []
-    var parlaySelections: [BetOption] = []
+    var selectedBets: [Bet] = []
+    var activeParlays: [Parlay] = []
     
     init() {
         self.users = [
@@ -91,7 +92,7 @@ import Observation
             if let chosenGame = games.randomElement(),
                let chosenBet = chosenGame.betOptions.randomElement() {
                 if let betOption = chosenGame.betOptions.first(where: { $0.id == chosenBet.id }) {
-                    let bet = Bet(id: UUID(), userID: player.user.userID, betOptionID: chosenBet.id, game: chosenGame, type: allBetTypes.randomElement()!, result: allBetResults.randomElement()!, odds: chosenBet.odds, selectedTeam: betOption.selectedTeam)
+                    let bet = Bet(id: UUID(), betOption: betOption, game: chosenGame, type: allBetTypes.randomElement()!, result: allBetResults.randomElement()!, odds: chosenBet.odds, selectedTeam: betOption.selectedTeam)
                     bets.append(bet)
                     player.points[currentWeek]! += bet.points!
                 }
@@ -107,29 +108,15 @@ import Observation
     }
     
     func createParlayWithinOddsRange(for player: Player, from bets: [Bet]) -> Parlay {
-//        let betCount = generateRandomNumberInRange(range: 2...6) // assuming parlays consist of 2-6 bets
-//        var parlayBets = generateRandomBets(from: bets, betCount: betCount, player: player)
-        
-        var parlayOdds = calculateParlayOdds(bets: bets)
         let allBetResults: [BetResult] = [.win, .loss, .pending]
-        
-//        while parlayOdds < 400 || parlayOdds > 800 {
-//            if parlayBets.count <= 2 {
-//                // can't create a valid parlay with less than 2 bets
-//                return nil
-//            }
-//            // remove bet with lowest absolute odds and recalculate
-//            if let minBet = parlayBets.min(by: { abs($0.odds) < abs($1.odds) }) {
-//                parlayBets = parlayBets.filter { $0.id != minBet.id }
-//                parlayOdds = calculateParlayOdds(bets: parlayBets)
-//            }
-//        }
-        
         let parlay = Parlay(id: UUID(), userID: player.user.userID, bets: bets, result: allBetResults.randomElement()!)
+        
         player.parlays.append(parlay)
+        
         if parlay.totalPoints != 0 {
             player.points[0]! += parlay.totalPoints
         }
+        
         return parlay
     }
     

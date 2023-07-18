@@ -82,8 +82,6 @@ struct Leaderboard: View {
                     }
                     .task {
                         self.players = await viewModel.getLeaderboardData()
-//                        let _ = BetService().makeBet(for: viewModel.games[0], betOption: viewModel.games[0].betOptions[0], player: players[0])
-//                        BetService().makeParlay(for: viewModel.games, player: players[1])
                     }
                 }
                 .padding(.top, 24)

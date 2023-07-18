@@ -14,24 +14,23 @@ struct Board: View {
     @Environment(\.viewModel) private var viewModel
     @Environment(\.dismiss) var dismiss
     @State var parlayMode: Bool = false
+    @State var mainColor: Color = .yellow
     
     var body: some View {
         NavigationStack {
             ZStack(alignment: .bottom) {
                 Color("onyx").ignoresSafeArea()
-                
-                if viewModel.activeButtons.count > 0 {
+                if viewModel.selectedBets.count > 0 {
                     NavigationLink(destination: SelectedBetsView()) {
                         ZStack {
                             Color("onyxLightish")
                             HStack(spacing: 8) {
                                 Text("Betslip")
-                                
-                                Image(systemName: "arrowshape.right.fill")
+                                Image(systemName: viewModel.selectedBets.count > 1 ? "gift.fill" : "")
                             }
                             .font(.title3.bold())
                             .fontDesign(.rounded)
-                            .foregroundStyle(.yellow)
+                            .foregroundStyle(mainColor)
                             .multilineTextAlignment(.leading)
                             .lineLimit(2)
                         }
@@ -39,50 +38,61 @@ struct Board: View {
                         .cornerRadius(20)
                         .padding(.horizontal, 40)
                         .shadow(radius: 10)
-                        .zIndex(100)
                     }
+                    .zIndex(100)
+                    .simultaneousGesture(
+                        TapGesture()
+                            .onEnded { _ in
+                                let parlay = BetService().makeParlay(for: viewModel.selectedBets, player: players[0])
+                                viewModel.activeParlays.append(parlay)
+                                parlayMode.toggle()
+                                viewModel.activeButtons = [UUID]()
+                            }
+                    )
                 }
                 
                 ScrollView(showsIndicators: false) {
-                    GameListingView(parlayMode: $parlayMode, players: players)
-                    .navigationBarBackButtonHidden()
-                    .toolbar {
-                        ToolbarItem(placement: .principal) {
-                            Text("Board")
-                                .font(.system(size: 32, weight: .bold, design: .rounded))
-                        }
-                        ToolbarItem(placement: .topBarTrailing) {
-                            Image(systemName: "gift.fill")
-                                .font(.system(size: 18, weight: .bold, design: .rounded))
-                                .foregroundStyle(parlayMode ? Color.yellow : Color.white)
-                                .onTapGesture {
-                                    withAnimation {
-                                        parlayMode.toggle()
+                    GameListingView(parlayMode: $parlayMode, mainColor: $mainColor, players: players)
+                        .navigationBarBackButtonHidden()
+                        .toolbar {
+                            ToolbarItem(placement: .principal) {
+                                Text("Board")
+                                    .font(.system(size: 32, weight: .bold, design: .rounded))
+                            }
+                            ToolbarItem(placement: .topBarTrailing) {
+                                Image(systemName: "gift.fill")
+                                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                                    .foregroundStyle(parlayMode ? mainColor : Color.white)
+                                    .onTapGesture {
+                                        withAnimation(.easeInOut(duration: 0.5)) {
+                                            if parlayMode {
+                                                viewModel.activeButtons = []
+                                            }
+                                            parlayMode.toggle()
+                                            mainColor =  parlayMode ? Color.redd : .yellow
+                                        }
                                     }
-                                }
+                                    .scaleEffect(parlayMode ? 1.2 : 1.0)
+                            }
+                            ToolbarItem(placement: .topBarLeading) {
+                                Image(systemName: "chevron.left")
+                                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                                    .onTapGesture {
+                                        dismiss()
+                                    }
+                            }
                         }
-                        ToolbarItem(placement: .topBarLeading) {
-                            Image(systemName: "chevron.left")
-                                .font(.system(size: 18, weight: .bold, design: .rounded))
-                                .onTapGesture {
-                                    dismiss()
-                                }
+                        .task {
+                            if self.players.isEmpty {
+                                self.players = await viewModel.getLeaderboardData()
+                            }
                         }
-                    }
-                    .task {
-                        if self.players.isEmpty {
-                            self.players = await viewModel.getLeaderboardData()
-                        }
-                    }
                 }
                 .padding(.top, 24)
-
+                
                 .fontDesign(.rounded)
-                .sheet(isPresented: $parlayMode) {
-                    ModalSheet(parlayMode: $parlayMode, players: players)
-                }
             }
-
+            
         }
     }
 }
@@ -91,53 +101,16 @@ struct Board: View {
     Board()
 }
 
-struct ModalSheet: View {
-    @Environment(\.viewModel) private var viewModel
-    @Binding var parlayMode: Bool
-    var players: [Player]
-    
-    var body: some View {
-        ZStack(alignment: .top) {
-            Color("onyx").ignoresSafeArea()  // Set the background color.
-            
-            VStack(alignment: .leading) {
-                Text("Build Parlay")
-                    .font(.caption.bold())
-                    .padding([.top, .leading], 20)
-                
-                if viewModel.bets.count > 1 {
-                    Button {
-                        let parlay = BetService().makeParlay(for: viewModel.bets, player: players[0])
-                        viewModel.parlays.append(parlay)
-                        parlayMode.toggle()
-                        viewModel.activeButtons = [UUID]()
-                        viewModel.parlaySelections = []
-                    } label: {
-                        Text("Place Parlay")
-                            .font(.subheadline.bold())
-                    }
-                    .padding(.leading, 20)
-                }
-                
-                ScrollView {
-                    GameListingView(parlayMode: $parlayMode, players: players)
-                }
-            }
-        }
-        .edgesIgnoringSafeArea(.all)
-    }
-}
-
-
 struct GameListingView: View {
     @Environment(\.viewModel) private var viewModel
     @Binding var parlayMode: Bool
+    @Binding var mainColor: Color
     var players: [Player]
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             ForEach(viewModel.games, id: \.id) { game in
-                GameRow(game: game, parlayMode: $parlayMode, players: players)
+                GameRow(game: game, parlayMode: $parlayMode, mainColor: $mainColor, players: players)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -148,10 +121,11 @@ struct GameListingView: View {
 struct GameRow: View {
     var game: Game
     @Binding var parlayMode: Bool
+    @Binding var mainColor: Color
     var players: [Player]
     let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 3)
     @Environment(\.viewModel) private var viewModel
-
+    
     var body: some View {
         HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 8) {
@@ -170,15 +144,15 @@ struct GameRow: View {
             
             LazyVGrid(columns: columns, spacing: 10) {
                 ForEach(options, id: \.id) { betOption in
-                    CustomButton(betOption: betOption, buttonText: betOption.betString, parlayMode: $parlayMode) {
+                    CustomButton(betOption: betOption, buttonText: betOption.betString, parlayMode: $parlayMode, mainColor: $mainColor) {
                         withAnimation {
                             if parlayMode {
-                                let bet = BetService().makeBet(for: game, betOption: betOption, player: players[3])
-                                viewModel.bets.append(bet)
-//                                print(viewModel.parlaySelections.count)
+                                let bet = BetService().makeBet(for: game, betOption: betOption)
+                                viewModel.selectedBets.append(bet)
+                                print(viewModel.selectedBets)
                             } else {
-                                let bet = BetService().makeBet(for: game, betOption: betOption, player: players[3])
-                                viewModel.bets.append(bet)
+                                let bet = BetService().makeBet(for: game, betOption: betOption)
+                                viewModel.selectedBets.append(bet)
                             }
                         }
                     }

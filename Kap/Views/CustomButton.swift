@@ -13,6 +13,7 @@ struct CustomButton: View {
     @Environment(\.viewModel) private var viewModel
     @State var confirmBet = false
     @Binding var parlayMode: Bool
+    @Binding var mainColor: Color
     @Environment(\.dismiss) var dismiss
     var action: () -> Void
     
@@ -28,7 +29,7 @@ struct CustomButton: View {
                     self.action()
                     self.confirmBet.toggle()
                     viewModel.activeButtons.removeAll(where: { $0.uuidString == betOption.id.uuidString })
-                    
+                    viewModel.selectedBets.removeAll(where: { $0.betOption.id == betOption.id })
                 } else {
                     self.confirmBet.toggle()
                     viewModel.activeButtons.append(betOption.id)
@@ -36,19 +37,19 @@ struct CustomButton: View {
             }
         }) {
             ZStack {
-                confirmBet ? Color("onyxLight") : Color.yellow
+                confirmBet ? Color.onyxLight : mainColor
                 if confirmBet {
                     Text(buttonText)
                         .font(.caption2.bold())
                         .fontDesign(.rounded)
-                        .foregroundStyle(.yellow)
+                        .foregroundStyle(mainColor)
                         .multilineTextAlignment(.center)
                         .lineLimit(2)
                 } else {
                     Text(buttonText)
                         .font(.caption2.bold())
                         .fontDesign(.rounded)
-                        .foregroundStyle(Color("onyx"))
+                        .foregroundStyle(parlayMode ? .white : Color.onyx)
                         .multilineTextAlignment(.center)
                         .lineLimit(2)
                 }
