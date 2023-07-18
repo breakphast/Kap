@@ -8,55 +8,37 @@
 import SwiftUI
 
 struct CustomButton: View {
-    var betOption: BetOption
+    var bet: Bet
     var buttonText: String
     @Environment(\.viewModel) private var viewModel
-    @State var confirmBet = false
-    @Binding var parlayMode: Bool
-    @Binding var mainColor: Color
+    @State var betSelected = false
     @Environment(\.dismiss) var dismiss
     var action: () -> Void
     
     var body: some View {
         Button(action: {
             withAnimation {
+                print("Tapped button: ", bet.id)
                 
-                if parlayMode {
-                    self.action()
-                }
-                
-                if confirmBet {
-                    self.action()
-                    self.confirmBet.toggle()
-                    viewModel.activeButtons.removeAll(where: { $0.uuidString == betOption.id.uuidString })
-                    viewModel.selectedBets.removeAll(where: { $0.betOption.id == betOption.id })
-                } else {
-                    self.confirmBet.toggle()
-                    viewModel.activeButtons.append(betOption.id)
-                }
+                self.action()
+                self.betSelected.toggle()
             }
         }) {
             ZStack {
-                confirmBet ? Color.onyxLight : mainColor
-                if confirmBet {
-                    Text(buttonText)
-                        .font(.caption2.bold())
-                        .fontDesign(.rounded)
-                        .foregroundStyle(mainColor)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(2)
-                } else {
-                    Text(buttonText)
-                        .font(.caption2.bold())
-                        .fontDesign(.rounded)
-                        .foregroundStyle(parlayMode ? .white : Color.onyx)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(2)
-                }
+                betSelected ? Color.onyxLight : .yellow
+                Text(buttonText)
+                    .font(.caption2.bold())
+                    .fontDesign(.rounded)
+                    .foregroundStyle(betSelected ? .yellow : Color.onyx)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
             }
         }
         .frame(height: 40)
         .cornerRadius(10)
         .shadow(radius: 10)
+        .onChange(of: viewModel.selectedBets.count, { oldValue, newValue in
+            betSelected = viewModel.selectedBets.contains(where: { $0.id == bet.id })
+        })
     }
 }

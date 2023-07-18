@@ -53,9 +53,9 @@ struct ExtendedWeeklyLeaderboard: View {
                 let weeklyGames = games.chunked(into: 16)
                 self.games = weeklyGames[0]
                 
-                for player in league.players {
-                    let _ = AppDataViewModel().generateRandomBets(from: self.games, betCount: 6, player: player)
-                }
+//                for player in league.players {
+//                    let _ = AppDataViewModel().generateRandomBets(from: self.games, betCount: 6)
+//                }
                 
                 let pla = league.players.sorted { $0.points[0] ?? 0 > $1.points[0] ?? 0}
                 self.players = pla

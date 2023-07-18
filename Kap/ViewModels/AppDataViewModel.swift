@@ -20,7 +20,11 @@ import Observation
     var weeklyGames: [[Game]] = [[]]
     var currentWeek = 0
     var activeButtons: [UUID] = []
-    var selectedBets: [Bet] = []
+    var selectedBets: [Bet] = [] {
+        didSet {
+            print(selectedBets.map { $0.id })
+        }
+    }
     var activeParlays: [Parlay] = []
     
     init() {
@@ -55,9 +59,9 @@ import Observation
             let weeklyGames = games.chunked(into: 16)
             self.games = weeklyGames[0]
             
-            for player in league.players {
-                let _ = AppDataViewModel().generateRandomBets(from: self.games, betCount: 6, player: player)
-            }
+//            for _ in league.players {
+//                let _ = AppDataViewModel().generateRandomBets(from: self.games, betCount: 6)
+//            }
             
             self.players = league.players.sorted { $0.points[0] ?? 0 > $1.points[0] ?? 0 }
         } catch {
@@ -76,28 +80,24 @@ import Observation
             print("Failed to get games: \(error)")
         }
         
-        for player in league.players {
-            week.bets.append(generateRandomBets(from: week.games, betCount: 6, player: player))
-        }
+//        for _ in league.players {
+//            week.bets.append(generateRandomBets(from: week.games, betCount: 6))
+//        }
         
         return week
     }
     
-    func generateRandomBets(from games: [Game], betCount: Int, player: Player) -> [Bet] {
+    func generateRandomBets(from games: [Game]) -> [Bet] {
         var bets = [Bet]()
         let allBetTypes: [BetType] = [.spread, .moneyline, .over, .under]
         let allBetResults: [BetResult] = [.win, .loss, .pending]
         
-        for _ in 0..<betCount {
-            if let chosenGame = games.randomElement(),
-               let chosenBet = chosenGame.betOptions.randomElement() {
-                if let betOption = chosenGame.betOptions.first(where: { $0.id == chosenBet.id }) {
-                    let bet = Bet(id: UUID(), betOption: betOption, game: chosenGame, type: allBetTypes.randomElement()!, result: allBetResults.randomElement()!, odds: chosenBet.odds, selectedTeam: betOption.selectedTeam)
-                    bets.append(bet)
-                    player.points[currentWeek]! += bet.points!
-                }
-                
-            }
+        for i in 0..<6 {
+            let chosenGame = games[i]
+            let betOption = chosenGame.betOptions[i]
+            let bet = Bet(id: UUID(), betOption: betOption, game: chosenGame, type: allBetTypes.randomElement()!, result: allBetResults.randomElement()!, odds: betOption.odds, selectedTeam: betOption.selectedTeam)
+            
+            bets.append(bet)
         }
         self.bets = bets
         return bets

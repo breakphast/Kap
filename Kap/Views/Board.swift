@@ -8,13 +8,10 @@
 import SwiftUI
 
 struct Board: View {
-    @State private var games = [Game]()
     @State private var players: [Player] = []
     let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 3)
     @Environment(\.viewModel) private var viewModel
     @Environment(\.dismiss) var dismiss
-    @State var parlayMode: Bool = false
-    @State var mainColor: Color = .yellow
     
     var body: some View {
         NavigationStack {
@@ -30,7 +27,7 @@ struct Board: View {
                             }
                             .font(.title3.bold())
                             .fontDesign(.rounded)
-                            .foregroundStyle(mainColor)
+                            .foregroundStyle(.yellow)
                             .multilineTextAlignment(.leading)
                             .lineLimit(2)
                         }
@@ -43,16 +40,16 @@ struct Board: View {
                     .simultaneousGesture(
                         TapGesture()
                             .onEnded { _ in
+                                viewModel.activeParlays = []
                                 let parlay = BetService().makeParlay(for: viewModel.selectedBets, player: players[0])
                                 viewModel.activeParlays.append(parlay)
-                                parlayMode.toggle()
                                 viewModel.activeButtons = [UUID]()
                             }
                     )
                 }
                 
                 ScrollView(showsIndicators: false) {
-                    GameListingView(parlayMode: $parlayMode, mainColor: $mainColor, players: players)
+                    GameListingView(players: players)
                         .navigationBarBackButtonHidden()
                         .toolbar {
                             ToolbarItem(placement: .principal) {
@@ -62,17 +59,7 @@ struct Board: View {
                             ToolbarItem(placement: .topBarTrailing) {
                                 Image(systemName: "gift.fill")
                                     .font(.system(size: 18, weight: .bold, design: .rounded))
-                                    .foregroundStyle(parlayMode ? mainColor : Color.white)
-                                    .onTapGesture {
-                                        withAnimation(.easeInOut(duration: 0.5)) {
-                                            if parlayMode {
-                                                viewModel.activeButtons = []
-                                            }
-                                            parlayMode.toggle()
-                                            mainColor =  parlayMode ? Color.redd : .yellow
-                                        }
-                                    }
-                                    .scaleEffect(parlayMode ? 1.2 : 1.0)
+                                    .foregroundStyle(.white)
                             }
                             ToolbarItem(placement: .topBarLeading) {
                                 Image(systemName: "chevron.left")
@@ -103,14 +90,12 @@ struct Board: View {
 
 struct GameListingView: View {
     @Environment(\.viewModel) private var viewModel
-    @Binding var parlayMode: Bool
-    @Binding var mainColor: Color
     var players: [Player]
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             ForEach(viewModel.games, id: \.id) { game in
-                GameRow(game: game, parlayMode: $parlayMode, mainColor: $mainColor, players: players)
+                GameRow(game: game, players: players)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -120,8 +105,6 @@ struct GameListingView: View {
 
 struct GameRow: View {
     var game: Game
-    @Binding var parlayMode: Bool
-    @Binding var mainColor: Color
     var players: [Player]
     let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 3)
     @Environment(\.viewModel) private var viewModel
@@ -142,18 +125,26 @@ struct GameRow: View {
                 game.betOptions.indices.contains(index) ? game.betOptions[index] : nil
             }
             
+            let bets = AppDataViewModel().generateRandomBets(from: viewModel.games)
+            
             LazyVGrid(columns: columns, spacing: 10) {
-                ForEach(options, id: \.id) { betOption in
-                    CustomButton(betOption: betOption, buttonText: betOption.betString, parlayMode: $parlayMode, mainColor: $mainColor) {
+                ForEach(Array(bets.enumerated()), id: \.1.id) { i, bet in
+                    CustomButton(bet: bet, buttonText: options[i].betString) {
                         withAnimation {
-                            if parlayMode {
-                                let bet = BetService().makeBet(for: game, betOption: betOption)
-                                viewModel.selectedBets.append(bet)
-                                print(viewModel.selectedBets)
+//                            let bet = BetService().makeBet(for: game, betOption: options[i])
+//                            print(bet.betString)
+                            if viewModel.selectedBets.contains(where: { $0.id == bet.id }) {
+                                viewModel.selectedBets.removeAll(where: { $0.id == bet.id })
                             } else {
-                                let bet = BetService().makeBet(for: game, betOption: betOption)
                                 viewModel.selectedBets.append(bet)
+                                print("---------")
+                                print(bet.id)
+                                print(viewModel.selectedBets[0].id)
+                                print(bet.betString)
+                                print(viewModel.selectedBets[0].betString)
+                                
                             }
+                            print("YO", bet.id)
                         }
                     }
                 }

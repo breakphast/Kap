@@ -19,8 +19,12 @@ struct SelectedBetsView: View {
             
             ScrollView {
                 VStack(spacing: 20) {
+                    ForEach(viewModel.selectedBets, id: \.id) { bet in
+                        BetView(bet: bet)
+                    }
+                    
                     ForEach(viewModel.activeParlays, id: \.id) { parlay in
-                        ParlayView2(parlay: parlay)
+                        ParlayView(parlay: parlay)
                     }
                 }
                 .navigationBarBackButtonHidden()
@@ -34,11 +38,12 @@ struct SelectedBetsView: View {
                     }
                 }
             }
+            .padding(.top)
         }
     }
 }
 
-struct ParlayView2: View {
+struct ParlayView: View {
     @Environment(\.viewModel) private var viewModel
     let parlay: Parlay
     
@@ -54,7 +59,7 @@ struct ParlayView2: View {
                             Spacer()
                             
                             VStack(alignment: .trailing) {
-                                Text("+\(parlay.totalOdds)")
+                                Text("+\(parlay.totalOdds)".replacingOccurrences(of: ",", with: ""))
                                 Text("Parlay Bonus")
                                     .font(.caption.bold())
                                     .foregroundStyle(.secondary)
@@ -72,7 +77,7 @@ struct ParlayView2: View {
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                         }
-                        .frame(height: 60)
+                        .frame(width: 200, height: 60, alignment: .leading)
                         
                         Spacer()
                         
@@ -95,46 +100,28 @@ struct ParlayView2: View {
             .foregroundStyle(.white)
             .multilineTextAlignment(.leading)
             
-            VStack {
-                Button {
-                    let parlay = viewModel.activeParlays
-                    viewModel.parlays.append(parlay[0])
-                    viewModel.activeButtons = [UUID]()
-                    viewModel.activeParlays = []
-                } label: {
-                    ZStack {
-                        Color.onyxLight
-                        Text("Place Bet")
-                            .font(.caption.bold())
-                            .fontDesign(.rounded)
-                            .foregroundStyle(.yellow)
-                            .lineLimit(2)
-                    }
-                    .frame(width: 80, height: 40)
-                    .cornerRadius(15)
-                    .shadow(radius: 10)
+            Button {
+                let parlay = viewModel.activeParlays
+                viewModel.parlays.append(parlay[0])
+                viewModel.activeButtons = [UUID]()
+                viewModel.activeParlays = []
+            } label: {
+                ZStack {
+                    Color.onyxLight
+                    Text("Place Parlay")
+                        .font(.caption.bold())
+                        .fontDesign(.rounded)
+                        .foregroundStyle(.yellow)
+                        .lineLimit(2)
                 }
-                .zIndex(100)
-                
-                Button {
-                    
-                } label: {
-                    ZStack {
-                        Color.redd.opacity(0.8)
-                        Text("Cancel Bet")
-                            .font(.caption.bold())
-                            .fontDesign(.rounded)
-                            .foregroundStyle(.white)
-                            .lineLimit(2)
-                    }
-                    .frame(width: 80, height: 40)
-                    .cornerRadius(15)
-                    .shadow(radius: 10)
-                }
-                .zIndex(100)
+                .frame(width: 80, height: 40)
+                .cornerRadius(15)
+                .shadow(radius: 10)
             }
+            .zIndex(100)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
             .padding(24)
+            .padding(.bottom, 8)
         }
         .frame(height: 200)
         .cornerRadius(20)
