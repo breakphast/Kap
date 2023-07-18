@@ -80,9 +80,9 @@ struct Leaderboard: View {
                                 .font(.system(size: 32, weight: .bold, design: .rounded))
                         }
                     }
-                    .task {
-                        self.players = await viewModel.getLeaderboardData()
-                    }
+//                    .task {
+//                        self.players = await viewModel.getLeaderboardData()
+//                    }
                 }
                 .padding(.top, 24)
             }

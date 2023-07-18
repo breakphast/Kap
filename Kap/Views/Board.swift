@@ -121,15 +121,15 @@ struct GameRow: View {
             
             Spacer()
             
-            let options = [1, 3, 4, 0, 2, 5].compactMap { index in
+            let options = [0, 2, 4, 1, 3, 5].compactMap { index in
                 game.betOptions.indices.contains(index) ? game.betOptions[index] : nil
             }
             
-            let bets = AppDataViewModel().generateRandomBets(from: viewModel.games)
+            let bets = AppDataViewModel().generateRandomBets(from: game)
             
             LazyVGrid(columns: columns, spacing: 10) {
-                ForEach(Array(bets.enumerated()), id: \.1.id) { i, bet in
-                    CustomButton(bet: bet, buttonText: options[i].betString) {
+                ForEach(bets, id: \.id) { bet in
+                    CustomButton(bet: bet, buttonText: bet.betOption.betString) {
                         withAnimation {
 //                            let bet = BetService().makeBet(for: game, betOption: options[i])
 //                            print(bet.betString)
@@ -137,11 +137,6 @@ struct GameRow: View {
                                 viewModel.selectedBets.removeAll(where: { $0.id == bet.id })
                             } else {
                                 viewModel.selectedBets.append(bet)
-                                print("---------")
-                                print(bet.id)
-                                print(viewModel.selectedBets[0].id)
-                                print(bet.betString)
-                                print(viewModel.selectedBets[0].betString)
                                 
                             }
                             print("YO", bet.id)

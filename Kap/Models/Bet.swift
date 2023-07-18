@@ -86,8 +86,6 @@ enum BetResult: String {
         self.odds = odds
         self.selectedTeam = selectedTeam
         
-        let formattedOdds = odds > 0 ? "+\(odds)" : "\(odds)"
-        
         switch type {
         case .spread:
             if let spread = betOption.spread {

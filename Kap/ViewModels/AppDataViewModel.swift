@@ -56,8 +56,9 @@ import Observation
             season.weeks = weeks
             
             let games = try await GameService().getGames()
-            let weeklyGames = games.chunked(into: 16)
-            self.games = weeklyGames[0]
+//            let weeklyGames = games.chunked(into: 16)
+//            self.games = weeklyGames[0]
+            self.games = games
             
 //            for _ in league.players {
 //                let _ = AppDataViewModel().generateRandomBets(from: self.games, betCount: 6)
@@ -73,12 +74,12 @@ import Observation
     
     func createWeek(season: Season, league: League, weekNumber: Int) async -> Week {
         let week = Week(id: UUID(), weekNumber: weekNumber, season: season, games: [], bets: [[]], parlays: [], isComplete: false)
-        do {
-            let games = try await GameService().getGames()
-            week.games = games.chunked(into: 16)[0]
-        } catch {
-            print("Failed to get games: \(error)")
-        }
+//        do {
+//            let games = try await GameService().getGames()
+//            week.games = games.chunked(into: 16)[0]
+//        } catch {
+//            print("Failed to get games: \(error)")
+//        }
         
 //        for _ in league.players {
 //            week.bets.append(generateRandomBets(from: week.games, betCount: 6))
@@ -87,20 +88,43 @@ import Observation
         return week
     }
     
-    func generateRandomBets(from games: [Game]) -> [Bet] {
+    func generateRandomBets(from game: Game) -> [Bet] {
         var bets = [Bet]()
-        let allBetTypes: [BetType] = [.spread, .moneyline, .over, .under]
         let allBetResults: [BetResult] = [.win, .loss, .pending]
-        
+        let options = [0, 2, 4, 1, 3, 5].compactMap { index in
+            game.betOptions.indices.contains(index) ? game.betOptions[index] : nil
+        }
         for i in 0..<6 {
-            let chosenGame = games[i]
-            let betOption = chosenGame.betOptions[i]
-            let bet = Bet(id: UUID(), betOption: betOption, game: chosenGame, type: allBetTypes.randomElement()!, result: allBetResults.randomElement()!, odds: betOption.odds, selectedTeam: betOption.selectedTeam)
+            var type = BetType.moneyline
+            switch i {
+            case 0, 3:
+                type = .spread
+            case 1, 4:
+                type = .moneyline
+            case 2:
+                type = .over
+            case 5:
+                type = .under
+            default:
+                type = .moneyline
+            }
+            var team = ""
+            switch i {
+            case 0, 2, 4:
+                team = game.awayTeam
+            default:
+                team = game.homeTeam
+            }
             
+            let bet = Bet(id: UUID(), betOption: options[i], game: game, type: type, result: allBetResults.randomElement()!, odds: options[i].odds, selectedTeam: team)
             bets.append(bet)
         }
         self.bets = bets
-        return bets
+        let betss = [0, 4, 2, 3, 1, 5].compactMap { index in
+            bets.indices.contains(index) ? bets[index] : nil
+        }
+        
+        return betss
     }
     
     func generateRandomNumberInRange(range: ClosedRange<Int>) -> Int {

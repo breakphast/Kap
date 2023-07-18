@@ -89,11 +89,11 @@ struct Home: View {
                     .padding(24)
                 }
             }
-            .task {
-                if viewModel.leagues.isEmpty {
-                   let _ = await viewModel.getLeaderboardData()
-                }
-            }
+//            .task {
+//                if viewModel.leagues.isEmpty {
+//                   let _ = await viewModel.getLeaderboardData()
+//                }
+//            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
