@@ -15,6 +15,7 @@ struct KapApp: App {
         WindowGroup {
             Home()
                 .environment(\.viewModel, viewModel)
+                .fontDesign(.rounded)
         }
     }
 }

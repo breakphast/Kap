@@ -90,7 +90,7 @@ enum BetResult: String {
         case .spread:
             if let spread = betOption.spread {
                 let formattedSpread = spread > 0 ? "+\(spread)" : "\(spread)"
-                betString = "\(selectedTeam ?? "") \(formattedSpread)"
+                betString = "\(formattedSpread)"
             } else {
                 betString = ""
             }

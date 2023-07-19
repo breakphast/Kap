@@ -1,49 +1,76 @@
 //
-//  SelectedBetsView.swift
+//  MyBets.swift
 //  Kap
 //
-//  Created by Desmond Fitch on 7/17/23.
+//  Created by Desmond Fitch on 7/16/23.
 //
 
 import SwiftUI
 import Observation
 
-struct SelectedBetsView: View {
+struct MyBets: View {
     let results: [Image] = [Image(systemName: "checkmark"), Image(systemName: "x.circle")]
+    
     @Environment(\.viewModel) private var viewModel
-    @Environment(\.dismiss) var dismiss
+    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        ZStack {
+        ZStack(alignment: .bottom) {
             Color.onyx.ignoresSafeArea()
             
-            ScrollView {
-                VStack(spacing: 20) {
-                    ForEach(viewModel.selectedBets, id: \.id) { bet in
-                        BetView(bet: bet)
-                    }
-                    
-                    ForEach(viewModel.activeParlays, id: \.id) { parlay in
-                        ParlayView(parlay: parlay)
+            TabView {
+                VStack {
+                    if viewModel.bets.isEmpty && viewModel.parlays.isEmpty {
+                        Text("No active bets")
+                            .foregroundColor(.white)
+                            .font(.largeTitle.bold())
+                    } else {
+                        ScrollView {
+                            VStack(spacing: 20) {
+                                ForEach(viewModel.bets, id: \.id) { bet in
+                                    PlacedBetView(bet: bet)
+                                }
+                                ForEach(viewModel.parlays, id: \.id) { parlay in
+                                    PlacedParlayView(parlay: parlay)
+                                }
+                            }
+                            .padding(.top, 20)
+                        }
                     }
                 }
-                .padding(.top, 20)
-                .navigationBarBackButtonHidden()
-                .toolbar {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 18, weight: .bold, design: .rounded))
-                            .onTapGesture {
-                                dismiss()
-                            }
-                    }
+                .tabItem { Text("Active Bets") }
+                
+                VStack {
+                    Text("Settled")
+                        .foregroundColor(.white)
+                        .font(.largeTitle.bold())
+                }
+                .tabItem { Text("Settled") }
+            }
+            .accentColor(.white)  // For the circle indicator
+            .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
+            .navigationBarBackButtonHidden()
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .onTapGesture {
+                            dismiss()
+                        }
                 }
             }
         }
+        .fontDesign(.rounded)
     }
 }
 
-struct BetView: View {
+// Note: The ParlayView structure was not given in the initial code, so it's not included here.
+
+#Preview {
+    MyBets()
+}
+
+struct PlacedBetView: View {
     @Environment(\.viewModel) private var viewModel
     let bet: Bet
     
@@ -85,10 +112,17 @@ struct BetView: View {
                     .padding(.trailing, 20)
                     
                     VStack(alignment: .leading) {
-                        Text("Points: \(bet.points ?? 0)")
+                        Text("Points: \(abs(bet.points!))")
                         RoundedRectangle(cornerRadius: 0.5)
                             .frame(width: 80, height: 1)
                             .foregroundStyle(.secondary)
+                        if bet.result != .pending {
+                            HStack(spacing: 0) {
+                                Text("Result: ")
+                                Text("\(bet.result == .win ? "+": "")\(bet.points ?? 0)")
+                                    .foregroundStyle(bet.result == .win ? .green : .red)
+                            }
+                        }
                     }
                     .font(.caption.bold())
                 }
@@ -100,47 +134,19 @@ struct BetView: View {
             .multilineTextAlignment(.leading)
             
             VStack {
-                Button {
-                    if !viewModel.bets.contains(where: { $0.id == bet.id})  {
-                        viewModel.bets.append(bet)
-                        viewModel.activeButtons = [UUID]()
-                        viewModel.selectedBets.removeAll(where: { $0.id == bet.id })
-                    }
-                } label: {
-                    ZStack {
-                        Color.onyxLight
-                        Text("Place Bet")
-                            .font(.caption.bold())
-                            .fontDesign(.rounded)
-                            .foregroundStyle(.yellow)
-                            .lineLimit(2)
-                    }
-                    .frame(width: 80, height: 40)
-                    .cornerRadius(15)
-                    .shadow(radius: 10)
-                    .disabled(viewModel.bets.contains(where: { $0.id == bet.id}))
-                }
-                .zIndex(100)
-                
-                Button {
-                    
-                } label: {
-                    ZStack {
-                        Color.redd.opacity(0.8)
-                        Text("Cancel Bet")
-                            .font(.caption.bold())
-                            .fontDesign(.rounded)
-                            .foregroundStyle(.white)
-                            .lineLimit(2)
-                    }
-                    .frame(width: 80, height: 40)
-                    .cornerRadius(15)
-                    .shadow(radius: 10)
-                }
-                .zIndex(100)
+                Image(systemName: "checkmark.circle")
+                    .font(.largeTitle.bold())
+                    .foregroundColor(.green)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
             .padding(24)
+            
+            Image(systemName: "trash")
+                .foregroundColor(Color.onyxLight.opacity(0.9))
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                .fontWeight(.bold)
+                .fontDesign(.rounded)
+                .padding(.bottom, 8)
         }
         .frame(height: 200)
         .cornerRadius(20)
@@ -149,7 +155,7 @@ struct BetView: View {
     }
 }
 
-struct ParlayView: View {
+struct PlacedParlayView: View {
     @Environment(\.viewModel) private var viewModel
     let parlay: Parlay
     
@@ -175,6 +181,8 @@ struct ParlayView: View {
                                 .foregroundStyle(.secondary)
                         }
                         
+                        Spacer()
+                        
                         ScrollView(showsIndicators: false) {
                             VStack(alignment: .leading) {
                                 ForEach(parlay.bets, id: \.id) { bet in
@@ -188,12 +196,19 @@ struct ParlayView: View {
                         .frame(width: 200, height: 60, alignment: .leading)
                         
                         VStack(alignment: .leading) {
-                            Text("Points: \(parlay.totalPoints)")
-                                .font(.caption.bold())
+                            Text("Points: \(abs(parlay.totalPoints))")
                             RoundedRectangle(cornerRadius: 0.5)
-                                .frame(width: 70, height: 1)
+                                .frame(width: 80, height: 1)
                                 .foregroundStyle(.secondary)
+//                            if parlay.result == .push {
+//                                HStack(spacing: 0) {
+//                                    Text("Result: ")
+//                                    Text("\(parlay.result == .win ? "+": "")\(parlay.totalPoints)")
+//                                        .foregroundStyle(parlay.result == .win ? .green : .red)
+//                                }
+//                            }
                         }
+                        .font(.caption.bold())
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                 }
@@ -206,55 +221,23 @@ struct ParlayView: View {
             .multilineTextAlignment(.leading)
             
             VStack {
-                Button {
-                    let parlay = viewModel.activeParlays
-                    viewModel.parlays.append(parlay[0])
-                    viewModel.activeButtons = [UUID]()
-                    viewModel.activeParlays = []
-                } label: {
-                    ZStack {
-                        Color.onyxLight
-                        Text("Place Parlay")
-                            .font(.caption.bold())
-                            .fontDesign(.rounded)
-                            .foregroundStyle(.yellow)
-                            .lineLimit(2)
-                    }
-                    .frame(width: 100, height: 40)
-                    .cornerRadius(15)
-                    .shadow(radius: 10)
-                }
-                .zIndex(100)
-                .disabled(parlay.totalOdds < 400)
-                
-                Button {
-                    
-                } label: {
-                    ZStack {
-                        Color.redd.opacity(0.8)
-                        Text("Cancel Parlay")
-                            .font(.caption.bold())
-                            .fontDesign(.rounded)
-                            .foregroundStyle(.white)
-                            .lineLimit(2)
-                    }
-                    .frame(width: 100, height: 40)
-                    .cornerRadius(15)
-                    .shadow(radius: 10)
-                }
-                .zIndex(100)
+                Image(systemName: "checkmark.circle")
+                    .font(.largeTitle.bold())
+                    .foregroundColor(.green)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
             .padding(24)
+            
+            Image(systemName: "trash")
+                .foregroundColor(Color.onyxLight.opacity(0.9))
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                .fontWeight(.bold)
+                .fontDesign(.rounded)
+                .padding(.bottom, 8)
         }
         .frame(height: 200)
         .cornerRadius(20)
         .padding(.horizontal, 20)
         .shadow(radius: 10)
     }
-}
-
-
-#Preview {
-    SelectedBetsView()
 }

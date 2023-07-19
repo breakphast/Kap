@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct Board: View {
-    @State private var players: [Player] = []
     let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 3)
     @Environment(\.viewModel) private var viewModel
     @Environment(\.dismiss) var dismiss
@@ -23,7 +22,9 @@ struct Board: View {
                             Color("onyxLightish")
                             HStack(spacing: 8) {
                                 Text("Betslip")
-                                Image(systemName: viewModel.selectedBets.count > 1 ? "gift.fill" : "")
+                                if viewModel.selectedBets.count > 1 {
+                                    Image(systemName: "gift.fill")
+                                }
                             }
                             .font(.title3.bold())
                             .fontDesign(.rounded)
@@ -40,16 +41,22 @@ struct Board: View {
                     .simultaneousGesture(
                         TapGesture()
                             .onEnded { _ in
-                                viewModel.activeParlays = []
-                                let parlay = BetService().makeParlay(for: viewModel.selectedBets, player: players[0])
-                                viewModel.activeParlays.append(parlay)
-                                viewModel.activeButtons = [UUID]()
+                                if viewModel.selectedBets.count > 1 && viewModel.parlays.count < 1 {
+                                    viewModel.activeParlays = []
+                                    let parlay = BetService().makeParlay(for: viewModel.selectedBets, player: viewModel.players[0])
+                                    if parlay.totalOdds >= 400 {
+                                        viewModel.activeParlays.append(parlay)
+                                        viewModel.activeButtons = [UUID]()
+                                    }
+                                } else {
+                                    viewModel.activeParlays = []
+                                }
                             }
                     )
                 }
                 
                 ScrollView(showsIndicators: false) {
-                    GameListingView(players: players)
+                    GameListingView(players: viewModel.players)
                         .navigationBarBackButtonHidden()
                         .toolbar {
                             ToolbarItem(placement: .principal) {
@@ -70,16 +77,14 @@ struct Board: View {
                             }
                         }
                         .task {
-                            if self.players.isEmpty {
-                                self.players = await viewModel.getLeaderboardData()
+                            if viewModel.players.isEmpty {
+                                let _ = await viewModel.getLeaderboardData()
                             }
                         }
                 }
                 .padding(.top, 24)
-                
                 .fontDesign(.rounded)
             }
-            
         }
     }
 }
@@ -100,6 +105,7 @@ struct GameListingView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding(.horizontal)
+        .padding(.vertical, 20)
     }
 }
 
@@ -121,25 +127,17 @@ struct GameRow: View {
             
             Spacer()
             
-            let options = [0, 2, 4, 1, 3, 5].compactMap { index in
-                game.betOptions.indices.contains(index) ? game.betOptions[index] : nil
-            }
-            
             let bets = AppDataViewModel().generateRandomBets(from: game)
             
             LazyVGrid(columns: columns, spacing: 10) {
                 ForEach(bets, id: \.id) { bet in
                     CustomButton(bet: bet, buttonText: bet.betOption.betString) {
                         withAnimation {
-//                            let bet = BetService().makeBet(for: game, betOption: options[i])
-//                            print(bet.betString)
                             if viewModel.selectedBets.contains(where: { $0.id == bet.id }) {
                                 viewModel.selectedBets.removeAll(where: { $0.id == bet.id })
                             } else {
                                 viewModel.selectedBets.append(bet)
-                                
                             }
-                            print("YO", bet.id)
                         }
                     }
                 }

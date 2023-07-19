@@ -22,12 +22,12 @@ struct Home: View {
                     
                     VStack(alignment: .leading) {
                         HStack {
-                            NavigationLink(destination: Betslip()) {
+                            NavigationLink(destination: MyBets()) {
                                 ZStack {
                                     RoundedRectangle(cornerRadius: 10)
                                         .foregroundColor(.blue.opacity(0.8)) // Assuming you have defined a color extension for light blue
                                     
-                                    Text("Leaderboard")
+                                    Text("My Bets")
                                         .font(.title2.bold())
                                         .foregroundColor(.white)
                                 }
@@ -77,7 +77,7 @@ struct Home: View {
                                     RoundedRectangle(cornerRadius: 10)
                                         .foregroundColor(.purple.opacity(0.8)) // Assuming you have defined a color extension for light blue
                                     
-                                    Text("BETSLIP")
+                                    Text("MyBets")
                                         .font(.title3.bold())
                                         .foregroundColor(.white)
                                 }

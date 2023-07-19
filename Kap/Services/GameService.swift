@@ -32,7 +32,6 @@ class GameService {
                 games[gameIndex].homeScore = score.scores?[1].score
             }
         }
-        print(games.count)
         return games
     }
     
