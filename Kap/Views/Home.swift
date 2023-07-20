@@ -62,7 +62,7 @@ struct Home: View {
                         HStack {
                             ZStack {
                                 RoundedRectangle(cornerRadius: 10)
-                                    .foregroundColor(.yellow.opacity(0.8)) // Assuming you have defined a color extension for light blue
+                                    .foregroundColor(Color.lion.opacity(0.8)) // Assuming you have defined a color extension for light blue
                                 
                                 Text("Stats & News")
                                     .font(.title3)

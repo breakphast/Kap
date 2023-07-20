@@ -119,7 +119,7 @@ struct BetView: View {
                         Text("Place Bet")
                             .font(.caption.bold())
                             .fontDesign(.rounded)
-                            .foregroundStyle(isValid ? .yellow : .white)
+                            .foregroundStyle(isValid ? Color.lion : .white)
                             .lineLimit(2)
                     }
                     .overlay {
@@ -234,7 +234,7 @@ struct ParlayView: View {
                         Color.onyxLight
                         Text("Place Parlay")
                             .font(.system(.caption, design: .rounded, weight: .bold))
-                            .foregroundStyle(.yellow)
+                            .foregroundStyle(Color.lion)
                             .lineLimit(2)
                     }
                     .overlay {

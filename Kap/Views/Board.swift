@@ -28,7 +28,7 @@ struct Board: View {
                             }
                             .font(.title3.bold())
                             .fontDesign(.rounded)
-                            .foregroundStyle(.yellow)
+                            .foregroundStyle(Color.lion)
                             .multilineTextAlignment(.leading)
                             .lineLimit(2)
                         }
@@ -82,7 +82,7 @@ struct Board: View {
                             }
                         }
                 }
-                .padding(.top, 24)
+                .padding(.top, 12)
                 .fontDesign(.rounded)
             }
         }
@@ -97,17 +97,53 @@ struct GameListingView: View {
     @Environment(\.viewModel) private var viewModel
     var players: [Player]
     
+    private var thursdayNightGame: [Game] {
+        Array(viewModel.games.prefix(1))
+    }
+    
+    private var sundayGames: [Game] {
+        Array(viewModel.games.dropFirst().dropLast(2))
+    }
+    
+    private var sundayNightGame: [Game] {
+        Array(viewModel.games.suffix(2).prefix(1))
+    }
+    
+    private var mondayNightGame: [Game] {
+        Array(viewModel.games.suffix(1))
+    }
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            ForEach(viewModel.games, id: \.id) { game in
-                GameRow(game: game)
-            }
+            SectionView(title: "Thursday Night Football", games: thursdayNightGame)
+            SectionView(title: "Sunday Afternoon", games: sundayGames)
+            SectionView(title: "Sunday Night Football", games: sundayNightGame)
+            SectionView(title: "Monday Night Football", games: mondayNightGame)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding(.horizontal)
         .padding(.vertical, 20)
     }
 }
+
+struct SectionView: View {
+    var title: String
+    var games: [Game]
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text(title)
+                .font(.headline.bold())
+                .foregroundStyle(Color.lion)
+                .padding(.bottom)
+            
+            ForEach(games, id: \.id) { game in
+                GameRow(game: game)
+            }
+        }
+    }
+}
+
 
 struct GameRow: View {
     var game: Game
