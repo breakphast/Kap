@@ -20,12 +20,9 @@ import Observation
     var weeklyGames: [[Game]] = [[]]
     var currentWeek = 0
     var activeButtons: [UUID] = []
-    var selectedBets: [Bet] = [] {
-        didSet {
-            print(selectedBets.map { $0.id })
-        }
-    }
+    var selectedBets: [Bet] = []
     var activeParlays: [Parlay] = []
+    var currentPlayer: Player?
     
     init() {
         self.users = [
@@ -46,25 +43,18 @@ import Observation
         do {
             let league = AppDataViewModel().createLeague(name: "BIG JOHN SILVER", players: [])
             let season = AppDataViewModel().createSeason(league: league, year: 2023)
-            var weeks = [Week]()
-            
             let week = await AppDataViewModel().createWeek(season: season, league: season.league, weekNumber: 0)
             let week2 = await AppDataViewModel().createWeek(season: season, league: season.league, weekNumber: 1)
             weeks.append(week)
             weeks.append(week2)
+                        
+            games = try await GameService().getGames()
             
-            season.weeks = weeks
+            weeks[0].games = games
+            updateDayType(for: &weeks[0].games)
             
-            let games = try await GameService().getGames()
-//            let weeklyGames = games.chunked(into: 16)
-//            self.games = weeklyGames[0]
-            self.games = games
-            
-//            for _ in league.players {
-//                let _ = AppDataViewModel().generateRandomBets(from: self.games, betCount: 6)
-//            }
-            
-            self.players = league.players.sorted { $0.points[0] ?? 0 > $1.points[0] ?? 0 }
+            players = league.players.sorted { $0.points[0] ?? 0 > $1.points[0] ?? 0 } // leaderboard sorting
+            self.currentPlayer = players[0]
         } catch {
             print("Failed to get games: \(error)")
         }
@@ -72,25 +62,47 @@ import Observation
         return self.players
     }
     
-    func createWeek(season: Season, league: League, weekNumber: Int) async -> Week {
-        let week = Week(id: UUID(), weekNumber: weekNumber, season: season, games: [], bets: [[]], parlays: [], isComplete: false)
-//        do {
-//            let games = try await GameService().getGames()
-//            week.games = games.chunked(into: 16)[0]
-//        } catch {
-//            print("Failed to get games: \(error)")
-//        }
+    func updateDayType(for games: inout [Game]) {
+        for game in games.prefix(1) {
+            game.betOptions = game.betOptions.map { bet in
+                let mutableBet = bet
+                mutableBet.dayType = .tnf
+                mutableBet.maxBets = 1
+                return mutableBet
+            }
+        }
         
-//        for _ in league.players {
-//            week.bets.append(generateRandomBets(from: week.games, betCount: 6))
-//        }
+        let sundayAfternoonGamesCount = games.count - 3
+        for game in games.dropFirst().prefix(sundayAfternoonGamesCount) {
+            game.betOptions = game.betOptions.map { bet in
+                let mutableBet = bet
+                mutableBet.dayType = .sunday
+                mutableBet.maxBets = 3
+                return mutableBet
+            }
+        }
         
-        return week
+        for game in games.dropFirst(sundayAfternoonGamesCount + 1).prefix(1) {
+            game.betOptions = game.betOptions.map { bet in
+                let mutableBet = bet
+                mutableBet.dayType = .snf
+                mutableBet.maxBets = 1
+                return mutableBet
+            }
+        }
+        
+        for game in games.suffix(1) {
+            game.betOptions = game.betOptions.map { bet in
+                let mutableBet = bet
+                mutableBet.dayType = .mnf
+                mutableBet.maxBets = 1
+                return mutableBet
+            }
+        }
     }
-    
-    func generateRandomBets(from game: Game) -> [Bet] {
+
+    func generateBetsForGame(_ game: Game) -> [Bet] {
         var bets = [Bet]()
-        let allBetResults: [BetResult] = [.win, .loss, .pending]
         let options = [0, 2, 4, 1, 3, 5].compactMap { index in
             game.betOptions.indices.contains(index) ? game.betOptions[index] : nil
         }
@@ -116,7 +128,7 @@ import Observation
                 team = game.homeTeam
             }
             
-            let bet = Bet(id: UUID(), betOption: options[i], game: game, type: type, result: allBetResults.randomElement()!, odds: options[i].odds, selectedTeam: team)
+            let bet = Bet(id: UUID(), betOption: options[i], game: game, type: type, result: .pending, odds: options[i].odds, selectedTeam: team)
             bets.append(bet)
         }
         self.bets = bets
@@ -129,19 +141,6 @@ import Observation
     
     func generateRandomNumberInRange(range: ClosedRange<Int>) -> Int {
         return Int.random(in: range)
-    }
-    
-    func createParlayWithinOddsRange(for player: Player, from bets: [Bet]) -> Parlay {
-        let allBetResults: [BetResult] = [.win, .loss, .pending]
-        let parlay = Parlay(id: UUID(), userID: player.user.userID, bets: bets, result: allBetResults.randomElement()!)
-        
-        player.parlays.append(parlay)
-        
-        if parlay.totalPoints != 0 {
-            player.points[0]! += parlay.totalPoints
-        }
-        
-        return parlay
     }
     
     func createLeague(name: String, players: [Player]) -> League {
@@ -163,5 +162,22 @@ import Observation
             players.append(player)
         }
         return players
+    }
+    
+    
+    func createWeek(season: Season, league: League, weekNumber: Int) async -> Week {
+        let week = Week(id: UUID(), weekNumber: weekNumber, season: season, games: [], bets: [[]], parlays: [], isComplete: false)
+        //        do {
+        //            let games = try await GameService().getGames()
+        //            week.games = games.chunked(into: 16)[0]
+        //        } catch {
+        //            print("Failed to get games: \(error)")
+        //        }
+        
+        //        for _ in league.players {
+        //            week.bets.append(generateRandomBets(from: week.games, betCount: 6))
+        //        }
+        
+        return week
     }
 }

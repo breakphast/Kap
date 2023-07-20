@@ -1,5 +1,5 @@
 //
-//  SelectedBetsView.swift
+//  Betslip.swift
 //  Kap
 //
 //  Created by Desmond Fitch on 7/17/23.
@@ -8,7 +8,7 @@
 import SwiftUI
 import Observation
 
-struct SelectedBetsView: View {
+struct Betslip: View {
     let results: [Image] = [Image(systemName: "checkmark"), Image(systemName: "x.circle")]
     @Environment(\.viewModel) private var viewModel
     @Environment(\.dismiss) var dismiss
@@ -40,11 +40,18 @@ struct SelectedBetsView: View {
                 }
             }
         }
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Betslip")
+                    .font(.system(size: 32, weight: .bold, design: .rounded))
+            }
+        }
     }
 }
 
 struct BetView: View {
     @Environment(\.viewModel) private var viewModel
+    @State var isValid = true
     let bet: Bet
     
     var body: some View {
@@ -65,7 +72,7 @@ struct BetView: View {
                             Text(bet.type != .spread ? bet.type.rawValue : bet.betString)
                                 .font(.subheadline.bold())
                             Spacer()
-                            Text("(SNF 1/1)")
+                            Text("(\(bet.betOption.dayType?.rawValue ?? "") \(viewModel.currentPlayer!.bets[0].map { $0.betOption.dayType == .snf }.count)/\(bet.betOption.maxBets ?? 0))")
                                 .font(.caption.bold())
                                 .foregroundStyle(.secondary)
                         }
@@ -101,8 +108,8 @@ struct BetView: View {
             
             VStack {
                 Button {
-                    if !viewModel.bets.contains(where: { $0.id == bet.id})  {
-                        viewModel.bets.append(bet)
+                    if !viewModel.currentPlayer!.bets[0].contains(where: { $0.id == bet.id})  {
+                        BetService().placeBet(bet: bet, player: viewModel.currentPlayer!)
                         viewModel.activeButtons = [UUID]()
                         viewModel.selectedBets.removeAll(where: { $0.id == bet.id })
                     }
@@ -112,15 +119,18 @@ struct BetView: View {
                         Text("Place Bet")
                             .font(.caption.bold())
                             .fontDesign(.rounded)
-                            .foregroundStyle(.yellow)
+                            .foregroundStyle(isValid ? .yellow : .white)
                             .lineLimit(2)
+                    }
+                    .overlay {
+                        Color.onyxLightish.opacity(isValid ? 0.0 : 0.7).ignoresSafeArea()
                     }
                     .frame(width: 80, height: 40)
                     .cornerRadius(15)
                     .shadow(radius: 10)
-                    .disabled(viewModel.bets.contains(where: { $0.id == bet.id}))
                 }
                 .zIndex(100)
+                .disabled(!isValid)
                 
                 Button {
                     
@@ -133,11 +143,15 @@ struct BetView: View {
                             .foregroundStyle(.white)
                             .lineLimit(2)
                     }
+                    .overlay {
+                        Color.onyxLightish.opacity(isValid ? 0.0 : 0.7).ignoresSafeArea()
+                    }
                     .frame(width: 80, height: 40)
                     .cornerRadius(15)
                     .shadow(radius: 10)
                 }
                 .zIndex(100)
+                .disabled(!isValid)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
             .padding(24)
@@ -146,11 +160,15 @@ struct BetView: View {
         .cornerRadius(20)
         .padding(.horizontal, 20)
         .shadow(radius: 10)
+        .onAppear {
+            isValid = !viewModel.currentPlayer!.bets[0].contains(where: { $0.betString == bet.betString })
+        }
     }
 }
 
 struct ParlayView: View {
     @Environment(\.viewModel) private var viewModel
+    @State var isValid = true
     let parlay: Parlay
     
     var body: some View {
@@ -170,7 +188,7 @@ struct ParlayView: View {
                         
                         HStack {
                             Spacer()
-                            Text("Parlay Bonus")
+                            Text("Parlay Bonus (\(viewModel.currentPlayer!.parlays.count)/1)")
                                 .font(.caption.bold())
                                 .foregroundStyle(.secondary)
                         }
@@ -207,25 +225,27 @@ struct ParlayView: View {
             
             VStack {
                 Button {
-                    let parlay = viewModel.activeParlays
-                    viewModel.parlays.append(parlay[0])
+                    let placedParlay = BetService().makeParlay(for: parlay.bets, player: viewModel.currentPlayer!)
+                    viewModel.currentPlayer!.parlays.append(placedParlay)
                     viewModel.activeButtons = [UUID]()
                     viewModel.activeParlays = []
                 } label: {
                     ZStack {
                         Color.onyxLight
                         Text("Place Parlay")
-                            .font(.caption.bold())
-                            .fontDesign(.rounded)
+                            .font(.system(.caption, design: .rounded, weight: .bold))
                             .foregroundStyle(.yellow)
                             .lineLimit(2)
+                    }
+                    .overlay {
+                        Color.onyxLightish.opacity(isValid ? 0.0 : 0.7).ignoresSafeArea()
                     }
                     .frame(width: 100, height: 40)
                     .cornerRadius(15)
                     .shadow(radius: 10)
                 }
                 .zIndex(100)
-                .disabled(parlay.totalOdds < 400)
+                .disabled(!isValid)
                 
                 Button {
                     
@@ -238,11 +258,15 @@ struct ParlayView: View {
                             .foregroundStyle(.white)
                             .lineLimit(2)
                     }
+                    .overlay {
+                        Color.onyxLightish.opacity(isValid ? 0.0 : 0.7).ignoresSafeArea()
+                    }
                     .frame(width: 100, height: 40)
                     .cornerRadius(15)
                     .shadow(radius: 10)
                 }
                 .zIndex(100)
+                .disabled(!isValid)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
             .padding(24)
@@ -251,10 +275,13 @@ struct ParlayView: View {
         .cornerRadius(20)
         .padding(.horizontal, 20)
         .shadow(radius: 10)
+        .onAppear {
+            isValid = viewModel.currentPlayer!.parlays.count == 0
+        }
     }
 }
 
 
 #Preview {
-    SelectedBetsView()
+    Betslip()
 }

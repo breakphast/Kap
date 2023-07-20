@@ -45,8 +45,14 @@ import SwiftUI
         return bet
     }
     
+    func placeBet(bet: Bet, player: Player) {
+        let placedBet = makeBet(for: bet.game, betOption: bet.betOption)
+        player.bets[0].append(placedBet)
+    }
+    
     func makeParlay(for bets: [Bet], player: Player) -> Parlay {
-        let parlay = viewModel.createParlayWithinOddsRange(for: player, from: bets)
+        let parlay = Parlay(id: UUID(), userID: player.user.userID, bets: bets, result: .pending)
+        
         return parlay
     }
 }

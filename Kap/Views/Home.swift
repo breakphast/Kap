@@ -72,7 +72,7 @@ struct Home: View {
                             
                             Spacer()
                             
-                            NavigationLink(destination: SelectedBetsView()) {
+                            NavigationLink(destination: Betslip()) {
                                 ZStack {
                                     RoundedRectangle(cornerRadius: 10)
                                         .foregroundColor(.purple.opacity(0.8)) // Assuming you have defined a color extension for light blue

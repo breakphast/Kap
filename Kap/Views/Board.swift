@@ -17,7 +17,7 @@ struct Board: View {
             ZStack(alignment: .bottom) {
                 Color("onyx").ignoresSafeArea()
                 if viewModel.selectedBets.count > 0 {
-                    NavigationLink(destination: SelectedBetsView()) {
+                    NavigationLink(destination: Betslip()) {
                         ZStack {
                             Color("onyxLightish")
                             HStack(spacing: 8) {
@@ -41,7 +41,7 @@ struct Board: View {
                     .simultaneousGesture(
                         TapGesture()
                             .onEnded { _ in
-                                if viewModel.selectedBets.count > 1 && viewModel.parlays.count < 1 {
+                                if viewModel.selectedBets.count > 1 {
                                     viewModel.activeParlays = []
                                     let parlay = BetService().makeParlay(for: viewModel.selectedBets, player: viewModel.players[0])
                                     if parlay.totalOdds >= 400 {
@@ -100,7 +100,7 @@ struct GameListingView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             ForEach(viewModel.games, id: \.id) { game in
-                GameRow(game: game, players: players)
+                GameRow(game: game)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -111,7 +111,6 @@ struct GameListingView: View {
 
 struct GameRow: View {
     var game: Game
-    var players: [Player]
     let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 3)
     @Environment(\.viewModel) private var viewModel
     
@@ -127,7 +126,7 @@ struct GameRow: View {
             
             Spacer()
             
-            let bets = AppDataViewModel().generateRandomBets(from: game)
+            let bets = AppDataViewModel().generateBetsForGame(game)
             
             LazyVGrid(columns: columns, spacing: 10) {
                 ForEach(bets, id: \.id) { bet in

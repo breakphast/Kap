@@ -15,11 +15,19 @@ enum BetType: String {
     case over = "Over"
     case under = "Under"
 }
+
 enum BetResult: String {
     case win = "Win"
     case loss = "Loss"
     case push = "Push"
     case pending = "Pending"
+}
+
+enum DayType: String {
+    case tnf = "TNF"
+    case sunday = "SUN"
+    case snf = "SNF"
+    case mnf = "MNF"
 }
 
 @Observable class BetOption {
@@ -33,6 +41,8 @@ enum BetResult: String {
     var betString: String
     var selectedTeam: String?
     var confirmBet: Bool
+    var dayType: DayType?
+    var maxBets: Int?
     
     init(game: Game, betType: BetType, odds: Int, spread: Double? = nil, over: Double, under: Double, selectedTeam: String? = nil, confirmBet: Bool = false) {
         self.id = UUID()
@@ -115,7 +125,7 @@ enum BetResult: String {
         } else {
             return 0
         }
-        return bet.result == .win ? Int(round(points)) : Int(round(-points)) / 2
+        return Int(round(points))
     }
     
     func checkBetResult(bet: Bet) -> BetResult {

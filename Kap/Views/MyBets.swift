@@ -20,14 +20,14 @@ struct MyBets: View {
             
             TabView {
                 VStack {
-                    if viewModel.bets.isEmpty && viewModel.parlays.isEmpty {
+                    if viewModel.currentPlayer!.bets[0].isEmpty && viewModel.parlays.isEmpty {
                         Text("No active bets")
                             .foregroundColor(.white)
                             .font(.largeTitle.bold())
                     } else {
                         ScrollView {
                             VStack(spacing: 20) {
-                                ForEach(viewModel.bets, id: \.id) { bet in
+                                ForEach(viewModel.currentPlayer!.bets[0], id: \.id) { bet in
                                     PlacedBetView(bet: bet)
                                 }
                                 ForEach(viewModel.parlays, id: \.id) { parlay in
@@ -72,6 +72,8 @@ struct MyBets: View {
 
 struct PlacedBetView: View {
     @Environment(\.viewModel) private var viewModel
+    @State var deleteActive = false
+    @Namespace var trash
     let bet: Bet
     
     var body: some View {
@@ -92,7 +94,7 @@ struct PlacedBetView: View {
                             Text(bet.type != .spread ? bet.type.rawValue : bet.betString)
                                 .font(.subheadline.bold())
                             Spacer()
-                            Text("(SNF 1/1)")
+                            Text("(SNF \(viewModel.currentPlayer!.bets[0].map { $0.betOption.dayType == (bet.betOption.dayType) }.count)/1)")
                                 .font(.caption.bold())
                                 .foregroundStyle(.secondary)
                         }
@@ -141,12 +143,47 @@ struct PlacedBetView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
             .padding(24)
             
-            Image(systemName: "trash")
-                .foregroundColor(Color.onyxLight.opacity(0.9))
+            if deleteActive {
+                HStack(spacing: 12) {
+                    Image(systemName: "xmark")
+                        .foregroundColor(.red)
+                        .font(.headline.bold())
+                        .fontDesign(.rounded)
+                        .padding(.bottom, 8)
+                        .onTapGesture {
+                            withAnimation {
+                                deleteActive.toggle()
+                            }
+                        }
+                    
+                    Image(systemName: "checkmark")
+                        .foregroundColor(.green)
+                        .font(.headline.bold())
+                        .fontDesign(.rounded)
+                        .padding(.bottom, 8)
+                        .onTapGesture {
+                            withAnimation {
+                                deleteActive.toggle()
+                            }
+                        }
+                }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                .fontWeight(.bold)
-                .fontDesign(.rounded)
                 .padding(.bottom, 8)
+                .matchedGeometryEffect(id: "trash", in: trash)
+            } else {
+                Image(systemName: "trash")
+                    .foregroundColor(Color.onyxLight.opacity(0.9))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                    .fontWeight(.bold)
+                    .fontDesign(.rounded)
+                    .padding(.bottom, 8)
+                    .onTapGesture {
+                        withAnimation {
+                            deleteActive.toggle()
+                        }
+                    }
+                    .matchedGeometryEffect(id: "trash", in: trash)
+            }
         }
         .frame(height: 200)
         .cornerRadius(20)
@@ -157,6 +194,9 @@ struct PlacedBetView: View {
 
 struct PlacedParlayView: View {
     @Environment(\.viewModel) private var viewModel
+    @State var deleteActive = false
+    @Namespace var trash
+    
     let parlay: Parlay
     
     var body: some View {
@@ -200,13 +240,6 @@ struct PlacedParlayView: View {
                             RoundedRectangle(cornerRadius: 0.5)
                                 .frame(width: 80, height: 1)
                                 .foregroundStyle(.secondary)
-//                            if parlay.result == .push {
-//                                HStack(spacing: 0) {
-//                                    Text("Result: ")
-//                                    Text("\(parlay.result == .win ? "+": "")\(parlay.totalPoints)")
-//                                        .foregroundStyle(parlay.result == .win ? .green : .red)
-//                                }
-//                            }
                         }
                         .font(.caption.bold())
                     }
@@ -228,12 +261,47 @@ struct PlacedParlayView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
             .padding(24)
             
-            Image(systemName: "trash")
-                .foregroundColor(Color.onyxLight.opacity(0.9))
+            if deleteActive {
+                HStack(spacing: 12) {
+                    Image(systemName: "xmark")
+                        .foregroundColor(.red)
+                        .font(.headline.bold())
+                        .fontDesign(.rounded)
+                        .padding(.bottom, 8)
+                        .onTapGesture {
+                            withAnimation {
+                                deleteActive.toggle()
+                            }
+                        }
+                    
+                    Image(systemName: "checkmark")
+                        .foregroundColor(.green)
+                        .font(.headline.bold())
+                        .fontDesign(.rounded)
+                        .padding(.bottom, 8)
+                        .onTapGesture {
+                            withAnimation {
+                                deleteActive.toggle()
+                            }
+                        }
+                }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                .fontWeight(.bold)
-                .fontDesign(.rounded)
                 .padding(.bottom, 8)
+                .matchedGeometryEffect(id: "trash", in: trash)
+            } else {
+                Image(systemName: "trash")
+                    .foregroundColor(Color.onyxLight.opacity(0.9))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                    .fontWeight(.bold)
+                    .fontDesign(.rounded)
+                    .padding(.bottom, 8)
+                    .onTapGesture {
+                        withAnimation {
+                            deleteActive.toggle()
+                        }
+                    }
+                    .matchedGeometryEffect(id: "trash", in: trash)
+            }
         }
         .frame(height: 200)
         .cornerRadius(20)
