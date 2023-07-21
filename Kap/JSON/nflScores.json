@@ -1,8 +1,8 @@
 [
     {
         "id": "2b3d7457dc4137c5e85e04f43a9afb19",
-        "sport_key": "baseball_mlb",
-        "sport_title": "MLB",
+        "sport_key": "football_nfl",
+        "sport_title": "NFL",
         "commence_time": "2023-07-15T23:05:00Z",
         "completed": false,
         "home_team": "Baltimore Orioles",
@@ -21,8 +21,8 @@
       },
     {
         "id": "c6fff13045fbce32a116b480967d092d",
-        "sport_key": "baseball_mlb",
-        "sport_title": "MLB",
+        "sport_key": "football_nfl",
+        "sport_title": "NFL",
         "commence_time": "2023-07-15T23:05:00Z",
         "completed": false,
         "home_team": "Philadelphia Phillies",
@@ -41,8 +41,8 @@
       },
     {
         "id": "57c6313cd1f43a06b212d36f1132d07e",
-        "sport_key": "baseball_mlb",
-        "sport_title": "MLB",
+        "sport_key": "football_nfl",
+        "sport_title": "NFL",
         "commence_time": "2023-07-15T23:07:00Z",
         "completed": false,
         "home_team": "Oakland Athletics",
@@ -61,8 +61,8 @@
       },
     {
         "id": "4c6cb11b7f1faf14cadb44b994cbf645",
-        "sport_key": "baseball_mlb",
-        "sport_title": "MLB",
+        "sport_key": "football_nfl",
+        "sport_title": "NFL",
         "commence_time": "2023-07-15T23:15:00Z",
         "completed": false,
         "home_team": "Atlanta Braves",
@@ -81,8 +81,8 @@
       },
     {
         "id": "ff892884362b2e76e0c400c4e9b8bd29",
-        "sport_key": "baseball_mlb",
-        "sport_title": "MLB",
+        "sport_key": "football_nfl",
+        "sport_title": "NFL",
         "commence_time": "2023-07-15T23:45:41Z",
         "completed": false,
         "home_team": "Pittsburgh Pirates",
@@ -101,8 +101,8 @@
       },
     {
         "id": "8bb2891992be97ffc9c848337394fb1a",
-        "sport_key": "baseball_mlb",
-        "sport_title": "MLB",
+        "sport_key": "football_nfl",
+        "sport_title": "NFL",
         "commence_time": "2023-07-16T00:20:00Z",
         "completed": false,
         "home_team": "St. Louis Cardinals",
@@ -121,8 +121,8 @@
       },
     {
         "id": "6b14ad4273b605e5a4f4928bdf00199f",
-        "sport_key": "baseball_mlb",
-        "sport_title": "MLB",
+        "sport_key": "football_nfl",
+        "sport_title": "NFL",
         "commence_time": "2023-07-16T00:25:00Z",
         "completed": false,
         "home_team": "Cincinnati Reds",
@@ -141,8 +141,8 @@
       },
     {
         "id": "1f8fe19e46375e3d26056578084cdd2e",
-        "sport_key": "baseball_mlb",
-        "sport_title": "MLB",
+        "sport_key": "football_nfl",
+        "sport_title": "NFL",
         "commence_time": "2023-07-16T01:07:00Z",
         "completed": false,
         "home_team": "Los Angeles Angels",

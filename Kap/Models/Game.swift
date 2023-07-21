@@ -9,8 +9,8 @@ import Foundation
 
 class Game {
     let id: String
-    let homeTeam: String
-    let awayTeam: String
+    var homeTeam: String
+    var awayTeam: String
     var date: Date
     var betOptions = [BetOption]()
     var homeSpread: Double
@@ -99,6 +99,9 @@ class Game {
         self.awaySpreadPriceTemp = awaySpreadPriceTemp
         self.overPriceTemp = overPriceTemp
         self.underPriceTemp = underPriceTemp
+        
+        homeTeam = nflTeams[gameElement.homeTeam] ?? ""
+        awayTeam = nflTeams[gameElement.awayTeam] ?? ""
         
         self.betOptions = createBetOptions()
     }
@@ -195,9 +198,9 @@ enum Title: String, Codable {
 }
 
 enum SportKey: String, Codable {
-    case baseball_mlb = "baseball_mlb"
+    case football_nfl = "football_nfl"
 }
 
 enum SportTitle: String, Codable {
-    case mlb = "MLB"
+    case NFL = "NFL"
 }

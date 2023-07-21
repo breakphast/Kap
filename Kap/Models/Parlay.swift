@@ -9,16 +9,14 @@ import Foundation
 
 class Parlay {
     let id: UUID
-    let userID: UUID
     let bets: [Bet]
     var totalOdds: Int
     var result: BetResult
     var totalPoints: Int
     var betString: String
     
-    init(id: UUID, userID: UUID, bets: [Bet], result: BetResult) {
+    init(id: UUID, bets: [Bet], result: BetResult) {
         self.id = id
-        self.userID = userID
         self.bets = bets
         self.totalOdds = calculateParlayOdds(bets: bets)
         self.result = result

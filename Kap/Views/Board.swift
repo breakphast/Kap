@@ -20,21 +20,15 @@ struct Board: View {
                     NavigationLink(destination: Betslip()) {
                         ZStack {
                             Color("onyxLightish")
-                            HStack(spacing: 8) {
-                                Text("Betslip")
-                                if viewModel.selectedBets.count > 1 {
-                                    Image(systemName: "gift.fill")
-                                }
-                            }
+                            
+                            Text("Betslip")
                             .font(.title3.bold())
                             .fontDesign(.rounded)
-                            .foregroundStyle(Color.lion)
-                            .multilineTextAlignment(.leading)
-                            .lineLimit(2)
+                            .foregroundStyle(.lion)
                         }
                         .frame(height: 60)
                         .cornerRadius(20)
-                        .padding(.horizontal, 40)
+                        .padding(.horizontal, 24)
                         .shadow(radius: 10)
                     }
                     .zIndex(100)
@@ -43,7 +37,8 @@ struct Board: View {
                             .onEnded { _ in
                                 if viewModel.selectedBets.count > 1 {
                                     viewModel.activeParlays = []
-                                    let parlay = BetService().makeParlay(for: viewModel.selectedBets, player: viewModel.players[0])
+                                    let parlay = BetService().makeParlay(for: viewModel.selectedBets)
+                                    
                                     if parlay.totalOdds >= 400 {
                                         viewModel.activeParlays.append(parlay)
                                         viewModel.activeButtons = [UUID]()
@@ -63,11 +58,21 @@ struct Board: View {
                                 Text("Board")
                                     .font(.system(size: 32, weight: .bold, design: .rounded))
                             }
-                            ToolbarItem(placement: .topBarTrailing) {
-                                Image(systemName: "gift.fill")
-                                    .font(.system(size: 18, weight: .bold, design: .rounded))
-                                    .foregroundStyle(.white)
+                            
+                            ToolbarItem(placement: .navigationBarTrailing) {
+                                if viewModel.selectedBets.count > 1 && calculateParlayOdds(bets: viewModel.selectedBets) > 0 {
+                                    HStack(spacing: 2) {
+                                        Image(systemName: "gift.fill")
+                                        Text("+\(calculateParlayOdds(bets: viewModel.selectedBets))".replacingOccurrences(of: ",", with: ""))
+                                            .font(.caption2)
+                                            .offset(y: -4)
+                                    }
+                                    .fontDesign(.rounded)
+                                    .fontWeight(.black)
+                                    .foregroundStyle(Color("lion"))
+                                }
                             }
+                            
                             ToolbarItem(placement: .topBarLeading) {
                                 Image(systemName: "chevron.left")
                                     .font(.system(size: 18, weight: .bold, design: .rounded))
@@ -76,11 +81,9 @@ struct Board: View {
                                     }
                             }
                         }
-                        .task {
-                            if viewModel.players.isEmpty {
-                                let _ = await viewModel.getLeaderboardData()
-                            }
-                        }
+                    Rectangle()
+                        .frame(height: 40)
+                        .foregroundStyle(.clear)
                 }
                 .padding(.top, 12)
                 .fontDesign(.rounded)
@@ -133,8 +136,8 @@ struct SectionView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(title)
-                .font(.headline.bold())
-                .foregroundStyle(Color.lion)
+                .font(.subheadline.bold())
+                .foregroundStyle(.lion)
                 .padding(.bottom)
             
             ForEach(games, id: \.id) { game in
@@ -152,12 +155,12 @@ struct GameRow: View {
     
     var body: some View {
         HStack(alignment: .center) {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 10) {
                 Text(game.awayTeam)
                 Text("@")
                 Text(game.homeTeam)
             }
-            .font(.subheadline.bold())
+            .font(.headline.bold())
             .frame(maxWidth: UIScreen.main.bounds.width / 3, alignment: .leading)
             
             Spacer()
@@ -177,7 +180,7 @@ struct GameRow: View {
                     }
                 }
             }
-            .frame(maxWidth: UIScreen.main.bounds.width / 2)
+            .frame(maxWidth: UIScreen.main.bounds.width / 1.75)
         }
         .padding(.bottom, 20)
     }

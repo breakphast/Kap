@@ -20,24 +20,32 @@ struct MyBets: View {
             
             TabView {
                 VStack {
-                    if viewModel.currentPlayer!.bets[0].isEmpty && viewModel.parlays.isEmpty {
+                    if viewModel.currentPlayer!.bets[0].isEmpty && viewModel.currentPlayer!.parlays.isEmpty {
                         Text("No active bets")
                             .foregroundColor(.white)
                             .font(.largeTitle.bold())
                     } else {
+                        Text("Active Bets")
+                            .font(.system(.subheadline, design: .rounded, weight: .bold))
+                            .foregroundStyle(.lion)
+                        
                         ScrollView {
                             VStack(spacing: 20) {
                                 ForEach(viewModel.currentPlayer!.bets[0], id: \.id) { bet in
                                     PlacedBetView(bet: bet)
                                 }
-                                ForEach(viewModel.parlays, id: \.id) { parlay in
+                                ForEach(viewModel.currentPlayer!.parlays, id: \.id) { parlay in
                                     PlacedParlayView(parlay: parlay)
                                 }
+                                Rectangle()
+                                    .frame(height: 40)
+                                    .foregroundStyle(.clear)
                             }
                             .padding(.top, 20)
                         }
                     }
                 }
+                .padding(.top, 20)
                 .tabItem { Text("Active Bets") }
                 
                 VStack {
@@ -57,6 +65,11 @@ struct MyBets: View {
                         .onTapGesture {
                             dismiss()
                         }
+                }
+                
+                ToolbarItem(placement: .principal) {
+                    Text("My Bets")
+                        .font(.system(size: 32, weight: .bold, design: .rounded))
                 }
             }
         }
@@ -136,7 +149,7 @@ struct PlacedBetView: View {
             .multilineTextAlignment(.leading)
             
             VStack {
-                Image(systemName: "checkmark.circle")
+                Image(systemName: bet.result == .win ? "checkmark.circle" : bet.result == .loss ? "xmark.circle" : "hourglass.circle")
                     .font(.largeTitle.bold())
                     .foregroundColor(.green)
             }
@@ -149,9 +162,10 @@ struct PlacedBetView: View {
                         .foregroundColor(.red)
                         .font(.headline.bold())
                         .fontDesign(.rounded)
-                        .padding(.bottom, 8)
+                        .padding(.bottom, 12)
                         .onTapGesture {
                             withAnimation {
+                                viewModel.currentPlayer!.bets[0].removeAll(where: { $0.id == bet.id })
                                 deleteActive.toggle()
                             }
                         }
@@ -160,7 +174,7 @@ struct PlacedBetView: View {
                         .foregroundColor(.green)
                         .font(.headline.bold())
                         .fontDesign(.rounded)
-                        .padding(.bottom, 8)
+                        .padding(.bottom, 12)
                         .onTapGesture {
                             withAnimation {
                                 deleteActive.toggle()
@@ -172,7 +186,7 @@ struct PlacedBetView: View {
                 .matchedGeometryEffect(id: "trash", in: trash)
             } else {
                 Image(systemName: "trash")
-                    .foregroundColor(Color.onyxLight.opacity(0.9))
+                    .foregroundColor(.onyxLight.opacity(0.9))
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                     .fontWeight(.bold)
                     .fontDesign(.rounded)
@@ -185,7 +199,7 @@ struct PlacedBetView: View {
                     .matchedGeometryEffect(id: "trash", in: trash)
             }
         }
-        .frame(height: 200)
+        .frame(height: 180)
         .cornerRadius(20)
         .padding(.horizontal, 20)
         .shadow(radius: 10)
@@ -221,8 +235,6 @@ struct PlacedParlayView: View {
                                 .foregroundStyle(.secondary)
                         }
                         
-                        Spacer()
-                        
                         ScrollView(showsIndicators: false) {
                             VStack(alignment: .leading) {
                                 ForEach(parlay.bets, id: \.id) { bet in
@@ -246,28 +258,30 @@ struct PlacedParlayView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                .padding(24)
-                .padding([.bottom, .trailing], 12)
+                .padding(.horizontal, 24)
+//                .padding([.bottom, .trailing], 12)
             }
             .fontDesign(.rounded)
             .foregroundStyle(.white)
             .multilineTextAlignment(.leading)
             
             VStack {
-                Image(systemName: "checkmark.circle")
+                Image(systemName: parlay.result == .win ? "checkmark.circle" : parlay.result == .loss ? "xmark.circle" : "hourglass.circle")
                     .font(.largeTitle.bold())
                     .foregroundColor(.green)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-            .padding(24)
+            .padding(.trailing, 24)
+            .padding(.bottom, 12)
             
             if deleteActive {
                 HStack(spacing: 12) {
                     Image(systemName: "xmark")
                         .foregroundColor(.red)
-                        .font(.headline.bold())
+                        .font(.title2.bold())
+                        .bold()
                         .fontDesign(.rounded)
-                        .padding(.bottom, 8)
+                        .padding(.bottom, 12)
                         .onTapGesture {
                             withAnimation {
                                 deleteActive.toggle()
@@ -276,9 +290,9 @@ struct PlacedParlayView: View {
                     
                     Image(systemName: "checkmark")
                         .foregroundColor(.green)
-                        .font(.headline.bold())
+                        .font(.title2.bold())
                         .fontDesign(.rounded)
-                        .padding(.bottom, 8)
+                        .padding(.bottom, 12)
                         .onTapGesture {
                             withAnimation {
                                 deleteActive.toggle()
@@ -290,11 +304,11 @@ struct PlacedParlayView: View {
                 .matchedGeometryEffect(id: "trash", in: trash)
             } else {
                 Image(systemName: "trash")
-                    .foregroundColor(Color.onyxLight.opacity(0.9))
+                    .foregroundColor(.onyxLight.opacity(0.9))
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                    .fontWeight(.bold)
+                    .font(.title2.bold())
                     .fontDesign(.rounded)
-                    .padding(.bottom, 8)
+                    .padding(.bottom, 12)
                     .onTapGesture {
                         withAnimation {
                             deleteActive.toggle()
@@ -303,9 +317,45 @@ struct PlacedParlayView: View {
                     .matchedGeometryEffect(id: "trash", in: trash)
             }
         }
-        .frame(height: 200)
+        .frame(height: 180)
         .cornerRadius(20)
         .padding(.horizontal, 20)
         .shadow(radius: 10)
     }
 }
+
+
+let nflTeams = [
+    "Miami Dolphins": "MIA Dolphins",
+    "New England Patriots": "NE Patriots",
+    "Buffalo Bills": "BUF Bills",
+    "New York Jets": "NYJ Jets",
+    "Pittsburgh Steelers": "PIT Steelers",
+    "Baltimore Ravens": "BAL Ravens",
+    "Cleveland Browns": "CLE Browns",
+    "Cincinnati Bengals": "CIN Bengals",
+    "Tennessee Titans": "TEN Titans",
+    "Indianapolis Colts": "IND Colts",
+    "Houston Texans": "HOU Texans",
+    "Jacksonville Jaguars": "JAX Jaguars",
+    "Kansas City Chiefs": "KC Chiefs",
+    "Las Vegas Raiders": "LV Raiders",
+    "Denver Broncos": "DEN Broncos",
+    "Los Angeles Chargers": "LAC Chargers",
+    "Dallas Cowboys": "DAL Cowboys",
+    "Philadelphia Eagles": "PHI Eagles",
+    "New York Giants": "NYG Giants",
+    "Washington Football Team": "WAS Football Team",
+    "Green Bay Packers": "GB Packers",
+    "Chicago Bears": "CHI Bears",
+    "Minnesota Vikings": "MIN Vikings",
+    "Detroit Lions": "DET Lions",
+    "San Francisco 49ers": "SF 49ers",
+    "Seattle Seahawks": "SEA Seahawks",
+    "Los Angeles Rams": "LA Rams",
+    "Arizona Cardinals": "ARI Cardinals",
+    "Atlanta Falcons": "ATL Falcons",
+    "New Orleans Saints": "NO Saints",
+    "Tampa Bay Buccaneers": "TB Buccaneers",
+    "Carolina Panthers": "CAR Panthers"
+]

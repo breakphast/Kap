@@ -15,7 +15,7 @@ import SwiftUI
 
     func fetchGames() async throws {
         do {
-            let data = try await loadData(from: "mlbData.json")
+            let data = try await loadData(from: "nflData.json")
             let decoder = JSONDecoder()
             decoder.dateDecodingStrategy = .iso8601
             let gamesData = try decoder.decode([GameElement].self, from: data)
@@ -39,8 +39,7 @@ import SwiftUI
     }
 
     func makeBet(for game: Game, betOption: BetOption) -> Bet {
-        let allBetResults: [BetResult] = [.win, .loss, .pending]
-        let bet = Bet(id: UUID(), betOption: betOption, game: game, type: betOption.betType, result: allBetResults.randomElement(), odds: betOption.odds, selectedTeam: betOption.selectedTeam)
+        let bet = Bet(id: UUID(), betOption: betOption, game: game, type: betOption.betType, result: .pending, odds: betOption.odds, selectedTeam: betOption.selectedTeam)
         
         return bet
     }
@@ -50,9 +49,13 @@ import SwiftUI
         player.bets[0].append(placedBet)
     }
     
-    func makeParlay(for bets: [Bet], player: Player) -> Parlay {
-        let parlay = Parlay(id: UUID(), userID: player.user.userID, bets: bets, result: .pending)
-        
+    func makeParlay(for bets: [Bet]) -> Parlay {
+        let parlay = Parlay(id: UUID(), bets: bets, result: .pending)
         return parlay
+    }
+    
+    func placeParlay(parlay: Parlay, player: Player) {
+        let placedParlay = makeParlay(for: parlay.bets)
+        player.parlays.append(placedParlay)
     }
 }

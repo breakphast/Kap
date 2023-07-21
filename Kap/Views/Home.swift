@@ -62,7 +62,7 @@ struct Home: View {
                         HStack {
                             ZStack {
                                 RoundedRectangle(cornerRadius: 10)
-                                    .foregroundColor(Color.lion.opacity(0.8)) // Assuming you have defined a color extension for light blue
+                                    .foregroundColor(.lion.opacity(0.8)) // Assuming you have defined a color extension for light blue
                                 
                                 Text("Stats & News")
                                     .font(.title3)
@@ -89,11 +89,12 @@ struct Home: View {
                     .padding(24)
                 }
             }
-//            .task {
-//                if viewModel.leagues.isEmpty {
-//                   let _ = await viewModel.getLeaderboardData()
-//                }
-//            }
+            .task {
+                if viewModel.players.isEmpty {
+                    let _ = await viewModel.getLeaderboardData()
+               
+                }
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }

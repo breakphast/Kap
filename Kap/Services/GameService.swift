@@ -18,15 +18,15 @@ class GameService {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         
-        let odds = try await loadMlbData()
+        let odds = try await loadnflData()
         let gamesData = try decoder.decode([GameElement].self, from: odds)
         
-        let scores = try await loadMlbScoresData()
+        let scores = try await loadnflScoresData()
         let scoresData = try decoder.decode([GameElement].self, from: scores)
         
         games = gamesData.compactMap { Game(gameElement: $0) }
         
-        for score in scoresData {
+        for score in scoresData { 
             if let gameIndex = games.firstIndex(where: { $0.id == score.id }) {
                 games[gameIndex].awayScore = score.scores?[0].score
                 games[gameIndex].homeScore = score.scores?[1].score
@@ -35,18 +35,18 @@ class GameService {
         return games
     }
     
-    private func loadMlbData() async throws -> Data {
-        guard let url = Bundle.main.url(forResource: "mlbData", withExtension: "json") else {
-            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Unable to locate mlbData.json"])
+    private func loadnflData() async throws -> Data {
+        guard let url = Bundle.main.url(forResource: "nflData", withExtension: "json") else {
+            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Unable to locate nflData.json"])
         }
         
         let (data, _) = try await URLSession.shared.data(from: url)
         return data
     }
     
-    private func loadMlbScoresData() async throws -> Data {
-        guard let url = Bundle.main.url(forResource: "mlbScores", withExtension: "json") else {
-            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Unable to locate mlbScores.json"])
+    private func loadnflScoresData() async throws -> Data {
+        guard let url = Bundle.main.url(forResource: "nflScores", withExtension: "json") else {
+            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Unable to locate nflScores.json"])
         }
         
         let (data, _) = try await URLSession.shared.data(from: url)

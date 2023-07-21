@@ -25,12 +25,12 @@ struct CustomButton: View {
                 Text(buttonText)
                     .font(.caption2.bold())
                     .fontDesign(.rounded)
-                    .foregroundStyle(viewModel.selectedBets.contains(where: { $0.id == bet.id }) ? Color.lion : Color.onyx)
+                    .foregroundStyle(viewModel.selectedBets.contains(where: { $0.id == bet.id }) ? .lion : .onyx)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
             }
         }
-        .frame(height: 40)
+        .frame(height: 44)
         .cornerRadius(10)
         .shadow(radius: 10)
     }
