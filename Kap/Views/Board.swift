@@ -21,7 +21,7 @@ struct Board: View {
                     GameListingView(players: viewModel.players)
                         .navigationBarBackButtonHidden()
                         .toolbar {
-                            ToolbarItem(placement: .principal) {
+                            ToolbarItem(placement: .topBarLeading) {
                                 Text("Board")
                                     .font(.system(size: 32, weight: .bold, design: .rounded))
                             }
@@ -39,27 +39,18 @@ struct Board: View {
                                     .foregroundStyle(Color("lion"))
                                 }
                             }
-                            
-                            ToolbarItem(placement: .topBarLeading) {
-                                Image(systemName: "chevron.left")
-                                    .font(.system(size: 18, weight: .bold, design: .rounded))
-                                    .onTapGesture {
-                                        dismiss()
-                                    }
-                            }
                         }
                     Rectangle()
                         .frame(height: 40)
                         .foregroundStyle(.clear)
                 }
-                .padding(.top, 12)
                 .fontDesign(.rounded)
                 
                 if viewModel.selectedBets.count > 0 {
                     Spacer()
                     NavigationLink(destination: Betslip()) {
                         ZStack {
-                            Color("onyxLightish")
+                            Color.onyxLightish
                             
                             Text("Betslip")
                             .font(.title.bold())
@@ -67,8 +58,7 @@ struct Board: View {
                             .foregroundStyle(.lion)
                         }
                         .frame(height: 60)
-                        .cornerRadius(20)
-                        .padding(.horizontal, 24)
+                        .clipShape(TopRoundedRectangle(radius: 20))
                         .shadow(radius: 10)
                     }
                     .zIndex(100)
@@ -90,6 +80,7 @@ struct Board: View {
                     )
                 }
             }
+            .navigationBarBackButtonHidden()
         }
     }
 }
@@ -125,9 +116,7 @@ struct GameListingView: View {
             SectionView(title: "Sunday Night Football", games: sundayNightGame)
             SectionView(title: "Monday Night Football", games: mondayNightGame)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .padding(.horizontal)
-        .padding(.vertical, 20)
+        .padding()
     }
 }
 
@@ -185,5 +174,22 @@ struct GameRow: View {
             .frame(maxWidth: UIScreen.main.bounds.width / 1.75)
         }
         .padding(.bottom, 20)
+    }
+}
+
+struct TopRoundedRectangle: Shape {
+    var radius: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+
+        path.move(to: CGPoint(x: 0, y: rect.maxY)) // bottom left
+        path.addLine(to: CGPoint(x: 0, y: radius)) // top left
+        path.addArc(center: CGPoint(x: radius, y: radius), radius: radius, startAngle: .degrees(180), endAngle: .degrees(270), clockwise: false)
+        path.addLine(to: CGPoint(x: rect.maxX - radius, y: 0)) // before top right corner
+        path.addArc(center: CGPoint(x: rect.maxX - radius, y: radius), radius: radius, startAngle: .degrees(270), endAngle: .degrees(0), clockwise: false)
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY)) // bottom right
+
+        return path
     }
 }

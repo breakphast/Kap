@@ -167,16 +167,6 @@ import Observation
     
     func createWeek(season: Season, league: League, weekNumber: Int) async -> Week {
         let week = Week(id: UUID(), weekNumber: weekNumber, season: season, games: [], bets: [[]], parlays: [], isComplete: false)
-        //        do {
-        //            let games = try await GameService().getGames()
-        //            week.games = games.chunked(into: 16)[0]
-        //        } catch {
-        //            print("Failed to get games: \(error)")
-        //        }
-        
-        //        for _ in league.players {
-        //            week.bets.append(generateRandomBets(from: week.games, betCount: 6))
-        //        }
         
         return week
     }

@@ -12,6 +12,37 @@ struct Home: View {
     @Environment(\.viewModel) private var viewModel
     
     var body: some View {
+        TabView {
+            Board()
+                .tabItem {
+                    Label("Home", systemImage: "house.fill")
+                }
+            
+            MyBets()
+                .tabItem {
+                    Label("My Bets", systemImage: "checklist")
+                }
+            
+            Leaderboard()
+                .tabItem {
+                    Label("League", systemImage: "person.3")
+                }
+            
+            navyStack
+                .tabItem {
+                    Label("Profile", systemImage: "person.fill")
+                }
+        }
+        .tint(.white)
+        .task {
+            if viewModel.players.isEmpty {
+                let _ = await viewModel.getLeaderboardData()
+           
+            }
+        }
+    }
+    
+    var navyStack: some View {
         NavigationStack {
             ZStack {
                 Color("onyx").ignoresSafeArea()

@@ -59,54 +59,8 @@ struct BetView: View {
             Color("onyxLightish")
             HStack(spacing: 8) {
                 VStack(alignment: .leading, spacing: 12) {
-                    VStack(alignment: .leading, spacing: 12) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            HStack {
-                                Text(bet.selectedTeam ?? "")
-                                    .font(.subheadline.bold())
-                                Spacer()
-                                Text("\(bet.odds > 0 ? "+" : "")\(bet.odds)")
-                                    .font(.subheadline.bold())
-                            }
-                            
-                            HStack {
-                                Text(bet.type != .spread ? bet.type.rawValue : bet.betString)
-                                    .font(.subheadline.bold())
-                                Spacer()
-                                Text("(\(bet.betOption.dayType?.rawValue ?? "") \(viewModel.currentPlayer!.bets[0].map { $0.betOption.dayType == bet.betOption.dayType }.count)/\(bet.betOption.maxBets ?? 0))")
-                                    .font(.caption.bold())
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                        
-                        
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("\(bet.game.awayTeam) @ \(bet.game.homeTeam)")
-                                .font(.caption2.bold())
-                                .lineLimit(1)
-                            Text("9/12/2023")
-                                .font(.caption2)
-                            Text("7PM EST")
-                                .font(.caption2)
-                        }
-                        .foregroundStyle(.secondary)
-                        .frame(width: 200, alignment: .leading)
-                        
-                        HStack {
-                            VStack(alignment: .leading) {
-                                Text("Points: \(bet.points ?? 0)")
-                                    .font(.subheadline.bold())
-                                RoundedRectangle(cornerRadius: 0.5)
-                                    .frame(width: 80, height: 1)
-                                    .foregroundStyle(.secondary)
-                            }
-                            
-                            Spacer()
-                            
-                            buttons
-                        }
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                    teamAndType
+                    pointsAndButtons
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                 .padding(24)
@@ -120,6 +74,45 @@ struct BetView: View {
         .shadow(radius: 10)
         .onAppear {
             isValid = !viewModel.currentPlayer!.bets[0].contains(where: { $0.betString == bet.betString })
+        }
+    }
+    
+    var pointsAndButtons: some View {
+        HStack {
+            VStack(alignment: .leading) {
+                Text("Points: \(bet.points ?? 0)")
+                    .bold()
+                RoundedRectangle(cornerRadius: 1)
+                    .frame(width: 100, height: 2)
+                    .foregroundStyle(.secondary)
+            }
+            
+            Spacer()
+            
+            buttons
+        }
+    }
+    
+    var teamAndType: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text(bet.selectedTeam ?? "")
+                
+                Spacer()
+                
+                Text("\(bet.odds > 0 ? "+" : "")\(bet.odds)")
+            }
+            .bold()
+            
+            HStack {
+                Text(bet.type != .spread ? bet.type.rawValue : "Spread " + bet.betString)
+                    .foregroundStyle(.secondary)
+                    .bold()
+                Spacer()
+                Text("(\(bet.betOption.dayType?.rawValue ?? "") \(viewModel.currentPlayer!.bets[0].map { $0.betOption.dayType == bet.betOption.dayType }.count)/\(bet.betOption.maxBets ?? 0))")
+                    .font(.caption.bold())
+                    .foregroundStyle(.secondary)
+            }
         }
     }
     
@@ -215,9 +208,9 @@ struct ParlayView: View {
                         HStack {
                             VStack(alignment: .leading) {
                                 Text("Points: \(parlay.totalPoints)")
-                                    .font(.subheadline.bold())
-                                RoundedRectangle(cornerRadius: 0.5)
-                                    .frame(width: 70, height: 1)
+                                    .bold()
+                                RoundedRectangle(cornerRadius: 1)
+                                    .frame(width: 100, height: 2)
                                     .foregroundStyle(.secondary)
                             }
                             

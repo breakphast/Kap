@@ -49,13 +49,33 @@ struct MyBets: View {
                 .tabItem { Text("Active Bets") }
                 
                 VStack {
-                    Text("Settled")
-                        .font(.system(.subheadline, design: .rounded, weight: .bold))
-                        .foregroundStyle(.lion)
-                    Spacer()
+                    if viewModel.currentPlayer!.bets[0].isEmpty && viewModel.currentPlayer!.parlays.isEmpty {
+                        Text("No settled bets")
+                            .foregroundColor(.white)
+                            .font(.largeTitle.bold())
+                    } else {
+                        Text("Settled")
+                            .font(.system(.subheadline, design: .rounded, weight: .bold))
+                            .foregroundStyle(.lion)
+                        
+                        ScrollView(showsIndicators: false) {
+                            VStack(spacing: 20) {
+                                ForEach(viewModel.currentPlayer!.bets[0], id: \.id) { bet in
+                                    PlacedBetView(bet: bet)
+                                }
+                                ForEach(viewModel.currentPlayer!.parlays, id: \.id) { parlay in
+                                    PlacedParlayView(parlay: parlay)
+                                }
+                                Rectangle()
+                                    .frame(height: 40)
+                                    .foregroundStyle(.clear)
+                            }
+                            .padding(.top, 20)
+                        }
+                    }
                 }
                 .padding(.top, 20)
-                .tabItem { Text("Settled") }
+                .tabItem { Text("Settled Bets") }
             }
             .accentColor(.white)  // For the circle indicator
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
