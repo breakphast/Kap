@@ -32,6 +32,6 @@ struct CustomButton: View {
         }
         .frame(height: 44)
         .cornerRadius(10)
-        .shadow(radius: 10)
+        .shadow(color: .onyxLightish, radius: 10)
     }
 }

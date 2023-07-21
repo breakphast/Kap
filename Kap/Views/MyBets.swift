@@ -25,11 +25,11 @@ struct MyBets: View {
                             .foregroundColor(.white)
                             .font(.largeTitle.bold())
                     } else {
-                        Text("Active Bets")
+                        Text("Active")
                             .font(.system(.subheadline, design: .rounded, weight: .bold))
                             .foregroundStyle(.lion)
                         
-                        ScrollView {
+                        ScrollView(showsIndicators: false) {
                             VStack(spacing: 20) {
                                 ForEach(viewModel.currentPlayer!.bets[0], id: \.id) { bet in
                                     PlacedBetView(bet: bet)
@@ -50,9 +50,11 @@ struct MyBets: View {
                 
                 VStack {
                     Text("Settled")
-                        .foregroundColor(.white)
-                        .font(.largeTitle.bold())
+                        .font(.system(.subheadline, design: .rounded, weight: .bold))
+                        .foregroundStyle(.lion)
+                    Spacer()
                 }
+                .padding(.top, 20)
                 .tabItem { Text("Settled") }
             }
             .accentColor(.white)  // For the circle indicator
@@ -76,8 +78,6 @@ struct MyBets: View {
         .fontDesign(.rounded)
     }
 }
-
-// Note: The ParlayView structure was not given in the initial code, so it's not included here.
 
 #Preview {
     MyBets()
@@ -135,7 +135,7 @@ struct PlacedBetView: View {
                             HStack(spacing: 0) {
                                 Text("Result: ")
                                 Text("\(bet.result == .win ? "+": "")\(bet.points ?? 0)")
-                                    .foregroundStyle(bet.result == .win ? .green : .red)
+                                    .foregroundStyle(bet.result == .win ? .bean : .red)
                             }
                         }
                     }
@@ -151,7 +151,7 @@ struct PlacedBetView: View {
             VStack {
                 Image(systemName: bet.result == .win ? "checkmark.circle" : bet.result == .loss ? "xmark.circle" : "hourglass.circle")
                     .font(.largeTitle.bold())
-                    .foregroundColor(.green)
+                    .foregroundColor(.bean)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
             .padding(24)
@@ -171,7 +171,7 @@ struct PlacedBetView: View {
                         }
                     
                     Image(systemName: "checkmark")
-                        .foregroundColor(.green)
+                        .foregroundColor(.bean)
                         .font(.headline.bold())
                         .fontDesign(.rounded)
                         .padding(.bottom, 12)
@@ -268,7 +268,7 @@ struct PlacedParlayView: View {
             VStack {
                 Image(systemName: parlay.result == .win ? "checkmark.circle" : parlay.result == .loss ? "xmark.circle" : "hourglass.circle")
                     .font(.largeTitle.bold())
-                    .foregroundColor(.green)
+                    .foregroundColor(.bean)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
             .padding(.trailing, 24)
@@ -289,7 +289,7 @@ struct PlacedParlayView: View {
                         }
                     
                     Image(systemName: "checkmark")
-                        .foregroundColor(.green)
+                        .foregroundColor(.bean)
                         .font(.title2.bold())
                         .fontDesign(.rounded)
                         .padding(.bottom, 12)

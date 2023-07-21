@@ -16,39 +16,6 @@ struct Board: View {
         NavigationStack {
             ZStack(alignment: .bottom) {
                 Color("onyx").ignoresSafeArea()
-                if viewModel.selectedBets.count > 0 {
-                    NavigationLink(destination: Betslip()) {
-                        ZStack {
-                            Color("onyxLightish")
-                            
-                            Text("Betslip")
-                            .font(.title3.bold())
-                            .fontDesign(.rounded)
-                            .foregroundStyle(.lion)
-                        }
-                        .frame(height: 60)
-                        .cornerRadius(20)
-                        .padding(.horizontal, 24)
-                        .shadow(radius: 10)
-                    }
-                    .zIndex(100)
-                    .simultaneousGesture(
-                        TapGesture()
-                            .onEnded { _ in
-                                if viewModel.selectedBets.count > 1 {
-                                    viewModel.activeParlays = []
-                                    let parlay = BetService().makeParlay(for: viewModel.selectedBets)
-                                    
-                                    if parlay.totalOdds >= 400 {
-                                        viewModel.activeParlays.append(parlay)
-                                        viewModel.activeButtons = [UUID]()
-                                    }
-                                } else {
-                                    viewModel.activeParlays = []
-                                }
-                            }
-                    )
-                }
                 
                 ScrollView(showsIndicators: false) {
                     GameListingView(players: viewModel.players)
@@ -87,6 +54,41 @@ struct Board: View {
                 }
                 .padding(.top, 12)
                 .fontDesign(.rounded)
+                
+                if viewModel.selectedBets.count > 0 {
+                    Spacer()
+                    NavigationLink(destination: Betslip()) {
+                        ZStack {
+                            Color("onyxLightish")
+                            
+                            Text("Betslip")
+                            .font(.title.bold())
+                            .fontDesign(.rounded)
+                            .foregroundStyle(.lion)
+                        }
+                        .frame(height: 60)
+                        .cornerRadius(20)
+                        .padding(.horizontal, 24)
+                        .shadow(radius: 10)
+                    }
+                    .zIndex(100)
+                    .simultaneousGesture(
+                        TapGesture()
+                            .onEnded { _ in
+                                if viewModel.selectedBets.count > 1 {
+                                    viewModel.activeParlays = []
+                                    let parlay = BetService().makeParlay(for: viewModel.selectedBets)
+                                    
+                                    if parlay.totalOdds >= 400 {
+                                        viewModel.activeParlays.append(parlay)
+                                        viewModel.activeButtons = [UUID]()
+                                    }
+                                } else {
+                                    viewModel.activeParlays = []
+                                }
+                            }
+                    )
+                }
             }
         }
     }
@@ -156,9 +158,9 @@ struct GameRow: View {
     var body: some View {
         HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 10) {
-                Text(game.awayTeam)
+                Text(nflTeams[game.awayTeam] ?? "")
                 Text("@")
-                Text(game.homeTeam)
+                Text(nflTeams[game.homeTeam] ?? "")
             }
             .font(.headline.bold())
             .frame(maxWidth: UIScreen.main.bounds.width / 3, alignment: .leading)

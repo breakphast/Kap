@@ -35,7 +35,7 @@ struct Leaderboard: View {
                                                 .padding()
                                                 .overlay(
                                                     RoundedRectangle(cornerRadius: 20)
-                                                        .stroke(index == 0 ? Color("leader") : player.points[0] ?? 0 >= 0 ? Color.green : Color.red, lineWidth: 3)
+                                                        .stroke(index == 0 ? Color("leader") : player.points[0] ?? 0 >= 0 ? Color.bean : Color.red, lineWidth: 3)
                                                 )
                                         } else {
                                             RoundedRectangle(cornerRadius: 20).fill(Color("onyx").opacity(0.5))
@@ -56,13 +56,13 @@ struct Leaderboard: View {
                                                         .foregroundStyle(.secondary)
                                                     Text("\(player.points[0] ?? 0 > 0 ? "+" : "")\(player.points[0] ?? 0)")
                                                         .font(.caption2)
-                                                        .foregroundStyle(player.points[0]! < 0 ? .red : .green)
+                                                        .foregroundStyle(player.points[0]! < 0 ? .red : .bean)
                                                 }
                                             }
                                             Spacer()
                                             Image(systemName: index == 0 ? "minus" : player.points[0]! >= 0 ? "chevron.up.circle" : "chevron.down.circle")
                                                 .font(.title2.bold())
-                                                .foregroundStyle(index == 0 ? .secondary : player.points[0]! >= 0 ? Color.green : Color.red)
+                                                .foregroundStyle(index == 0 ? .secondary : player.points[0]! >= 0 ? Color.bean : Color.red)
                                         }
                                         .padding(.horizontal)
                                         .padding(.trailing, index == 0 ? 1 : 0)

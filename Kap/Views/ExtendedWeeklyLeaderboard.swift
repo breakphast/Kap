@@ -29,7 +29,7 @@ struct ExtendedWeeklyLeaderboard: View {
                             Text(player.name)
                                 .font(.headline.bold())
                             Text("\(player.points[0] ?? 0)")
-                                .foregroundStyle(player.points[0] ?? 0 > 0 ? .green : .red)
+                                .foregroundStyle(player.points[0] ?? 0 > 0 ? .bean : .red)
                                 .bold()
                         }
                     }

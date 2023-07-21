@@ -16,78 +16,73 @@ struct Home: View {
             ZStack {
                 Color("onyx").ignoresSafeArea()
                 
-                VStack {
-                    Text("Devsmond's League")
-                        .bold()
-                    
-                    VStack(alignment: .leading) {
-                        HStack {
-                            NavigationLink(destination: MyBets()) {
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .foregroundColor(.blue.opacity(0.8)) // Assuming you have defined a color extension for light blue
-                                    
-                                    Text("My Bets")
-                                        .font(.title2.bold())
-                                        .foregroundColor(.white)
-                                }
-                            }
-                            .frame(height: 200)
-                            
-                            Spacer()
-                            
+                VStack(alignment: .leading) {
+                    HStack {
+                        NavigationLink(destination: MyBets()) {
                             ZStack {
                                 RoundedRectangle(cornerRadius: 10)
-                                    .foregroundColor(.green.opacity(0.8)) // Assuming you have defined a color extension for light blue
+                                    .foregroundColor(.blue.opacity(0.8)) // Assuming you have defined a color extension for light blue
                                 
-                                Text("Profile")
-                                    .font(.title3)
-                                    .foregroundColor(.white)
-                            }
-                            .frame(height: 200)
-                        }
-                        
-                        NavigationLink(destination: Board()) {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 10)
-                                    .foregroundColor(.red.opacity(0.8)) // Assuming you have defined a color extension for light blue
-                                
-                                Text("BOARD")
+                                Text("My Bets")
                                     .font(.title2.bold())
                                     .foregroundColor(.white)
                             }
                         }
                         .frame(height: 200)
                         
-                        HStack {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 10)
-                                    .foregroundColor(.lion.opacity(0.8)) // Assuming you have defined a color extension for light blue
-                                
-                                Text("Stats & News")
-                                    .font(.title3)
-                                    .foregroundColor(.white)
-                            }
-                            .frame(height: 200)
+                        Spacer()
+                        
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 10)
+                                .foregroundColor(.bean.opacity(0.8)) // Assuming you have defined a color extension for light blue
                             
-                            Spacer()
+                            Text("Profile")
+                                .font(.title3)
+                                .foregroundColor(.white)
+                        }
+                        .frame(height: 200)
+                    }
+                    
+                    NavigationLink(destination: Board()) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 10)
+                                .foregroundColor(.red.opacity(0.8)) // Assuming you have defined a color extension for light blue
                             
-                            NavigationLink(destination: Betslip()) {
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .foregroundColor(.purple.opacity(0.8)) // Assuming you have defined a color extension for light blue
-                                    
-                                    Text("MyBets")
-                                        .font(.title3.bold())
-                                        .foregroundColor(.white)
-                                }
-                            }
-                            .frame(height: 200)
+                            Text("BOARD")
+                                .font(.title2.bold())
+                                .foregroundColor(.white)
                         }
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(24)
+                    .frame(height: 200)
+                    
+                    HStack {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 10)
+                                .foregroundColor(.lion.opacity(0.8)) // Assuming you have defined a color extension for light blue
+                            
+                            Text("Stats & News")
+                                .font(.title3)
+                                .foregroundColor(.white)
+                        }
+                        .frame(height: 200)
+                        
+                        Spacer()
+                        
+                        NavigationLink(destination: Betslip()) {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 10)
+                                    .foregroundColor(.purple.opacity(0.8)) // Assuming you have defined a color extension for light blue
+                                
+                                Text("MyBets")
+                                    .font(.title3.bold())
+                                    .foregroundColor(.white)
+                            }
+                        }
+                        .frame(height: 200)
+                    }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(24)
             }
             .task {
                 if viewModel.players.isEmpty {

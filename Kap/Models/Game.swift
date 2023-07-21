@@ -99,10 +99,6 @@ class Game {
         self.awaySpreadPriceTemp = awaySpreadPriceTemp
         self.overPriceTemp = overPriceTemp
         self.underPriceTemp = underPriceTemp
-        
-        homeTeam = nflTeams[gameElement.homeTeam] ?? ""
-        awayTeam = nflTeams[gameElement.awayTeam] ?? ""
-        
         self.betOptions = createBetOptions()
     }
     

@@ -17,7 +17,7 @@ struct Betslip: View {
         ZStack {
             Color.onyx.ignoresSafeArea()
             
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 VStack(spacing: 20) {
                     ForEach(viewModel.selectedBets, id: \.id) { bet in
                         BetView(bet: bet)
