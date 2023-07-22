@@ -13,6 +13,10 @@ struct Betslip: View {
     @Environment(\.viewModel) private var viewModel
     @Environment(\.dismiss) var dismiss
     
+    private let dismissThreshold: CGFloat = 100.0
+    @State private var offset: CGFloat = 0.0
+    @State private var shouldDismiss = false
+    
     var body: some View {
         ZStack {
             Color.onyx.ignoresSafeArea()
@@ -40,6 +44,28 @@ struct Betslip: View {
                 }
             }
         }
+        .gesture(
+            DragGesture()
+                .onChanged { value in
+                    // Only swipe from the leading edge
+                    if value.startLocation.x < 50 {
+                        self.offset = value.translation.width
+                    }
+                }
+                .onEnded { value in
+                    // Check if swipe distance is more than the threshold
+                    if value.translation.width > dismissThreshold {
+                        shouldDismiss = true
+                    } else {
+                        offset = 0
+                    }
+                }
+        )
+        .onChange(of: shouldDismiss, { oldValue, newValue in
+            withAnimation {
+                dismiss()
+            }
+        })
         .toolbar {
             ToolbarItem(placement: .principal) {
                 Text("Betslip")
