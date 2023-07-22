@@ -21,7 +21,7 @@ struct CustomButton: View {
             }
         }) {
             ZStack {
-                viewModel.selectedBets.contains(where: { $0.id == bet.id }) ? Color.onyxLight : Color.lion
+                viewModel.selectedBets.contains(where: { $0.id == bet.id }) ? Color.onyxLightish : Color.lion
                 Text(buttonText)
                     .font(.caption2.bold())
                     .fontDesign(.rounded)

@@ -27,7 +27,7 @@ struct Board: View {
                             }
                             
                             ToolbarItem(placement: .navigationBarTrailing) {
-                                if viewModel.selectedBets.count > 1 && calculateParlayOdds(bets: viewModel.selectedBets) > 0 {
+                                if viewModel.selectedBets.count > 1 && calculateParlayOdds(bets: viewModel.selectedBets) >= 400 {
                                     HStack(spacing: 2) {
                                         Image(systemName: "gift.fill")
                                         Text("+\(calculateParlayOdds(bets: viewModel.selectedBets))".replacingOccurrences(of: ",", with: ""))
@@ -71,7 +71,6 @@ struct Board: View {
                                     
                                     if parlay.totalOdds >= 400 {
                                         viewModel.activeParlays.append(parlay)
-                                        viewModel.activeButtons = [UUID]()
                                     }
                                 } else {
                                     viewModel.activeParlays = []
@@ -80,7 +79,8 @@ struct Board: View {
                     )
                 }
             }
-            .navigationBarBackButtonHidden()
+            .navigationBarTitleDisplayMode(.inline)
+
         }
     }
 }

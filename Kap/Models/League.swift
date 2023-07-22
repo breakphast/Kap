@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Observation
 
 class League {
     let leagueID: UUID
@@ -59,7 +60,7 @@ class Week {
     }
 }
 
-class Player {
+@Observable class Player {
     let id: UUID
     let user: User
     let league: League

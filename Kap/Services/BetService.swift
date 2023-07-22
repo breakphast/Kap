@@ -46,7 +46,10 @@ import SwiftUI
     
     func placeBet(bet: Bet, player: Player) {
         let placedBet = makeBet(for: bet.game, betOption: bet.betOption)
-        player.bets[0].append(placedBet)
+        
+        if !player.bets[0].contains(where: { $0.game.id == placedBet.game.id }) {
+            player.bets[0].append(placedBet)
+        }
     }
     
     func makeParlay(for bets: [Bet]) -> Parlay {

@@ -20,18 +20,18 @@ struct MyBets: View {
             
             TabView {
                 VStack {
-                    if viewModel.currentPlayer!.bets[0].isEmpty && viewModel.currentPlayer!.parlays.isEmpty {
+                    if viewModel.currentPlayer!.bets[0].filter({ $0.result == .pending }).isEmpty && viewModel.currentPlayer!.parlays.filter({ $0.result == .pending}).isEmpty {
                         Text("No active bets")
                             .foregroundColor(.white)
                             .font(.largeTitle.bold())
                     } else {
                         Text("Active")
-                            .font(.system(.subheadline, design: .rounded, weight: .bold))
+                            .font(.system(.body, design: .rounded, weight: .bold))
                             .foregroundStyle(.lion)
                         
                         ScrollView(showsIndicators: false) {
                             VStack(spacing: 20) {
-                                ForEach(viewModel.currentPlayer!.bets[0], id: \.id) { bet in
+                                ForEach(viewModel.currentPlayer!.bets[0].filter({ $0.result == .pending }), id: \.id) { bet in
                                     PlacedBetView(bet: bet)
                                 }
                                 ForEach(viewModel.currentPlayer!.parlays, id: \.id) { parlay in
@@ -49,18 +49,18 @@ struct MyBets: View {
                 .tabItem { Text("Active Bets") }
                 
                 VStack {
-                    if viewModel.currentPlayer!.bets[0].isEmpty && viewModel.currentPlayer!.parlays.isEmpty {
+                    if viewModel.currentPlayer!.bets[0].filter({ $0.result != .pending }).isEmpty && viewModel.currentPlayer!.parlays.filter({ $0.result != .pending }).isEmpty {
                         Text("No settled bets")
                             .foregroundColor(.white)
                             .font(.largeTitle.bold())
                     } else {
                         Text("Settled")
-                            .font(.system(.subheadline, design: .rounded, weight: .bold))
+                            .font(.system(.body, design: .rounded, weight: .bold))
                             .foregroundStyle(.lion)
                         
                         ScrollView(showsIndicators: false) {
                             VStack(spacing: 20) {
-                                ForEach(viewModel.currentPlayer!.bets[0], id: \.id) { bet in
+                                ForEach(viewModel.currentPlayer!.bets[0].filter({ $0.result != .pending }), id: \.id) { bet in
                                     PlacedBetView(bet: bet)
                                 }
                                 ForEach(viewModel.currentPlayer!.parlays, id: \.id) { parlay in
@@ -127,7 +127,7 @@ struct PlacedBetView: View {
                             Text(bet.type != .spread ? bet.type.rawValue : bet.betString)
                                 .font(.subheadline.bold())
                             Spacer()
-                            Text("(SNF \(viewModel.currentPlayer!.bets[0].map { $0.betOption.dayType == (bet.betOption.dayType) }.count)/1)")
+                            Text("(\(bet.betOption.dayType?.rawValue ?? "") \(viewModel.currentPlayer!.bets[0].filter({$0.betOption.dayType == bet.betOption.dayType}).count)/\(bet.betOption.maxBets ?? 0))")
                                 .font(.caption.bold())
                                 .foregroundStyle(.secondary)
                         }
@@ -171,7 +171,7 @@ struct PlacedBetView: View {
             VStack {
                 Image(systemName: bet.result == .win ? "checkmark.circle" : bet.result == .loss ? "xmark.circle" : "hourglass.circle")
                     .font(.largeTitle.bold())
-                    .foregroundColor(.bean)
+                    .foregroundColor(bet.result == .win ? .bean : bet.result == .loss ? .redd : .secondary)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
             .padding(24)
@@ -206,7 +206,7 @@ struct PlacedBetView: View {
                 .matchedGeometryEffect(id: "trash", in: trash)
             } else {
                 Image(systemName: "trash")
-                    .foregroundColor(.onyxLight.opacity(0.9))
+                    .foregroundColor(.onyxLightish)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                     .fontWeight(.bold)
                     .fontDesign(.rounded)
@@ -288,7 +288,7 @@ struct PlacedParlayView: View {
             VStack {
                 Image(systemName: parlay.result == .win ? "checkmark.circle" : parlay.result == .loss ? "xmark.circle" : "hourglass.circle")
                     .font(.largeTitle.bold())
-                    .foregroundColor(.bean)
+                    .foregroundColor(parlay.result == .win ? .bean : parlay.result == .loss ? .redd : .secondary)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
             .padding(.trailing, 24)
@@ -324,7 +324,7 @@ struct PlacedParlayView: View {
                 .matchedGeometryEffect(id: "trash", in: trash)
             } else {
                 Image(systemName: "trash")
-                    .foregroundColor(.onyxLight.opacity(0.9))
+                    .foregroundColor(.onyxLightish)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                     .font(.title2.bold())
                     .fontDesign(.rounded)

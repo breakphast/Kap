@@ -52,44 +52,55 @@ struct Betslip: View {
 struct BetView: View {
     @Environment(\.viewModel) private var viewModel
     @State var isValid = true
+    @State var isPlaced = false
+    @Environment(\.dismiss) var dismiss
     let bet: Bet
     
     var body: some View {
-        ZStack(alignment: .topLeading) {
+        ZStack(alignment: .center) {
             Color("onyxLightish")
-            HStack(spacing: 8) {
-                VStack(alignment: .leading, spacing: 12) {
-                    teamAndType
-                    pointsAndButtons
+            if isPlaced {
+                Label("Bet placed!", systemImage: "checkmark")
+                    .padding()
+                    .bold()
+            } else {
+                HStack(spacing: 8) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        teamAndType
+                        pointsAndButtons
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                    .padding([.horizontal, .top], 24)
+                    .padding(.bottom, 12)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                .padding(24)
+                .fontDesign(.rounded)
+                .foregroundStyle(.white)
+                .multilineTextAlignment(.leading)
             }
-            .fontDesign(.rounded)
-            .foregroundStyle(.white)
-            .multilineTextAlignment(.leading)
         }
         .cornerRadius(20)
         .padding(.horizontal, 20)
         .shadow(radius: 10)
         .onAppear {
-            isValid = !viewModel.currentPlayer!.bets[0].contains(where: { $0.betString == bet.betString })
+            isValid = viewModel.currentPlayer!.bets[0].filter({ $0.betOption.dayType == bet.betOption.dayType }).count < bet.betOption.maxBets ?? 0
+        }
+        .onChange(of: viewModel.currentPlayer!.bets[0].count) { oldValue, newValue in
+            isValid = viewModel.currentPlayer!.bets[0].filter({ $0.betOption.dayType == bet.betOption.dayType }).count < bet.betOption.maxBets ?? 0
         }
     }
     
     var pointsAndButtons: some View {
-        HStack {
+        VStack(alignment: .leading, spacing: 20) {
             VStack(alignment: .leading) {
                 Text("Points: \(bet.points ?? 0)")
                     .bold()
                 RoundedRectangle(cornerRadius: 1)
-                    .frame(width: 100, height: 2)
+                    .frame(width: 80, height: 2)
                     .foregroundStyle(.secondary)
             }
             
-            Spacer()
-            
             buttons
+                .frame(maxWidth: .infinity, alignment: .bottom)
         }
     }
     
@@ -109,7 +120,7 @@ struct BetView: View {
                     .foregroundStyle(.secondary)
                     .bold()
                 Spacer()
-                Text("(\(bet.betOption.dayType?.rawValue ?? "") \(viewModel.currentPlayer!.bets[0].map { $0.betOption.dayType == bet.betOption.dayType }.count)/\(bet.betOption.maxBets ?? 0))")
+                Text("(\(bet.betOption.dayType?.rawValue ?? "") \(viewModel.currentPlayer!.bets[0].filter({ $0.betOption.dayType == bet.betOption.dayType }).count)/\(bet.betOption.maxBets ?? 0))")
                     .font(.caption.bold())
                     .foregroundStyle(.secondary)
             }
@@ -117,16 +128,28 @@ struct BetView: View {
     }
     
     var buttons: some View {
-        VStack {
+        HStack {
             Button {
-                if !viewModel.currentPlayer!.bets[0].contains(where: { $0.id == bet.id }) {
-                    BetService().placeBet(bet: bet, player: viewModel.currentPlayer!)
-                    viewModel.activeButtons = [UUID]()
-                    viewModel.selectedBets.removeAll(where: { $0.id == bet.id })
+                withAnimation {
+                    let placedBet = BetService().makeBet(for: bet.game, betOption: bet.betOption)
+                    
+                    if !viewModel.currentPlayer!.bets[0].contains(where: { $0.game.id == placedBet.game.id }) {
+                        viewModel.currentPlayer!.bets[0].append(placedBet)
+                        isPlaced = true
+                        
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                            withAnimation {
+                                viewModel.selectedBets.removeAll(where: { $0.id == bet.id })
+                                if viewModel.selectedBets.count == 0 {
+                                    dismiss()
+                                }
+                            }
+                        }
+                    }
                 }
             } label: {
                 ZStack {
-                    Color.onyxLight
+                    Color.onyxLightish
                     Text("Place Bet")
                         .font(.system(.caption, design: .rounded, weight: .bold))
                         .foregroundStyle(isValid ? .lion : .white)
@@ -135,7 +158,7 @@ struct BetView: View {
                 .overlay {
                     Color.onyxLightish.opacity(isValid ? 0.0 : 0.7).ignoresSafeArea()
                 }
-                .frame(width: 80, height: 40)
+                .frame(width: 100, height: 50)
                 .cornerRadius(15)
                 .shadow(radius: 10)
             }
@@ -143,7 +166,9 @@ struct BetView: View {
             .disabled(!isValid)
             
             Button {
-                
+                withAnimation {
+                    viewModel.selectedBets.removeAll(where: { $0.id == bet.id })
+                }
             } label: {
                 ZStack {
                     Color.redd.opacity(0.8)
@@ -153,15 +178,11 @@ struct BetView: View {
                         .foregroundStyle(.white)
                         .lineLimit(2)
                 }
-                .overlay {
-                    Color.onyxLightish.opacity(isValid ? 0.0 : 0.7).ignoresSafeArea()
-                }
-                .frame(width: 80, height: 40)
+                .frame(width: 100, height: 50)
                 .cornerRadius(15)
                 .shadow(radius: 10)
             }
             .zIndex(100)
-            .disabled(!isValid)
         }
     }
 }
@@ -184,7 +205,7 @@ struct ParlayView: View {
                             
                             Text("+\(parlay.totalOdds)".replacingOccurrences(of: ",", with: ""))
                         }
-                        .font(.subheadline.bold())
+                        .bold()
                         
                         HStack {
                             Spacer()
@@ -200,8 +221,8 @@ struct ParlayView: View {
                                         .lineLimit(1)
                                 }
                             }
-                            .font(.caption2)
                             .foregroundStyle(.secondary)
+                            .font(.caption)
                         }
                         .frame(width: 200, alignment: .leading)
                         
@@ -210,7 +231,7 @@ struct ParlayView: View {
                                 Text("Points: \(parlay.totalPoints)")
                                     .bold()
                                 RoundedRectangle(cornerRadius: 1)
-                                    .frame(width: 100, height: 2)
+                                    .frame(width: 80, height: 2)
                                     .foregroundStyle(.secondary)
                             }
                             
@@ -237,51 +258,27 @@ struct ParlayView: View {
     }
     
     var buttons: some View {
-        VStack {
-            Button {
-                let placedParlay = BetService().makeParlay(for: parlay.bets)
-                viewModel.currentPlayer!.parlays.append(placedParlay)
-                viewModel.activeButtons = [UUID]()
-                viewModel.activeParlays = []
-            } label: {
-                ZStack {
-                    Color.onyxLight
-                    Text("Place Parlay")
-                        .font(.system(.caption, design: .rounded, weight: .bold))
-                        .foregroundStyle(.lion)
-                        .lineLimit(2)
-                }
-                .overlay {
-                    Color.onyxLightish.opacity(isValid ? 0.0 : 0.7).ignoresSafeArea()
-                }
-                .frame(width: 100, height: 40)
-                .cornerRadius(15)
-                .shadow(radius: 10)
+        Button {
+            let placedParlay = BetService().makeParlay(for: parlay.bets)
+            viewModel.currentPlayer!.parlays.append(placedParlay)
+            viewModel.activeParlays = []
+        } label: {
+            ZStack {
+                Color.onyxLightish
+                Text("Place Parlay")
+                    .font(.system(.caption, design: .rounded, weight: .bold))
+                    .foregroundStyle(.lion)
+                    .lineLimit(2)
             }
-            .zIndex(100)
-            .disabled(!isValid)
-            
-            Button {
-                
-            } label: {
-                ZStack {
-                    Color.redd.opacity(0.8)
-                    Text("Cancel Parlay")
-                        .font(.caption.bold())
-                        .fontDesign(.rounded)
-                        .foregroundStyle(.white)
-                        .lineLimit(2)
-                }
-                .overlay {
-                    Color.onyxLightish.opacity(isValid ? 0.0 : 0.7).ignoresSafeArea()
-                }
-                .frame(width: 100, height: 40)
-                .cornerRadius(15)
-                .shadow(radius: 10)
+            .overlay {
+                Color.onyxLightish.opacity(isValid ? 0.0 : 0.7).ignoresSafeArea()
             }
-            .zIndex(100)
-            .disabled(!isValid)
+            .frame(width: 100, height: 40)
+            .cornerRadius(15)
+            .shadow(radius: 10)
         }
+        .zIndex(100)
+        .disabled(!isValid)
     }
 }
 

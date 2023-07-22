@@ -19,7 +19,6 @@ import Observation
     var parlays: [Parlay] = []
     var weeklyGames: [[Game]] = [[]]
     var currentWeek = 0
-    var activeButtons: [UUID] = []
     var selectedBets: [Bet] = []
     var activeParlays: [Parlay] = []
     var currentPlayer: Player?
