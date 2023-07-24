@@ -14,13 +14,15 @@ struct MyBets: View {
     @Environment(\.viewModel) private var viewModel
     @Environment(\.dismiss) private var dismiss
     
+    @State private var bets: [Bet] = []
+    
     var body: some View {
         ZStack(alignment: .bottom) {
             Color.onyx.ignoresSafeArea()
             
             TabView {
                 VStack {
-                    if viewModel.currentPlayer!.bets[0].filter({ $0.result == .pending }).isEmpty && viewModel.currentPlayer!.parlays.filter({ $0.result == .pending}).isEmpty {
+                    if bets.filter({ $0.result == .pending }).isEmpty {
                         Text("No active bets")
                             .foregroundColor(.white)
                             .font(.largeTitle.bold())
@@ -31,7 +33,7 @@ struct MyBets: View {
                         
                         ScrollView(showsIndicators: false) {
                             VStack(spacing: 20) {
-                                ForEach(viewModel.currentPlayer!.bets[0].filter({ $0.result == .pending }), id: \.id) { bet in
+                                ForEach(bets.filter({ $0.result == .pending }), id: \.id) { bet in
                                     PlacedBetView(bet: bet)
                                 }
                                 ForEach(viewModel.currentPlayer!.parlays, id: \.id) { parlay in
@@ -49,7 +51,7 @@ struct MyBets: View {
                 .tabItem { Text("Active Bets") }
                 
                 VStack {
-                    if viewModel.currentPlayer!.bets[0].filter({ $0.result != .pending }).isEmpty && viewModel.currentPlayer!.parlays.filter({ $0.result != .pending }).isEmpty {
+                    if viewModel.bets.filter({ $0.result != .pending }).isEmpty && viewModel.parlays.filter({ $0.result != .pending }).isEmpty {
                         Text("No settled bets")
                             .foregroundColor(.white)
                             .font(.largeTitle.bold())
@@ -60,7 +62,7 @@ struct MyBets: View {
                         
                         ScrollView(showsIndicators: false) {
                             VStack(spacing: 20) {
-                                ForEach(viewModel.currentPlayer!.bets[0].filter({ $0.result != .pending }), id: \.id) { bet in
+                                ForEach(bets.filter({ $0.result != .pending }), id: \.id) { bet in
                                     PlacedBetView(bet: bet)
                                 }
                                 ForEach(viewModel.currentPlayer!.parlays, id: \.id) { parlay in
@@ -96,6 +98,16 @@ struct MyBets: View {
             }
         }
         .fontDesign(.rounded)
+        .onChange(of: viewModel.bets.count, { _, _ in
+            withAnimation {
+                bets = viewModel.bets
+            }
+        })
+        .onAppear {
+            withAnimation {
+                bets = viewModel.bets
+            }
+        }
     }
 }
 

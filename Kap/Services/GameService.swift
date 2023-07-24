@@ -5,6 +5,8 @@
 //  Created by Desmond Fitch on 7/13/23.
 //
 import Foundation
+import SwiftUI
+import Firebase
 
 struct ScoreElement: Codable {
     let id: String
@@ -59,5 +61,30 @@ extension Array {
         stride(from: 0, to: count, by: size).map {
             Array(self[$0..<Swift.min($0 + size, count)])
         }
+    }
+}
+
+extension Game {
+    var dictionary: [String: Any] {
+        return [
+            "id": id,
+            "homeTeam": homeTeam,
+            "awayTeam": awayTeam,
+            "date": Timestamp(date: Date()),
+            "betOptions": betOptions.map { $0.dictionary },
+            "homeSpread": homeSpread,
+            "awaySpread": awaySpread,
+            "homeMoneyLine": homeMoneyLine,
+            "awayMoneyLine": awayMoneyLine,
+            "over": over,
+            "under": under,
+            "completed": completed,
+            "homeScore": homeScore ?? NSNull(), // Handle optional values
+            "awayScore": awayScore ?? NSNull(),
+            "homeSpreadPriceTemp": homeSpreadPriceTemp,
+            "awaySpreadPriceTemp": awaySpreadPriceTemp,
+            "overPriceTemp": overPriceTemp,
+            "underPriceTemp": underPriceTemp
+        ]
     }
 }

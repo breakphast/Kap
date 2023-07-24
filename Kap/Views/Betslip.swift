@@ -156,13 +156,13 @@ struct BetView: View {
     var buttons: some View {
         HStack {
             Button {
-                withAnimation {
+                Task {
                     let placedBet = BetService().makeBet(for: bet.game, betOption: bet.betOption)
                     
                     if !viewModel.currentPlayer!.bets[0].contains(where: { $0.game.id == placedBet.game.id }) {
-                        viewModel.currentPlayer!.bets[0].append(placedBet)
+                        try await viewModel.addBet(bet: placedBet, player: viewModel.currentPlayer!)
+                        let _ = try await viewModel.fetchData()
                         isPlaced = true
-                        
                         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                             withAnimation {
                                 viewModel.selectedBets.removeAll(where: { $0.id == bet.id })

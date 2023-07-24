@@ -31,7 +31,7 @@ enum DayType: String {
 }
 
 @Observable class BetOption {
-    let id: UUID
+    var id: UUID
     let game: Game
     let betType: BetType
     var odds: Int
@@ -162,5 +162,47 @@ enum DayType: String {
         }
         
         return .pending
+    }
+}
+
+
+extension BetOption {
+    var dictionary: [String: Any] {
+        return [
+            "id": id.uuidString,
+            "betType": betType.rawValue,
+            "odds": odds,
+            "spread": spread ?? NSNull(),
+            "over": over,
+            "under": under,
+            "selectedTeam": selectedTeam ?? NSNull(),
+            "confirmBet": confirmBet,
+            "betString": betString,
+            "dayType": dayType?.rawValue ?? NSNull(),
+            "maxBets": maxBets ?? NSNull()
+        ]
+    }
+    
+    static func fromDictionary(_ dictionary: [String: Any], game: Game) -> BetOption? {
+        guard
+            let idString = dictionary["id"] as? String,
+            let id = UUID(uuidString: idString),
+            let betTypeString = dictionary["betType"] as? String,
+            let betType = BetType(rawValue: betTypeString),
+            let odds = dictionary["odds"] as? Int,
+            let over = dictionary["over"] as? Double,
+            let under = dictionary["under"] as? Double
+        else {
+            return nil
+        }
+        
+        let spread = dictionary["spread"] as? Double
+        let selectedTeam = dictionary["selectedTeam"] as? String
+        let confirmBet = dictionary["confirmBet"] as? Bool ?? false
+        let dayTypeString = dictionary["dayType"] as? String
+        
+        let betOption = BetOption(game: game, betType: betType, odds: odds, spread: spread, over: over, under: under, selectedTeam: selectedTeam, confirmBet: confirmBet)
+        betOption.id = id
+        return betOption
     }
 }

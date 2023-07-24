@@ -6,16 +6,20 @@
 //
 
 import SwiftUI
+import Firebase
 
 @main
 struct KapApp: App {
     @State private var viewModel = AppDataViewModel()
+
+    init() {
+        FirebaseApp.configure()
+    }
     
     var body: some Scene {
         WindowGroup {
             Home()
                 .environment(\.viewModel, viewModel)
-                .fontDesign(.rounded)
         }
     }
 }

@@ -7,9 +7,13 @@
 
 import SwiftUI
 import Observation
+import Firebase
+//import FirebaseFirestore
+import FirebaseFirestoreSwift
 
 struct Home: View {
     @Environment(\.viewModel) private var viewModel
+    @State private var showingSplashScreen = true
     
     var body: some View {
         TabView {
@@ -25,21 +29,52 @@ struct Home: View {
             
             Leaderboard()
                 .tabItem {
-                    Label("League", systemImage: "person.3")
+                    Label("Leaderboard", systemImage: "rosette")
                 }
             
-            Leaderboard()
-                .tabItem {
-                    Label("Profile", systemImage: "person.fill")
+            Button("Add games") {
+                Task {
+                    viewModel.addGames(games: viewModel.games)
                 }
+            }
+            .tabItem {
+                Label("Profile", systemImage: "person.fill")
+            }
         }
         .tint(.white)
         .task {
-            if viewModel.players.isEmpty {
-                let _ = await viewModel.getLeaderboardData()
-           
+            do {
+                if viewModel.players.isEmpty {
+                    let _ = await viewModel.getLeaderboardData()
+                    await viewModel.fetchGames()
+                    let _ = try await viewModel.fetchData()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        withAnimation(.smooth) {
+                            self.showingSplashScreen = false
+                        }
+                    }
+                }
+            } catch {
+                print("An error occurred: \(error)")
             }
         }
+
+        .overlay(
+            Group {
+                if showingSplashScreen {
+                    Color.lion
+                        .ignoresSafeArea()
+                        .overlay(
+                            Image(.mün)
+                                .resizable()
+                                .frame(width: 200, height: 200)
+                                .scaledToFit()
+                                .clipShape(RoundedRectangle(cornerRadius: 40))
+                                .shadow(radius: 4)
+                        )
+                }
+            }
+        )
     }
 }
 

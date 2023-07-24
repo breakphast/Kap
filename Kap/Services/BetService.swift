@@ -8,10 +8,31 @@
 import Foundation
 import Observation
 import SwiftUI
+import Firebase
 
 @Observable class BetService {
     var games: [Game] = []
     var viewModel = AppDataViewModel()
+    
+//    private let db = Firestore.firestore()
+//    
+//    func fetchData() {
+//        db.collection("bets").addSnapshotListener { (querySnapshot, error) in
+//            guard let documents = querySnapshot?.documents else {
+//                print("No documents")
+//                return
+//            }
+//            
+//            self.bets = documents.map { (queryDocumentSnapshot) -> Bet in
+//                let data = queryDocumentSnapshot.data()
+//                let id = data["id"] as? String ?? ""
+//                let amount = data["amount"] as? Double ?? 0.0
+//                let description = data["description"] as? String ?? ""
+//                // ... Add other properties here
+//                return Bet(id: id, amount: amount, description: description)
+//            }
+//        }
+//    }
 
     func fetchGames() async throws {
         do {
@@ -39,7 +60,7 @@ import SwiftUI
     }
 
     func makeBet(for game: Game, betOption: BetOption) -> Bet {
-        let bet = Bet(id: UUID(), betOption: betOption, game: game, type: betOption.betType, result: .pending, odds: betOption.odds, selectedTeam: betOption.selectedTeam)
+        let bet = Bet(id: UUID(), betOption: betOption, game: game, type: betOption.betType, result: [.pending, .loss, .win].randomElement(), odds: betOption.odds, selectedTeam: betOption.selectedTeam)
         
         return bet
     }
