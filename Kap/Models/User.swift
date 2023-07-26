@@ -6,19 +6,32 @@
 //
 
 import Foundation
+import Firebase
+import FirebaseFirestoreSwift
 
-class User {
-    var userID: UUID
+struct User: Codable, Identifiable {
+    @DocumentID var id: String?
     var email: String
-    var password: String
     var name: String
-    var leagues: [League]
-    
-    init(userID: UUID, email: String, password: String, name: String, leagues: [League]) {
-        self.userID = userID
-        self.email = email
-        self.password = password
-        self.name = name
-        self.leagues = leagues
-    }
+    var leagues: [String]  // Store league IDs the user is part of
 }
+
+//@Observable class Player {
+//    let id: UUID
+//    let user: User
+//    let league: League
+//    var name: String
+//    var bets: [[Bet]]
+//    var parlays: [Parlay]
+//    var points: [Int: Int]
+//    
+//    init(id: UUID, user: User, league: League, name: String, bets: [[Bet]], parlays: [Parlay], points: [Int: Int]) {
+//        self.id = id
+//        self.user = user
+//        self.league = league
+//        self.name = name
+//        self.bets = bets
+//        self.parlays = parlays
+//        self.points = Dictionary(uniqueKeysWithValues: (0...16).map { ($0, 0) })
+//    }
+//}

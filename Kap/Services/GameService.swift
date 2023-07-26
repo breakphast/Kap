@@ -37,6 +37,108 @@ class GameService {
         return games
     }
     
+    func fetchGamesFromFirestore() async throws -> [Game] {
+        let db = Firestore.firestore()
+        let querySnapshot = try await db.collection("nflGames").getDocuments()
+
+        return querySnapshot.documents.map { queryDocumentSnapshot -> Game in
+            let data = queryDocumentSnapshot.data()
+            let id = data["id"] as? String ?? ""
+            let homeTeam = data["homeTeam"] as? String ?? ""
+            let awayTeam = data["awayTeam"] as? String ?? ""
+            let date = (data["date"] as? Timestamp)?.dateValue() ?? Date()
+            let homeSpread = data["homeSpread"] as? Double ?? 0.0
+            let awaySpread = data["awaySpread"] as? Double ?? 0.0
+            let homeMoneyLine = data["homeMoneyLine"] as? Int ?? 0
+            let awayMoneyLine = data["awayMoneyLine"] as? Int ?? 0
+            let over = data["over"] as? Double ?? 0.0
+            let under = data["under"] as? Double ?? 0.0
+            let completed = data["completed"] as? Bool ?? false
+            let homeScore = data["homeScore"] as? String
+            let awayScore = data["awayScore"] as? String
+            let homeSpreadPriceTemp = data["homeSpreadPriceTemp"] as? Double ?? 0.0
+            let awaySpreadPriceTemp = data["awaySpreadPriceTemp"] as? Double ?? 0.0
+            let overPriceTemp = data["overPriceTemp"] as? Double ?? 0.0
+            let underPriceTemp = data["underPriceTemp"] as? Double ?? 0.0
+
+            let gameElement = GameElement(id: id, sportKey: .football_nfl, sportTitle: .NFL, commenceTime: date, completed: completed, homeTeam: homeTeam, awayTeam: awayTeam, bookmakers: nil, scores: [Score(name: homeTeam, score: homeScore ?? ""), Score(name: awayTeam, score: awayScore ?? "")])
+
+            let game = Game(gameElement: gameElement)
+            game.homeSpread = homeSpread
+            game.awaySpread = awaySpread
+            game.homeMoneyLine = homeMoneyLine
+            game.awayMoneyLine = awayMoneyLine
+            game.over = over
+            game.under = under
+            game.homeSpreadPriceTemp = homeSpreadPriceTemp
+            game.awaySpreadPriceTemp = awaySpreadPriceTemp
+            game.overPriceTemp = overPriceTemp
+            game.underPriceTemp = underPriceTemp
+            game.completed = completed
+            
+            if let betOptionsDictionaries = data["betOptions"] as? [[String: Any]] {
+                game.betOptions = betOptionsDictionaries.compactMap {
+                    BetOption.fromDictionary($0, game: game)
+                }
+            }
+            return game
+        }
+    }
+    
+    func addGames(games: [Game]) {
+        let db = Firestore.firestore()
+        let ref = db.collection("nflGames")
+        for game in games {
+            ref.addDocument(data: game.dictionary) { error in
+                if let error = error {
+                    print("Error adding game: \(error.localizedDescription)")
+                } else {
+                    print("Game successfully added!")
+                }
+            }
+        }
+    }
+    
+    func updateDayType(for games: inout [Game]) {
+        for game in games.prefix(1) {
+            game.betOptions = game.betOptions.map { bet in
+                let mutableBet = bet
+                mutableBet.dayType = .tnf
+                mutableBet.maxBets = 1
+                return mutableBet
+            }
+        }
+        
+        let sundayAfternoonGamesCount = games.count - 3
+        for game in games.dropFirst().prefix(sundayAfternoonGamesCount) {
+            game.betOptions = game.betOptions.map { bet in
+                let mutableBet = bet
+                mutableBet.dayType = .sunday
+                mutableBet.maxBets = 3
+                return mutableBet
+            }
+        }
+        
+        for game in games.dropFirst(sundayAfternoonGamesCount + 1).prefix(1) {
+            game.betOptions = game.betOptions.map { bet in
+                let mutableBet = bet
+                mutableBet.dayType = .snf
+                mutableBet.maxBets = 1
+                return mutableBet
+            }
+        }
+        
+        for game in games.suffix(1) {
+            game.betOptions = game.betOptions.map { bet in
+                let mutableBet = bet
+                mutableBet.dayType = .mnf
+                mutableBet.maxBets = 1
+                return mutableBet
+            }
+        }
+    }
+
+    
     private func loadnflData() async throws -> Data {
         guard let url = Bundle.main.url(forResource: "nflData", withExtension: "json") else {
             throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Unable to locate nflData.json"])

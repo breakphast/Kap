@@ -18,7 +18,7 @@ struct Board: View {
                 Color("onyx").ignoresSafeArea()
                 
                 ScrollView(showsIndicators: false) {
-                    GameListingView(players: viewModel.players)
+                    GameListingView()
                         .navigationBarBackButtonHidden()
                         .toolbar {
                             ToolbarItem(placement: .topBarLeading) {
@@ -67,7 +67,7 @@ struct Board: View {
                             .onEnded { _ in
                                 if viewModel.selectedBets.count > 1 {
                                     viewModel.activeParlays = []
-                                    let parlay = BetService().makeParlay(for: viewModel.selectedBets)
+                                    let parlay = ParlayViewModel().makeParlay(for: viewModel.selectedBets)
                                     
                                     if parlay.totalOdds >= 400 {
                                         viewModel.activeParlays.append(parlay)
@@ -91,7 +91,6 @@ struct Board: View {
 
 struct GameListingView: View {
     @Environment(\.viewModel) private var viewModel
-    var players: [Player]
     
     private var thursdayNightGame: [Game] {
         Array(viewModel.games.prefix(1))
@@ -156,7 +155,7 @@ struct GameRow: View {
             
             Spacer()
             
-            let bets = AppDataViewModel().generateBetsForGame(game)
+            let bets = BetViewModel().generateBetsForGame(game)
             
             LazyVGrid(columns: columns, spacing: 10) {
                 ForEach(bets, id: \.id) { bet in

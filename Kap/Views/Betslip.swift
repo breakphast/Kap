@@ -108,10 +108,10 @@ struct BetView: View {
         .padding(.horizontal, 20)
         .shadow(radius: 10)
         .onAppear {
-            isValid = viewModel.currentPlayer!.bets[0].filter({ $0.betOption.dayType == bet.betOption.dayType }).count < bet.betOption.maxBets ?? 0
+            isValid = viewModel.bets.filter({ $0.betOption.dayType == bet.betOption.dayType }).count < bet.betOption.maxBets ?? 0
         }
-        .onChange(of: viewModel.currentPlayer!.bets[0].count) { oldValue, newValue in
-            isValid = viewModel.currentPlayer!.bets[0].filter({ $0.betOption.dayType == bet.betOption.dayType }).count < bet.betOption.maxBets ?? 0
+        .onChange(of: viewModel.bets.count) { oldValue, newValue in
+            isValid = viewModel.bets.filter({ $0.betOption.dayType == bet.betOption.dayType }).count < bet.betOption.maxBets ?? 0
         }
     }
     
@@ -146,7 +146,7 @@ struct BetView: View {
                     .foregroundStyle(.secondary)
                     .bold()
                 Spacer()
-                Text("(\(bet.betOption.dayType?.rawValue ?? "") \(viewModel.currentPlayer!.bets[0].filter({ $0.betOption.dayType == bet.betOption.dayType }).count)/\(bet.betOption.maxBets ?? 0))")
+                Text("(\(bet.betOption.dayType?.rawValue ?? "") \(viewModel.bets.filter({ $0.betOption.dayType == bet.betOption.dayType }).count)/\(bet.betOption.maxBets ?? 0))")
                     .font(.caption.bold())
                     .foregroundStyle(.secondary)
             }
@@ -157,11 +157,11 @@ struct BetView: View {
         HStack {
             Button {
                 Task {
-                    let placedBet = BetService().makeBet(for: bet.game, betOption: bet.betOption)
+                    let placedBet = BetViewModel().makeBet(for: bet.game, betOption: bet.betOption)
                     
-                    if !viewModel.currentPlayer!.bets[0].contains(where: { $0.game.id == placedBet.game.id }) {
-                        try await viewModel.addBet(bet: placedBet, player: viewModel.currentPlayer!)
-                        let _ = try await viewModel.fetchData()
+                    if !viewModel.bets.contains(where: { $0.game.id == placedBet.game.id }) {
+                        try await BetViewModel().addBet(bet: placedBet)
+                        let _ = try await BetViewModel().fetchBets(games: viewModel.games)
                         isPlaced = true
                         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                             withAnimation {
@@ -235,7 +235,7 @@ struct ParlayView: View {
                         
                         HStack {
                             Spacer()
-                            Text("Parlay Bonus (\(viewModel.currentPlayer!.parlays.count)/1)")
+                            Text("Parlay Bonus (\(viewModel.parlays.count)/1)")
                                 .font(.caption.bold())
                                 .foregroundStyle(.secondary)
                         }
@@ -279,14 +279,17 @@ struct ParlayView: View {
         .padding(.horizontal, 20)
         .shadow(radius: 10)
         .onAppear {
-            isValid = viewModel.currentPlayer!.parlays.count == 0
+            isValid = viewModel.parlays.count == 0
         }
     }
     
     var buttons: some View {
         Button {
-            let placedParlay = BetService().makeParlay(for: parlay.bets)
-            viewModel.currentPlayer!.parlays.append(placedParlay)
+            let placedParlay = ParlayViewModel().makeParlay(for: parlay.bets)
+            Task {
+                try await ParlayViewModel().addParlay(parlay: placedParlay)
+                viewModel.parlays.append(placedParlay)
+            }
             viewModel.activeParlays = []
         } label: {
             ZStack {

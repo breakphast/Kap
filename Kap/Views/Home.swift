@@ -27,14 +27,14 @@ struct Home: View {
                     Label("My Bets", systemImage: "checklist")
                 }
             
-            Leaderboard()
+            Board()
                 .tabItem {
                     Label("Leaderboard", systemImage: "rosette")
                 }
             
             Button("Add games") {
                 Task {
-                    viewModel.addGames(games: viewModel.games)
+                    GameService().addGames(games: viewModel.games)
                 }
             }
             .tabItem {
@@ -44,18 +44,17 @@ struct Home: View {
         .tint(.white)
         .task {
             do {
-                if viewModel.players.isEmpty {
-                    let _ = await viewModel.getLeaderboardData()
-                    await viewModel.fetchGames()
-                    let _ = try await viewModel.fetchData()
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                        withAnimation(.smooth) {
-                            self.showingSplashScreen = false
-                        }
-                    }
-                }
+                var games = try await GameService().fetchGamesFromFirestore()
+                GameService().updateDayType(for: &games)
+                viewModel.games = games
             } catch {
-                print("An error occurred: \(error)")
+                print("Error fetching games: \(error)")
+            }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                withAnimation(.smooth) {
+                    self.showingSplashScreen = false
+                }
             }
         }
 

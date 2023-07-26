@@ -36,7 +36,7 @@ struct MyBets: View {
                                 ForEach(bets.filter({ $0.result == .pending }), id: \.id) { bet in
                                     PlacedBetView(bet: bet)
                                 }
-                                ForEach(viewModel.currentPlayer!.parlays, id: \.id) { parlay in
+                                ForEach(viewModel.parlays, id: \.id) { parlay in
                                     PlacedParlayView(parlay: parlay)
                                 }
                                 Rectangle()
@@ -65,7 +65,7 @@ struct MyBets: View {
                                 ForEach(bets.filter({ $0.result != .pending }), id: \.id) { bet in
                                     PlacedBetView(bet: bet)
                                 }
-                                ForEach(viewModel.currentPlayer!.parlays, id: \.id) { parlay in
+                                ForEach(viewModel.parlays, id: \.id) { parlay in
                                     PlacedParlayView(parlay: parlay)
                                 }
                                 Rectangle()
@@ -139,7 +139,7 @@ struct PlacedBetView: View {
                             Text(bet.type != .spread ? bet.type.rawValue : bet.betString)
                                 .font(.subheadline.bold())
                             Spacer()
-                            Text("(\(bet.betOption.dayType?.rawValue ?? "") \(viewModel.currentPlayer!.bets[0].filter({$0.betOption.dayType == bet.betOption.dayType}).count)/\(bet.betOption.maxBets ?? 0))")
+                            Text("(\(bet.betOption.dayType?.rawValue ?? "") \(viewModel.bets.filter({$0.betOption.dayType == bet.betOption.dayType}).count)/\(bet.betOption.maxBets ?? 0))")
                                 .font(.caption.bold())
                                 .foregroundStyle(.secondary)
                         }
@@ -197,7 +197,7 @@ struct PlacedBetView: View {
                         .padding(.bottom, 12)
                         .onTapGesture {
                             withAnimation {
-                                viewModel.currentPlayer!.bets[0].removeAll(where: { $0.id == bet.id })
+                                viewModel.bets.removeAll(where: { $0.id == bet.id })
                                 deleteActive.toggle()
                             }
                         }

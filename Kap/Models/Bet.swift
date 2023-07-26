@@ -9,28 +9,7 @@ import Foundation
 import SwiftUI
 import Observation
 
-enum BetType: String {
-    case spread = "Spread"
-    case moneyline = "Moneyline"
-    case over = "Over"
-    case under = "Under"
-}
-
-enum BetResult: String {
-    case win = "Win"
-    case loss = "Loss"
-    case push = "Push"
-    case pending = "Pending"
-}
-
-enum DayType: String {
-    case tnf = "TNF"
-    case sunday = "SUN"
-    case snf = "SNF"
-    case mnf = "MNF"
-}
-
-@Observable class BetOption {
+class BetOption {
     var id: UUID
     let game: Game
     let betType: BetType
@@ -75,7 +54,7 @@ enum DayType: String {
     }
 }
 
-@Observable class Bet {
+class Bet {
     let id: UUID
     let betOption: BetOption
     let game: Game
@@ -205,4 +184,25 @@ extension BetOption {
         betOption.id = id
         return betOption
     }
+}
+
+enum BetType: String {
+    case spread = "Spread"
+    case moneyline = "Moneyline"
+    case over = "Over"
+    case under = "Under"
+}
+
+enum BetResult: String {
+    case win = "Win"
+    case loss = "Loss"
+    case push = "Push"
+    case pending = "Pending"
+}
+
+enum DayType: String {
+    case tnf = "TNF"
+    case sunday = "SUN"
+    case snf = "SNF"
+    case mnf = "MNF"
 }
