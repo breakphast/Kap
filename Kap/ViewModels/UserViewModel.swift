@@ -57,24 +57,4 @@ class UserViewModel: ObservableObject {
             }
         }
     }
-
-    // Add bet to user
-//    func addBetToUser(userId: String, bet: Bet) {
-//        guard let user = user else { return }
-//        
-//        var updatedUser = user
-//        updatedUser.bets.append(bet)
-//        
-//        updateUser(user: updatedUser)
-//    }
-
-    // Add parlay to user
-    func addParlayToUser(userId: String, parlay: Parlay) {
-        guard let user = user else { return }
-        
-        var updatedUser = user
-//        updatedUser.parlays.append(parlay)
-        
-        updateUser(user: updatedUser)
-    }
 }

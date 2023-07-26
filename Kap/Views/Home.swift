@@ -47,6 +47,17 @@ struct Home: View {
                 var games = try await GameService().fetchGamesFromFirestore()
                 GameService().updateDayType(for: &games)
                 viewModel.games = games
+                
+                let leagueViewModel = LeagueViewModel()
+                
+                // Creating a new league
+                let newLeagueId = try await leagueViewModel.createNewLeague(league: League(id: UUID().uuidString, name: "LOWNG JOwn", players: []))
+                
+                // Create a new player from the user ID
+                let playerId = try await leagueViewModel.createPlayerFromUserId(userId: viewModel.users[0].id ?? "")
+                
+                // Add this player to the newly created league
+                try await leagueViewModel.addPlayerToLeague(leagueId: newLeagueId, playerId: playerId)
             } catch {
                 print("Error fetching games: \(error)")
             }
@@ -57,7 +68,6 @@ struct Home: View {
                 }
             }
         }
-
         .overlay(
             Group {
                 if showingSplashScreen {

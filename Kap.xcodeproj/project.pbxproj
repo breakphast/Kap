@@ -32,6 +32,8 @@
 		3EFA18712A7094F2002D6E94 /* UserViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EFA18702A7094F2002D6E94 /* UserViewModel.swift */; };
 		3EFA18732A709843002D6E94 /* BetViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EFA18722A709843002D6E94 /* BetViewModel.swift */; };
 		3EFA18772A709A99002D6E94 /* ParlayViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EFA18762A709A99002D6E94 /* ParlayViewModel.swift */; };
+		3EFA18792A70C192002D6E94 /* LeagueViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EFA18782A70C192002D6E94 /* LeagueViewModel.swift */; };
+		3EFA187B2A70C1C7002D6E94 /* PlayerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EFA187A2A70C1C7002D6E94 /* PlayerViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -58,6 +60,8 @@
 		3EFA18702A7094F2002D6E94 /* UserViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserViewModel.swift; sourceTree = "<group>"; };
 		3EFA18722A709843002D6E94 /* BetViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BetViewModel.swift; sourceTree = "<group>"; };
 		3EFA18762A709A99002D6E94 /* ParlayViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParlayViewModel.swift; sourceTree = "<group>"; };
+		3EFA18782A70C192002D6E94 /* LeagueViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeagueViewModel.swift; sourceTree = "<group>"; };
+		3EFA187A2A70C1C7002D6E94 /* PlayerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -119,7 +123,9 @@
 			children = (
 				3EE35E5F2A60DBE80026F952 /* AppDataViewModel.swift */,
 				3EFA18702A7094F2002D6E94 /* UserViewModel.swift */,
+				3EFA18782A70C192002D6E94 /* LeagueViewModel.swift */,
 				3EFA18722A709843002D6E94 /* BetViewModel.swift */,
+				3EFA187A2A70C1C7002D6E94 /* PlayerViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -257,8 +263,10 @@
 				3EE35E552A60D77A0026F952 /* User.swift in Sources */,
 				3EE35E532A5F86CB0026F952 /* Home.swift in Sources */,
 				3E5D8D232A639B5300634DBE /* Board.swift in Sources */,
+				3EFA187B2A70C1C7002D6E94 /* PlayerViewModel.swift in Sources */,
 				3EA650412A5F7565007CA5ED /* KapApp.swift in Sources */,
 				3EFA18712A7094F2002D6E94 /* UserViewModel.swift in Sources */,
+				3EFA18792A70C192002D6E94 /* LeagueViewModel.swift in Sources */,
 				3EE35E5B2A60D7F00026F952 /* Parlay.swift in Sources */,
 				3EE35E662A60E3940026F952 /* GameService.swift in Sources */,
 				3EE35E602A60DBE80026F952 /* AppDataViewModel.swift in Sources */,

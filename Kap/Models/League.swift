@@ -13,5 +13,5 @@ import FirebaseFirestoreSwift
 struct League: Codable, Identifiable {
     @DocumentID var id: String?
     var name: String
-    var members: [String]
+    var players: [String]
 }
