@@ -34,7 +34,7 @@ struct MyBets: View {
                         ScrollView(showsIndicators: false) {
                             VStack(spacing: 20) {
                                 ForEach(bets.filter({ $0.result == .pending }), id: \.id) { bet in
-                                    PlacedBetView(bet: bet)
+                                    PlacedBetView(bet: bet, bets: bets)
                                 }
                                 ForEach(viewModel.parlays, id: \.id) { parlay in
                                     PlacedParlayView(parlay: parlay)
@@ -51,7 +51,7 @@ struct MyBets: View {
                 .tabItem { Text("Active Bets") }
                 
                 VStack {
-                    if viewModel.bets.filter({ $0.result != .pending }).isEmpty && viewModel.parlays.filter({ $0.result != .pending }).isEmpty {
+                    if bets.filter({ $0.result != .pending }).isEmpty && viewModel.parlays.filter({ $0.result != .pending }).isEmpty {
                         Text("No settled bets")
                             .foregroundColor(.white)
                             .font(.largeTitle.bold())
@@ -63,7 +63,7 @@ struct MyBets: View {
                         ScrollView(showsIndicators: false) {
                             VStack(spacing: 20) {
                                 ForEach(bets.filter({ $0.result != .pending }), id: \.id) { bet in
-                                    PlacedBetView(bet: bet)
+                                    PlacedBetView(bet: bet, bets: bets)
                                 }
                                 ForEach(viewModel.parlays, id: \.id) { parlay in
                                     PlacedParlayView(parlay: parlay)
@@ -103,11 +103,15 @@ struct MyBets: View {
                 bets = viewModel.bets
             }
         })
-        .onAppear {
-            withAnimation {
-                bets = viewModel.bets
+        .task {
+            do {
+                let fetchedBets = try await BetViewModel().fetchBets(games: viewModel.games)
+                self.bets = fetchedBets
+            } catch {
+                print("Error fetching bets: \(error)")
             }
         }
+
     }
 }
 
@@ -120,6 +124,7 @@ struct PlacedBetView: View {
     @State var deleteActive = false
     @Namespace var trash
     let bet: Bet
+    let bets: [Bet]
     
     var body: some View {
         ZStack(alignment: .topLeading) {
@@ -139,7 +144,7 @@ struct PlacedBetView: View {
                             Text(bet.type != .spread ? bet.type.rawValue : bet.betString)
                                 .font(.subheadline.bold())
                             Spacer()
-                            Text("(\(bet.betOption.dayType?.rawValue ?? "") \(viewModel.bets.filter({$0.betOption.dayType == bet.betOption.dayType}).count)/\(bet.betOption.maxBets ?? 0))")
+                            Text("(\(bet.betOption.dayType?.rawValue ?? "") \(bets.filter({$0.betOption.dayType == bet.betOption.dayType}).count)/\(bet.betOption.maxBets ?? 0))")
                                 .font(.caption.bold())
                                 .foregroundStyle(.secondary)
                         }
