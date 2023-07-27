@@ -8,18 +8,29 @@ class LeagueViewModel {
     // CREATE: Create a new league
     func createNewLeague(league: League) async throws -> String {
         return try await withCheckedThrowingContinuation { continuation in
-            db.collection("leagues").addDocument(data: [
+            // Exclude the id from the data you're sending to Firestore
+            let data: [String: Any] = [
                 "name": league.name,
                 "players": league.players
-            ]) { error in
+            ]
+
+            // Create a new document reference with an auto-generated ID
+            let newLeagueDocument = db.collection("leagues").document()
+
+            // Get the ID before setting the data
+            let leagueId = newLeagueDocument.documentID
+
+            newLeagueDocument.setData(data) { error in
                 if let error = error {
                     continuation.resume(throwing: error)
                 } else {
-                    continuation.resume(returning: "League created successfully")
+                    continuation.resume(returning: leagueId) // Return the new league's ID
                 }
             }
         }
     }
+
+
     
     // UPDATE: Add player (a Player's ID) to a league
     func addPlayerToLeague(leagueId: String, playerId: String) async throws {
@@ -40,7 +51,9 @@ class LeagueViewModel {
     func createPlayerFromUserId(userId: String) async throws -> String {
         return try await withCheckedThrowingContinuation { continuation in
             let newDocument = db.collection("players").document()
-            let playerData: [String: Any] = ["user": ["id": userId]]
+            let playerData: [String: Any] = [
+                "user": ["id": userId]
+            ]
             
             newDocument.setData(playerData) { error in
                 if let error = error {

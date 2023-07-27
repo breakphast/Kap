@@ -20,6 +20,10 @@ import FirebaseFirestore
     var selectedBets: [Bet] = []
     var activeParlays: [Parlay] = []
     
+    var activePlayer: Player?
+    var activeUser: User?
+    var currentWeek: Int?
+    
     init() {
         self.users = [
             User(email: "desmond@gmail.com", name: "ThePhast", leagues: []),

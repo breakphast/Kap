@@ -44,20 +44,25 @@ struct Home: View {
         .tint(.white)
         .task {
             do {
+                let users = try await UserViewModel().fetchAllUsers()
+                viewModel.users = users
+                viewModel.activeUser = users[0]
+                
                 var games = try await GameService().fetchGamesFromFirestore()
                 GameService().updateDayType(for: &games)
                 viewModel.games = games
                 
-                let leagueViewModel = LeagueViewModel()
+//                let bets = try await BetViewModel().fetchBets(games: games)
+//                viewModel.bets = bets
                 
-                // Creating a new league
-                let newLeagueId = try await leagueViewModel.createNewLeague(league: League(id: UUID().uuidString, name: "LOWNG JOwn", players: []))
+//                let newLeagueId = try await leagueViewModel.createNewLeague(league: League(name: "Ringus Mingus Townhomes", players: []))
+//
+//                if let user = viewModel.activeUser {
+//                    let playerId = try await leagueViewModel.createPlayerFromUserId(userId: user.id ?? "")
+//                    
+//                    try await leagueViewModel.addPlayerToLeague(leagueId: newLeagueId, playerId: playerId)
+//                }
                 
-                // Create a new player from the user ID
-                let playerId = try await leagueViewModel.createPlayerFromUserId(userId: viewModel.users[0].id ?? "")
-                
-                // Add this player to the newly created league
-                try await leagueViewModel.addPlayerToLeague(leagueId: newLeagueId, playerId: playerId)
             } catch {
                 print("Error fetching games: \(error)")
             }

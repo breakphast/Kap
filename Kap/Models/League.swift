@@ -14,4 +14,7 @@ struct League: Codable, Identifiable {
     @DocumentID var id: String?
     var name: String
     var players: [String]
+//    var bets: [Bet] = []
+//    var parlays: [Parlay] = []
+//    var leaderboards: [[Player]] = [[]]
 }

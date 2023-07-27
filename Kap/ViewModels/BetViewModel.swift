@@ -42,9 +42,11 @@ class BetViewModel {
             let odds = data["odds"] as? Int ?? 0
             let result = data["result"] as? String ?? ""
             let selectedTeam = data["selectedTeam"] as? String ?? ""
+            let playerID = data["playerID"] as? String ?? ""
+            let week = data["week"] as? Int ?? 0
             let (foundGame, foundBetOption) = self.findBetOption(games: games, gameID: game, betOptionID: betOption)
             
-            let bet = Bet(id: UUID(uuidString: id)!, betOption: foundBetOption!, game: foundGame!, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam)
+            let bet = Bet(id: UUID(uuidString: id)!, betOption: foundBetOption!, game: foundGame!, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week)
             
             return bet
         }
@@ -64,14 +66,16 @@ class BetViewModel {
             "points": bet.points ?? 0,
             "stake": 100,
             "betString": bet.betString,
-            "selectedTeam": bet.selectedTeam ?? ""
+            "selectedTeam": bet.selectedTeam ?? "",
+            "playerID": bet.playerID,
+            "week": bet.week
         ]
         
         let _ = try await db.collection("bets").addDocument(data: newBet)
     }
     
-    func makeBet(for game: Game, betOption: BetOption) -> Bet {
-        let bet = Bet(id: UUID(), betOption: betOption, game: game, type: betOption.betType, result: [.pending, .loss, .win].randomElement(), odds: betOption.odds, selectedTeam: betOption.selectedTeam)
+    func makeBet(for game: Game, betOption: BetOption, playerID: String, week: Int) -> Bet {
+        let bet = Bet(id: UUID(), betOption: betOption, game: game, type: betOption.betType, result: [.pending, .loss, .win].randomElement(), odds: betOption.odds, selectedTeam: betOption.selectedTeam, playerID: playerID, week: week)
         
         return bet
     }
@@ -103,7 +107,7 @@ class BetViewModel {
                 team = game.homeTeam
             }
             
-            let bet = Bet(id: UUID(), betOption: options[i], game: game, type: type, result: .pending, odds: options[i].odds, selectedTeam: team)
+            let bet = Bet(id: UUID(), betOption: options[i], game: game, type: type, result: .pending, odds: options[i].odds, selectedTeam: team, playerID: "", week: 0)
             bets.append(bet)
         }
         let betss = [0, 4, 2, 3, 1, 5].compactMap { index in

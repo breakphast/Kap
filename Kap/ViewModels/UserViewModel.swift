@@ -11,6 +11,17 @@ import FirebaseFirestoreSwift
 class UserViewModel: ObservableObject {
     @Published var user: User?
     private var db = Firestore.firestore()
+    
+    func fetchAllUsers() async throws -> [User] {
+        let querySnapshot = try await db.collection("users").getDocuments()
+
+        let users: [User] = querySnapshot.documents.compactMap { document in
+            try? document.data(as: User.self)
+        }
+
+        return users
+    }
+
 
     // Fetch user details
     func fetchUser(userId: String) {
