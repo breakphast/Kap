@@ -157,7 +157,7 @@ struct BetView: View {
         HStack {
             Button {
                 Task {
-                    let placedBet = BetViewModel().makeBet(for: bet.game, betOption: bet.betOption, playerID: viewModel.activePlayer?.id ?? "", week: viewModel.currentWeek ?? 0)
+                    let placedBet = BetViewModel().makeBet(for: bet.game, betOption: bet.betOption, playerID: viewModel.activeUser?.id ?? "", week: viewModel.currentWeek ?? 0)
                     
                     if !viewModel.bets.contains(where: { $0.game.id == placedBet.game.id }) {
                         try await BetViewModel().addBet(bet: placedBet)

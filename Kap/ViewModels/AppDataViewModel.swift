@@ -32,6 +32,14 @@ import FirebaseFirestore
             User(email: "desmond@gmail.com", name: "Brokeee", leagues: []),
             User(email: "desmond@gmail.com", name: "Mingy", leagues: [])
         ]
+        
+        Task {
+            users = try await UserViewModel().fetchAllUsers()
+            activeUser = users[0]
+            
+            games = try await GameService().fetchGamesFromFirestore()
+            GameService().updateDayType(for: &games)
+        }
     }
     
     enum FetchError: Error {
