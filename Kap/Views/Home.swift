@@ -43,11 +43,30 @@ struct Home: View {
         }
         .tint(.white)
         .task {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                withAnimation(.smooth) {
-                    self.showingSplashScreen = false
+            do {
+                viewModel.users = try await UserViewModel().fetchAllUsers()
+                viewModel.activeUser = viewModel.users.randomElement()
+                print(viewModel.activeUser?.name ?? "")
+                
+                viewModel.games = try await GameService().fetchGamesFromFirestore()
+                GameService().updateDayType(for: &viewModel.games)
+                
+                viewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
+                viewModel.activeLeague = viewModel.leagues.first
+                
+                if let user = viewModel.activeUser {
+                    let _ = try await PlayerViewModel().createPlayerFromUserId(userId: user.id ?? "", leagueID: viewModel.activeLeague?.id ?? "", name: user.name)
                 }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                    withAnimation(.smooth) {
+                        self.showingSplashScreen = false
+                    }
+                }
+            } catch {
+                
             }
+            
         }
         .overlay(
             Group {

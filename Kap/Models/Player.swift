@@ -12,9 +12,10 @@ import FirebaseFirestoreSwift
 struct Player {
     @DocumentID var id: String?
     let user: User
-    let league: League
+    let leagueID: String
     var name: String
     var bets: [Bet]
     var parlays: [Parlay]
     var points: [Int: Int] = [0:0]
+    var totalPoints: Int = 0
 }

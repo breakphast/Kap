@@ -5,6 +5,16 @@ class LeagueViewModel {
     
     private var db = Firestore.firestore()
     
+    func fetchAllLeagues() async throws -> [League] {
+        let querySnapshot = try await db.collection("leagues").getDocuments()
+
+        let leagues: [League] = querySnapshot.documents.compactMap { document in
+            try? document.data(as: League.self)
+        }
+
+        return leagues
+    }
+    
     // CREATE: Create a new league
     func createNewLeague(league: League) async throws -> String {
         return try await withCheckedThrowingContinuation { continuation in
@@ -42,24 +52,6 @@ class LeagueViewModel {
                     continuation.resume(throwing: error)
                 } else {
                     continuation.resume()
-                }
-            }
-        }
-    }
-
-    // CREATE: Create a player from a user's ID
-    func createPlayerFromUserId(userId: String) async throws -> String {
-        return try await withCheckedThrowingContinuation { continuation in
-            let newDocument = db.collection("players").document()
-            let playerData: [String: Any] = [
-                "user": ["id": userId]
-            ]
-            
-            newDocument.setData(playerData) { error in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                } else {
-                    continuation.resume(returning: newDocument.documentID)
                 }
             }
         }

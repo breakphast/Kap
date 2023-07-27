@@ -11,6 +11,7 @@ struct Board: View {
     let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 3)
     @Environment(\.viewModel) private var viewModel
     @Environment(\.dismiss) var dismiss
+    @State var selectedOption = "League A"
     
     var body: some View {
         NavigationStack {
@@ -23,7 +24,28 @@ struct Board: View {
                         .toolbar {
                             ToolbarItem(placement: .topBarLeading) {
                                 Text("Board")
-                                    .font(.system(size: 32, weight: .bold, design: .rounded))
+                                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                            }
+                            
+                            ToolbarItem(placement: .principal) {
+                                Menu {
+                                    Button("Option 1", action: {
+                                        selectedOption = "League A"
+                                    })
+                                    Button("Option 2", action: {
+                                        selectedOption = "League B"
+                                    })
+                                } label: {
+                                    HStack(spacing: 4) {
+                                        Text(selectedOption.isEmpty ? (viewModel.activeLeague?.name ?? "") : selectedOption)
+                                        Image(systemName: "chevron.down")
+                                            .font(.caption2.bold())
+                                    }
+                                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 8)// Adjust padding as needed
+                                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.gray.opacity(0.2)))
+                                }
                             }
                             
                             ToolbarItem(placement: .navigationBarTrailing) {
@@ -41,7 +63,7 @@ struct Board: View {
                             }
                         }
                     Rectangle()
-                        .frame(height: 40)
+                        .frame(height: 20)
                         .foregroundStyle(.clear)
                 }
                 .fontDesign(.rounded)

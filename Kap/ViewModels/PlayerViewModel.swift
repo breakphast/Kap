@@ -40,7 +40,7 @@ class PlayerViewModel {
             var playerData = [
                 "name": player.name,
                 "user": ["id": player.user.id ?? ""],
-                "league": ["id": player.league.id ?? ""]
+                "league": ["id": player.leagueID]
             ] as [String: Any]
             
             newDocument.setData(playerData) { error in
@@ -62,7 +62,7 @@ class PlayerViewModel {
         let playerData: [String: Any] = [
             "name": player.name,
             "user": ["id": player.user.id ?? ""],
-            "league": ["id": player.league.id ?? ""]
+            "league": ["id": player.leagueID]
         ]
         
         return try await withCheckedThrowingContinuation { continuation in
@@ -88,6 +88,30 @@ class PlayerViewModel {
             }
         }
     }
+    
+    func createPlayerFromUserId(userId: String, leagueID: String, name: String) async throws -> String {
+        return try await withCheckedThrowingContinuation { continuation in
+            let newDocument = db.collection("players").document()
+            let playerData: [String: Any] = [
+                "user": ["id": userId],
+                "league": ["id": leagueID],
+                "name": name
+            ]
+            
+            newDocument.setData(playerData) { error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume(returning: newDocument.documentID)
+                }
+            }
+        }
+    }
+    
+    func getPlayerTotalPoints(playerID: String, bets: [Bet]) -> Int {
+        let points = bets.map { $0.points ?? 0}.reduce(0, +)
+        return points
+    }
 }
 
 // Conversion from dictionary to Player model (assuming necessary initializers are present in the model)
@@ -95,14 +119,14 @@ extension Player {
     init?(data: [String: Any]) {
         guard let name = data["name"] as? String,
               let userId = (data["user"] as? [String: Any])?["id"] as? String,
-              let leagueId = (data["league"] as? [String: Any])?["id"] as? String
+              let leagueID = (data["league"] as? [String: Any])?["id"] as? String
         else {
             return nil
         }
         
         self.name = name
         self.user = User(id: userId, email: "", name: "", leagues: [])  // You'd likely want to fetch more user data here or adjust the structure.
-        self.league = League(id: leagueId, name: "", players: [])  // Similarly, you'd want to fetch more league data or adjust.
+        self.leagueID = leagueID
         self.bets = []
         self.parlays = []
         self.points = [:]

@@ -106,7 +106,7 @@ struct MyBets: View {
         .task {
             do {
                 let fetchedBets = try await BetViewModel().fetchBets(games: viewModel.games)
-                self.bets = fetchedBets
+                bets = fetchedBets.filter({ $0.playerID == viewModel.activeUser?.id })
             } catch {
                 print("Error fetching bets: \(error)")
             }
