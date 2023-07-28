@@ -27,15 +27,13 @@ struct Home: View {
                     Label("My Bets", systemImage: "checklist")
                 }
             
-            Board()
+            Leaderboard()
                 .tabItem {
                     Label("Leaderboard", systemImage: "rosette")
                 }
             
-            Button("Add games") {
-                Task {
-                    GameService().addGames(games: viewModel.games)
-                }
+            Button(viewModel.activeUser?.name ?? "") {
+                
             }
             .tabItem {
                 Label("Profile", systemImage: "person.fill")
@@ -57,6 +55,8 @@ struct Home: View {
                 viewModel.activeLeague = viewModel.leagues.first
                 
                 viewModel.bets = try await BetViewModel().fetchBets(games: viewModel.games)
+                
+                viewModel.parlays = try await ParlayViewModel().fetchParlays(games: viewModel.games)
                 
 //                let playerIDs = viewModel.activeLeague?.players.map { $0 == viewModel.activeUser?.id ?? ""}
 //                viewModel.players = try await PlayerViewModel().fetchAllPlayers()

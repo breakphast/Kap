@@ -17,6 +17,7 @@ struct Betslip: View {
     @State private var offset: CGFloat = 0.0
     @State private var shouldDismiss = false
     @State private var bets: [Bet] = []
+    @State private var parlays: [Parlay] = []
     
     var body: some View {
         ZStack {
@@ -29,7 +30,7 @@ struct Betslip: View {
                     }
                     
                     ForEach(viewModel.activeParlays, id: \.id) { parlay in
-                        ParlayView(parlay: parlay)
+                        ParlayView(parlays: $parlays, parlay: parlay)
                     }
                 }
                 .padding(.top, 20)
@@ -50,6 +51,10 @@ struct Betslip: View {
                 let fetchedBets = try await BetViewModel().fetchBets(games: viewModel.games)
                 bets = fetchedBets.filter({ $0.playerID == viewModel.activeUser?.id })
                 bets = bets.filter({ $0.week == viewModel.currentWeek })
+                
+                let fetchedParlays = try await ParlayViewModel().fetchParlays(games: viewModel.games)
+                parlays = fetchedParlays.filter({ $0.playerID == viewModel.activeUser?.id ?? ""})
+                parlays = parlays.filter({ $0.week == viewModel.currentWeek })
             } catch {
                 print("Error fetching bets: \(error)")
             }
@@ -132,7 +137,7 @@ struct BetView: View {
                 Text("Points: \(bet.points ?? 0)")
                     .bold()
                 RoundedRectangle(cornerRadius: 1)
-                    .frame(width: 80, height: 2)
+                    .frame(width: 100, height: 2)
                     .foregroundStyle(.secondary)
             }
             
@@ -249,6 +254,7 @@ struct BetView: View {
 struct ParlayView: View {
     @Environment(\.viewModel) private var viewModel
     @State var isValid = true
+    @Binding var parlays: [Parlay]
     let parlay: Parlay
     
     var body: some View {
@@ -268,7 +274,7 @@ struct ParlayView: View {
                         
                         HStack {
                             Spacer()
-                            Text("Parlay Bonus (\(viewModel.parlays.count)/1)")
+                            Text("Parlay Bonus (\(parlays.count)/1)")
                                 .font(.caption.bold())
                                 .foregroundStyle(.secondary)
                         }
@@ -290,7 +296,7 @@ struct ParlayView: View {
                                 Text("Points: \(parlay.totalPoints)")
                                     .bold()
                                 RoundedRectangle(cornerRadius: 1)
-                                    .frame(width: 80, height: 2)
+                                    .frame(width: 100, height: 2)
                                     .foregroundStyle(.secondary)
                             }
                             
@@ -312,16 +318,19 @@ struct ParlayView: View {
         .padding(.horizontal, 20)
         .shadow(radius: 10)
         .onAppear {
-            isValid = viewModel.parlays.count == 0
+            isValid = parlays.count == 0
+        }
+        .onChange(of: parlays.count) { _, _ in
+            isValid = parlays.count == 0
         }
     }
     
     var buttons: some View {
         Button {
-            let placedParlay = ParlayViewModel().makeParlay(for: parlay.bets)
+            let placedParlay = ParlayViewModel().makeParlay(for: parlay.bets, playerID: viewModel.activeUser?.id ?? "", week: viewModel.currentWeek)
             Task {
                 try await ParlayViewModel().addParlay(parlay: placedParlay)
-                viewModel.parlays.append(placedParlay)
+                parlays.append(placedParlay)
             }
             viewModel.activeParlays = []
         } label: {
@@ -329,7 +338,7 @@ struct ParlayView: View {
                 Color.onyxLightish
                 Text("Place Parlay")
                     .font(.system(.caption, design: .rounded, weight: .bold))
-                    .foregroundStyle(.lion)
+                    .foregroundStyle(isValid ? .lion : .white)
                     .lineLimit(2)
             }
             .overlay {

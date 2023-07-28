@@ -13,18 +13,18 @@ class Parlay {
     var totalOdds: Int
     var result: BetResult
     var totalPoints: Int
-    var betString: String
+    var betString: String?
+    var playerID: String
+    var week: Int
     
-    init(id: UUID, bets: [Bet], result: BetResult) {
+    init(id: UUID, bets: [Bet], totalOdds: Int, result: BetResult, playerID: String, week: Int) {
         self.id = id
         self.bets = bets
-        self.totalOdds = calculateParlayOdds(bets: bets)
+        self.totalOdds = totalOdds
         self.result = result
         self.totalPoints = calculateParlayPoints(odds: totalOdds, result: .win)
-        self.betString = bets.map { bet in
-            let betOption = bets.first(where: { $0.id == bet.betOption.id })
-            return betOption?.betString ?? "No bet string"
-        }.joined(separator: ", ")
+        self.playerID = playerID
+        self.week = week
     }
 }
 
@@ -39,7 +39,6 @@ func calculateParlayOdds(bets: [Bet]) -> Int {
         }
         totalPayout *= payout
     }
-
     let parlayOdds: Int
     if totalPayout >= 2 {
         parlayOdds = Int((totalPayout - 1) * 100) // For positive odds

@@ -18,8 +18,12 @@ class ParlayViewModel {
             guard
                 let id = data["id"] as? String,
                 let betsData = data["bets"] as? [[String: Any]],
+                let totalOdds = data["totalOdds"] as? Int,
                 let resultString = data["result"] as? String,
-                let result = BetResult(rawValue: resultString)
+                let result = BetResult(rawValue: resultString),
+                let betString = data["betString"] as? String,
+                let playerID = data["playerID"] as? String,
+                let week = data["week"] as? Int
             else { return nil }
 
             var bets = [Bet]()
@@ -41,13 +45,17 @@ class ParlayViewModel {
                     bets.append(bet)
                 }
             }
+            let parlay = Parlay(id: UUID(uuidString: id)!, bets: bets, totalOdds: totalOdds, result: result, playerID: playerID, week: week)
+            parlay.totalOdds = totalOdds
+            
+            parlay.betString = betString
 
-            return Parlay(id: UUID(uuidString: id)!, bets: bets, result: result)
+            return parlay
         }
         
         return parlays
     }
-
+    
     func addParlay(parlay: Parlay) async throws {
         let newParlay: [String: Any] = [
             "id": UUID().uuidString,
@@ -64,14 +72,29 @@ class ParlayViewModel {
             "result": parlay.result.rawValue,
             "totalOdds": parlay.totalOdds,
             "totalPoints": parlay.totalPoints,
-            "betString": parlay.betString
+            "betString": parlay.betString,
+            "playerID": parlay.playerID,
+            "week": parlay.week
         ]
 
         let _ = try await db.collection("parlays").addDocument(data: newParlay)
     }
     
-    func makeParlay(for bets: [Bet]) -> Parlay {
-        let parlay = Parlay(id: UUID(), bets: bets, result: .pending)
+    func deleteParlay(parlayID: String) async throws {
+        return try await withCheckedThrowingContinuation { continuation in
+            db.collection("parlays").document(parlayID).delete() { error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                    print("Deleted bet \(parlayID)")
+                }
+            }
+        }
+    }
+    
+    func makeParlay(for bets: [Bet], playerID: String, week: Int) -> Parlay {
+        let parlay = Parlay(id: UUID(), bets: bets, totalOdds: calculateParlayOdds(bets: bets), result: .pending, playerID: playerID, week: week)
         return parlay
     }
 }

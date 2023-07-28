@@ -12,19 +12,6 @@ import Firebase
 class BetViewModel {
     private let db = Firestore.firestore()
     
-    func deleteBet(betID: String) async throws {
-        return try await withCheckedThrowingContinuation { continuation in
-            db.collection("bets").document(betID).delete() { error in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                } else {
-                    continuation.resume()
-                    print("Deleted bet \(betID)")
-                }
-            }
-        }
-    }
-    
     func findBetOption(games: [Game], gameID: String, betOptionID: String) -> (Game?, BetOption?) {
         guard let game = games.first(where: { $0.id == gameID }) else {
             print("No game")
@@ -92,6 +79,19 @@ class BetViewModel {
         let bet = Bet(id: UUID(), betOption: betOption, game: game, type: betOption.betType, result: [.pending, .loss, .win].randomElement(), odds: betOption.odds, selectedTeam: betOption.selectedTeam, playerID: playerID, week: week)
         
         return bet
+    }
+    
+    func deleteBet(betID: String) async throws {
+        return try await withCheckedThrowingContinuation { continuation in
+            db.collection("bets").document(betID).delete() { error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                    print("Deleted bet \(betID)")
+                }
+            }
+        }
     }
     
     func generateBetsForGame(_ game: Game) -> [Bet] {

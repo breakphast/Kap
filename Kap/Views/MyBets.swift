@@ -15,6 +15,7 @@ struct MyBets: View {
     @Environment(\.dismiss) private var dismiss
     
     @State private var bets: [Bet] = []
+    @State private var parlays: [Parlay] = []
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -41,7 +42,7 @@ struct MyBets: View {
                                 ForEach(bets.filter({ $0.result == .pending }), id: \.id) { bet in
                                     PlacedBetView(bet: bet, bets: $bets)
                                 }
-                                ForEach(viewModel.parlays, id: \.id) { parlay in
+                                ForEach(parlays.filter({ $0.result == .pending }), id: \.id) { parlay in
                                     PlacedParlayView(parlay: parlay)
                                 }
                                 Rectangle()
@@ -56,7 +57,7 @@ struct MyBets: View {
                 .tabItem { Text("Active Bets") }
                 
                 VStack {
-                    if bets.filter({ $0.result != .pending }).isEmpty && viewModel.parlays.filter({ $0.result != .pending }).isEmpty {
+                    if bets.filter({ $0.result != .pending }).isEmpty && parlays.filter({ $0.result != .pending }).isEmpty {
                         Text("No settled bets")
                             .foregroundColor(.white)
                             .font(.largeTitle.bold())
@@ -70,7 +71,7 @@ struct MyBets: View {
                                 ForEach(bets.filter({ $0.result != .pending }), id: \.id) { bet in
                                     PlacedBetView(bet: bet, bets: $bets)
                                 }
-                                ForEach(viewModel.parlays, id: \.id) { parlay in
+                                ForEach(parlays.filter({ $0.result != .pending }), id: \.id) { parlay in
                                     PlacedParlayView(parlay: parlay)
                                 }
                                 Rectangle()
@@ -109,6 +110,10 @@ struct MyBets: View {
                     let fetchedBets = try await BetViewModel().fetchBets(games: viewModel.games)
                     bets = fetchedBets.filter({ $0.playerID == viewModel.activeUser?.id })
                     bets = bets.filter({ $0.week == viewModel.currentWeek })
+                    
+                    let fetchedParlays = try await ParlayViewModel().fetchParlays(games: viewModel.games)
+                    parlays = fetchedParlays.filter({ $0.playerID == viewModel.activeUser?.id ?? ""})
+                    parlays = parlays.filter({ $0.week == viewModel.currentWeek })
                 } catch {
                     print("Error fetching bets: \(error)")
                 }
@@ -119,11 +124,14 @@ struct MyBets: View {
                 let fetchedBets = try await BetViewModel().fetchBets(games: viewModel.games)
                 bets = fetchedBets.filter({ $0.playerID == viewModel.activeUser?.id })
                 bets = bets.filter({ $0.week == viewModel.currentWeek })
+                
+                let fetchedParlays = try await ParlayViewModel().fetchParlays(games: viewModel.games)
+                parlays = fetchedParlays.filter({ $0.playerID == viewModel.activeUser?.id ?? ""})
+                parlays = parlays.filter({ $0.week == viewModel.currentWeek })
             } catch {
                 print("Error fetching bets: \(error)")
             }
         }
-
     }
 }
 
@@ -180,7 +188,7 @@ struct PlacedBetView: View {
                     VStack(alignment: .leading) {
                         Text("Points: \(abs(bet.points!))")
                         RoundedRectangle(cornerRadius: 1)
-                            .frame(width: 80, height: 2)
+                            .frame(width: 100, height: 2)
                             .foregroundStyle(.secondary)
                     }
                     .bold()
@@ -235,8 +243,7 @@ struct PlacedBetView: View {
                 Image(systemName: "trash")
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                    .fontWeight(.bold)
-                    .fontDesign(.rounded)
+                    .font(.system(.title2, design: .rounded, weight: .bold))
                     .padding(.bottom, 12)
                     .onTapGesture {
                         withAnimation {
@@ -268,8 +275,10 @@ struct PlacedParlayView: View {
     @Environment(\.viewModel) private var viewModel
     @State var deleteActive = false
     @Namespace var trash
-    
     let parlay: Parlay
+    
+    @State private var formattedBets = [String]()
+    @State private var legs: Int = 0
     
     var body: some View {
         ZStack(alignment: .topLeading) {
@@ -278,7 +287,7 @@ struct PlacedParlayView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     VStack(alignment: .leading, spacing: 4) {
                         HStack {
-                            Text("\(parlay.bets.count) Leg Parlay")
+                            Text("\(legs) Leg Parlay")
                             
                             Spacer()
                             
@@ -295,9 +304,8 @@ struct PlacedParlayView: View {
                         
                         ScrollView(showsIndicators: false) {
                             VStack(alignment: .leading) {
-                                ForEach(parlay.bets, id: \.id) { bet in
-                                    Text(bet.type == .spread ? "\(bet.selectedTeam ?? "") \(bet.betString)" : bet.betString)
-                                        .lineLimit(1)
+                                ForEach(formattedBets, id: \.self) { bet in
+                                    Text(bet).lineLimit(1)
                                 }
                             }
                             .font(.caption2)
@@ -308,7 +316,7 @@ struct PlacedParlayView: View {
                         VStack(alignment: .leading) {
                             Text("Points: \(abs(parlay.totalPoints))")
                             RoundedRectangle(cornerRadius: 1)
-                                .frame(width: 80, height: 2)
+                                .frame(width: 100, height: 2)
                                 .foregroundStyle(.secondary)
                         }
                         .bold()
@@ -317,7 +325,6 @@ struct PlacedParlayView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                 .padding(.horizontal, 24)
-//                .padding([.bottom, .trailing], 12)
             }
             .fontDesign(.rounded)
             .foregroundStyle(.white)
@@ -343,6 +350,9 @@ struct PlacedParlayView: View {
                         .onTapGesture {
                             withAnimation {
                                 deleteActive.toggle()
+                                Task {
+                                    let _ = try await ParlayViewModel().deleteParlay(parlayID: parlay.id.uuidString)
+                                }
                             }
                         }
                     
@@ -362,7 +372,7 @@ struct PlacedParlayView: View {
                 .matchedGeometryEffect(id: "trash", in: trash)
             } else {
                 Image(systemName: "trash")
-                    .foregroundColor(.onyxLightish)
+                    .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                     .font(.title2.bold())
                     .fontDesign(.rounded)
@@ -379,41 +389,10 @@ struct PlacedParlayView: View {
         .cornerRadius(20)
         .padding(.horizontal, 20)
         .shadow(radius: 10)
+        .task {
+            formattedBets = parlay.betString?.split(separator: ",").map { String($0.trimmingCharacters(in: .whitespaces))
+            } ?? []
+            legs = formattedBets.count
+        }
     }
 }
-
-
-let nflTeams = [
-    "Miami Dolphins": "MIA Dolphins",
-    "New England Patriots": "NE Patriots",
-    "Buffalo Bills": "BUF Bills",
-    "New York Jets": "NYJ Jets",
-    "Pittsburgh Steelers": "PIT Steelers",
-    "Baltimore Ravens": "BAL Ravens",
-    "Cleveland Browns": "CLE Browns",
-    "Cincinnati Bengals": "CIN Bengals",
-    "Tennessee Titans": "TEN Titans",
-    "Indianapolis Colts": "IND Colts",
-    "Houston Texans": "HOU Texans",
-    "Jacksonville Jaguars": "JAX Jaguars",
-    "Kansas City Chiefs": "KC Chiefs",
-    "Las Vegas Raiders": "LV Raiders",
-    "Denver Broncos": "DEN Broncos",
-    "Los Angeles Chargers": "LAC Chargers",
-    "Dallas Cowboys": "DAL Cowboys",
-    "Philadelphia Eagles": "PHI Eagles",
-    "New York Giants": "NYG Giants",
-    "Washington Football Team": "WAS Football Team",
-    "Green Bay Packers": "GB Packers",
-    "Chicago Bears": "CHI Bears",
-    "Minnesota Vikings": "MIN Vikings",
-    "Detroit Lions": "DET Lions",
-    "San Francisco 49ers": "SF 49ers",
-    "Seattle Seahawks": "SEA Seahawks",
-    "Los Angeles Rams": "LA Rams",
-    "Arizona Cardinals": "ARI Cardinals",
-    "Atlanta Falcons": "ATL Falcons",
-    "New Orleans Saints": "NO Saints",
-    "Tampa Bay Buccaneers": "TB Buccaneers",
-    "Carolina Panthers": "CAR Panthers"
-]

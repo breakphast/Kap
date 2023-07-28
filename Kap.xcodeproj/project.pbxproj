@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3E195C762A74683200FB0CAD /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E195C752A74683200FB0CAD /* Constants.swift */; };
 		3E3596BF2A6C0B1800948A38 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 3E3596BE2A6C0B1800948A38 /* FirebaseAuth */; };
 		3E3596C12A6C0B1800948A38 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 3E3596C02A6C0B1800948A38 /* FirebaseFirestore */; };
 		3E3596C32A6C0B1800948A38 /* FirebaseFirestoreSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 3E3596C22A6C0B1800948A38 /* FirebaseFirestoreSwift */; };
@@ -38,6 +39,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		3E195C752A74683200FB0CAD /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		3E5D8D222A639B5300634DBE /* Board.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Board.swift; sourceTree = "<group>"; };
 		3E5D8D242A63A4F100634DBE /* CustomButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomButton.swift; sourceTree = "<group>"; };
 		3E5D8D262A64718C00634DBE /* MyBets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyBets.swift; sourceTree = "<group>"; };
@@ -80,6 +82,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		3E195C742A74682200FB0CAD /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				3E195C752A74683200FB0CAD /* Constants.swift */,
+			);
+			path = Helpers;
+			sourceTree = "<group>";
+		};
 		3EA650342A5F7565007CA5ED = {
 			isa = PBXGroup;
 			children = (
@@ -104,6 +114,7 @@
 				3EA6504E2A5F77C3007CA5ED /* ViewModels */,
 				3EE35E642A60E34D0026F952 /* Services */,
 				3EE35E6D2A6329460026F952 /* JSON */,
+				3E195C742A74682200FB0CAD /* Helpers */,
 				3EA650402A5F7565007CA5ED /* KapApp.swift */,
 				3EA650442A5F7568007CA5ED /* Assets.xcassets */,
 				3EB529D12A6C139300548643 /* GoogleService-Info.plist */,
@@ -268,6 +279,7 @@
 				3EF3991B2A71CF5100E03B76 /* Player.swift in Sources */,
 				3E5D8D232A639B5300634DBE /* Board.swift in Sources */,
 				3EFA187B2A70C1C7002D6E94 /* PlayerViewModel.swift in Sources */,
+				3E195C762A74683200FB0CAD /* Constants.swift in Sources */,
 				3EA650412A5F7565007CA5ED /* KapApp.swift in Sources */,
 				3EFA18712A7094F2002D6E94 /* UserViewModel.swift in Sources */,
 				3EFA18792A70C192002D6E94 /* LeagueViewModel.swift in Sources */,
