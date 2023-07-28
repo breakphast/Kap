@@ -19,10 +19,11 @@ import FirebaseFirestore
     var parlays: [Parlay] = []
     var selectedBets: [Bet] = []
     var activeParlays: [Parlay] = []
+    var players: [Player] = []
     
     var activePlayer: Player?
     var activeUser: User?
-    var currentWeek: Int?
+    var currentWeek = 2
     var activeLeague: League?
     
     init() {

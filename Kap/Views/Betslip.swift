@@ -133,20 +133,23 @@ struct BetView: View {
     var teamAndType: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text(bet.selectedTeam ?? "")
+                Text(bet.type == .over || bet.type == .under ? "\(bet.game.awayTeam) @ \(bet.game.homeTeam)" : bet.selectedTeam ?? "")
+                    .font(bet.type == .over || bet.type == .under ? .caption2.bold() : .subheadline.bold())
+                    .frame(maxWidth: UIScreen.main.bounds.width / 1.5, alignment: .leading)
                 
                 Spacer()
                 
                 Text("\(bet.odds > 0 ? "+" : "")\(bet.odds)")
+                    .font(.subheadline.bold())
             }
             .bold()
             
             HStack {
-                Text(bet.type != .spread ? bet.type.rawValue : "Spread " + bet.betString)
+                Text((bet.type == .over || bet.type == .under) ? bet.type.rawValue + " " + bet.betOption.betString.dropFirst(2) : bet.type == .spread ? "Spread " + bet.betString : bet.type.rawValue)
                     .foregroundStyle(.secondary)
                     .bold()
                 Spacer()
-                Text("(\(bet.betOption.dayType?.rawValue ?? "") \(viewModel.bets.filter({ $0.betOption.dayType == bet.betOption.dayType }).count)/\(bet.betOption.maxBets ?? 0))")
+                Text("(\(bet.betOption.dayType?.rawValue ?? "") \(viewModel.bets.filter({ $0.betOption.dayType == bet.betOption.dayType && bet.week == viewModel.currentWeek }).count)/\(bet.betOption.maxBets ?? 0))")
                     .font(.caption.bold())
                     .foregroundStyle(.secondary)
             }
@@ -157,7 +160,7 @@ struct BetView: View {
         HStack {
             Button {
                 Task {
-                    let placedBet = BetViewModel().makeBet(for: bet.game, betOption: bet.betOption, playerID: viewModel.activeUser?.id ?? "", week: viewModel.currentWeek ?? 0)
+                    let placedBet = BetViewModel().makeBet(for: bet.game, betOption: bet.betOption, playerID: viewModel.activeUser?.id ?? "", week: viewModel.currentWeek)
                     
                     if !viewModel.bets.contains(where: { $0.game.id == placedBet.game.id }) {
                         try await BetViewModel().addBet(bet: placedBet)

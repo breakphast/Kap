@@ -45,7 +45,8 @@ struct Home: View {
         .task {
             do {
                 viewModel.users = try await UserViewModel().fetchAllUsers()
-                viewModel.activeUser = viewModel.users.randomElement()
+                viewModel.activeUser = viewModel.users.filter({ $0.name == "RingoMingo" }).randomElement()
+                
                 print(viewModel.activeUser?.name ?? "")
                 
                 viewModel.games = try await GameService().fetchGamesFromFirestore()
@@ -54,9 +55,11 @@ struct Home: View {
                 viewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
                 viewModel.activeLeague = viewModel.leagues.first
                 
-                if let user = viewModel.activeUser {
-                    let _ = try await PlayerViewModel().createPlayerFromUserId(userId: user.id ?? "", leagueID: viewModel.activeLeague?.id ?? "", name: user.name)
-                }
+                viewModel.bets = try await BetViewModel().fetchBets(games: viewModel.games)
+                
+//                let playerIDs = viewModel.activeLeague?.players.map { $0 == viewModel.activeUser?.id ?? ""}
+//                viewModel.players = try await PlayerViewModel().fetchAllPlayers()
+//                let _ = try await LeagueViewModel().addPlayerToLeague(leagueId: viewModel.activeLeague?.id ?? "", playerId: viewModel.activeUser?.id ?? "")
                 
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                     withAnimation(.smooth) {

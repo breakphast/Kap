@@ -20,6 +20,11 @@ struct MyBets: View {
         ZStack(alignment: .bottom) {
             Color.onyx.ignoresSafeArea()
             
+            Text("Week \(viewModel.currentWeek)")
+                .font(.system(.title3, design: .rounded, weight: .bold))
+                .frame(maxHeight: .infinity, alignment: .top)
+                .padding(.top, 8)
+            
             TabView {
                 VStack {
                     if bets.filter({ $0.result == .pending }).isEmpty {
@@ -27,14 +32,14 @@ struct MyBets: View {
                             .foregroundColor(.white)
                             .font(.largeTitle.bold())
                     } else {
-                        Text("Active")
+                        Text("Active Bets")
                             .font(.system(.body, design: .rounded, weight: .bold))
                             .foregroundStyle(.lion)
                         
                         ScrollView(showsIndicators: false) {
                             VStack(spacing: 20) {
                                 ForEach(bets.filter({ $0.result == .pending }), id: \.id) { bet in
-                                    PlacedBetView(bet: bet, bets: bets)
+                                    PlacedBetView(bet: bet, bets: $bets)
                                 }
                                 ForEach(viewModel.parlays, id: \.id) { parlay in
                                     PlacedParlayView(parlay: parlay)
@@ -47,7 +52,7 @@ struct MyBets: View {
                         }
                     }
                 }
-                .padding(.top, 20)
+                .padding(.top, 40)
                 .tabItem { Text("Active Bets") }
                 
                 VStack {
@@ -56,14 +61,14 @@ struct MyBets: View {
                             .foregroundColor(.white)
                             .font(.largeTitle.bold())
                     } else {
-                        Text("Settled")
+                        Text("Settled Bets")
                             .font(.system(.body, design: .rounded, weight: .bold))
                             .foregroundStyle(.lion)
                         
                         ScrollView(showsIndicators: false) {
                             VStack(spacing: 20) {
                                 ForEach(bets.filter({ $0.result != .pending }), id: \.id) { bet in
-                                    PlacedBetView(bet: bet, bets: bets)
+                                    PlacedBetView(bet: bet, bets: $bets)
                                 }
                                 ForEach(viewModel.parlays, id: \.id) { parlay in
                                     PlacedParlayView(parlay: parlay)
@@ -76,7 +81,7 @@ struct MyBets: View {
                         }
                     }
                 }
-                .padding(.top, 20)
+                .padding(.top, 40)
                 .tabItem { Text("Settled Bets") }
             }
             .accentColor(.white)  // For the circle indicator
@@ -98,15 +103,22 @@ struct MyBets: View {
             }
         }
         .fontDesign(.rounded)
-        .onChange(of: viewModel.bets.count, { _, _ in
-            withAnimation {
-                bets = viewModel.bets
+        .onChange(of: bets.count, { _, _ in
+            Task {
+                do {
+                    let fetchedBets = try await BetViewModel().fetchBets(games: viewModel.games)
+                    bets = fetchedBets.filter({ $0.playerID == viewModel.activeUser?.id })
+                    bets = bets.filter({ $0.week == viewModel.currentWeek })
+                } catch {
+                    print("Error fetching bets: \(error)")
+                }
             }
         })
         .task {
             do {
                 let fetchedBets = try await BetViewModel().fetchBets(games: viewModel.games)
                 bets = fetchedBets.filter({ $0.playerID == viewModel.activeUser?.id })
+                bets = bets.filter({ $0.week == viewModel.currentWeek })
             } catch {
                 print("Error fetching bets: \(error)")
             }
@@ -124,7 +136,7 @@ struct PlacedBetView: View {
     @State var deleteActive = false
     @Namespace var trash
     let bet: Bet
-    let bets: [Bet]
+    @Binding var bets: [Bet]
     
     var body: some View {
         ZStack(alignment: .topLeading) {
@@ -133,18 +145,19 @@ struct PlacedBetView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     VStack(alignment: .leading, spacing: 4) {
                         HStack {
-                            Text(bet.selectedTeam ?? "")
-                                .font(.subheadline.bold())
+                            Text(bet.type == .over || bet.type == .under ? "\(bet.game.awayTeam) @ \(bet.game.homeTeam)" : bet.selectedTeam ?? "")
+                                .font(bet.type == .over || bet.type == .under ? .caption2.bold() : .subheadline.bold())
+                                .frame(maxWidth: UIScreen.main.bounds.width / 1.5, alignment: .leading)
                             Spacer()
                             Text("\(bet.odds > 0 ? "+": "")\(bet.odds)")
                                 .font(.subheadline.bold())
                         }
                         
                         HStack {
-                            Text(bet.type != .spread ? bet.type.rawValue : bet.betString)
+                            Text((bet.type == .over || bet.type == .under) ? bet.type.rawValue + " " + bet.betOption.betString.dropFirst(2) : bet.type == .spread ? "Spread " + bet.betString : bet.type.rawValue)
                                 .font(.subheadline.bold())
                             Spacer()
-                            Text("(\(bet.betOption.dayType?.rawValue ?? "") \(bets.filter({$0.betOption.dayType == bet.betOption.dayType}).count)/\(bet.betOption.maxBets ?? 0))")
+                            Text("(\(bet.betOption.dayType?.rawValue ?? "") \(bets.filter({ $0.betOption.dayType == bet.betOption.dayType && bet.week == viewModel.currentWeek }).count)/\(bet.betOption.maxBets ?? 0))")
                                 .font(.caption.bold())
                                 .foregroundStyle(.secondary)
                         }
@@ -168,13 +181,6 @@ struct PlacedBetView: View {
                         RoundedRectangle(cornerRadius: 0.5)
                             .frame(width: 80, height: 1)
                             .foregroundStyle(.secondary)
-                        if bet.result != .pending {
-                            HStack(spacing: 0) {
-                                Text("Result: ")
-                                Text("\(bet.result == .win ? "+": "")\(bet.points ?? 0)")
-                                    .foregroundStyle(bet.result == .win ? .bean : .red)
-                            }
-                        }
                     }
                     .font(.caption.bold())
                 }
@@ -202,7 +208,6 @@ struct PlacedBetView: View {
                         .padding(.bottom, 12)
                         .onTapGesture {
                             withAnimation {
-                                viewModel.bets.removeAll(where: { $0.id == bet.id })
                                 deleteActive.toggle()
                             }
                         }
@@ -215,19 +220,23 @@ struct PlacedBetView: View {
                         .onTapGesture {
                             withAnimation {
                                 deleteActive.toggle()
+                                Task {
+                                    let _ = try await BetViewModel().deleteBet(betID: bet.id.uuidString)
+                                    bets.removeAll(where: { $0.id.uuidString == bet.id.uuidString })
+                                }
                             }
                         }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                .padding(.bottom, 8)
+                .padding(.bottom, 12)
                 .matchedGeometryEffect(id: "trash", in: trash)
             } else {
                 Image(systemName: "trash")
-                    .foregroundColor(.onyxLightish)
+                    .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                     .fontWeight(.bold)
                     .fontDesign(.rounded)
-                    .padding(.bottom, 8)
+                    .padding(.bottom, 12)
                     .onTapGesture {
                         withAnimation {
                             deleteActive.toggle()

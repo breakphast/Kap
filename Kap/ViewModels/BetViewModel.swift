@@ -12,6 +12,19 @@ import Firebase
 class BetViewModel {
     private let db = Firestore.firestore()
     
+    func deleteBet(betID: String) async throws {
+        return try await withCheckedThrowingContinuation { continuation in
+            db.collection("bets").document(betID).delete() { error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                    print("Deleted bet \(betID)")
+                }
+            }
+        }
+    }
+    
     func findBetOption(games: [Game], gameID: String, betOptionID: String) -> (Game?, BetOption?) {
         guard let game = games.first(where: { $0.id == gameID }) else {
             print("No game")
@@ -55,9 +68,9 @@ class BetViewModel {
     
     func addBet(bet: Bet) async throws {
         let db = Firestore.firestore()
-
+        
         let newBet: [String: Any] = [
-            "id": UUID().uuidString,
+            "id": bet.id.uuidString,
             "betOption": bet.betOption.id.uuidString,
             "game": bet.game.id,
             "type": bet.type.rawValue,
@@ -71,8 +84,9 @@ class BetViewModel {
             "week": bet.week
         ]
         
-        let _ = try await db.collection("bets").addDocument(data: newBet)
+        let _ = try await db.collection("bets").document(bet.id.uuidString).setData(newBet)
     }
+
     
     func makeBet(for game: Game, betOption: BetOption, playerID: String, week: Int) -> Bet {
         let bet = Bet(id: UUID(), betOption: betOption, game: game, type: betOption.betType, result: [.pending, .loss, .win].randomElement(), odds: betOption.odds, selectedTeam: betOption.selectedTeam, playerID: playerID, week: week)
@@ -101,7 +115,7 @@ class BetViewModel {
             }
             var team = ""
             switch i {
-            case 0, 2, 4:
+            case 3, 2, 4:
                 team = game.awayTeam
             default:
                 team = game.homeTeam
@@ -110,10 +124,9 @@ class BetViewModel {
             let bet = Bet(id: UUID(), betOption: options[i], game: game, type: type, result: .pending, odds: options[i].odds, selectedTeam: team, playerID: "", week: 0)
             bets.append(bet)
         }
-        let betss = [0, 4, 2, 3, 1, 5].compactMap { index in
+        let betss = [3, 4, 2, 0, 1, 5].compactMap { index in
             bets.indices.contains(index) ? bets[index] : nil
         }
-        
         return betss
     }
 }
