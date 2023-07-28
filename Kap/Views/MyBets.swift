@@ -147,15 +147,16 @@ struct PlacedBetView: View {
                         HStack {
                             Text(bet.type == .over || bet.type == .under ? "\(bet.game.awayTeam) @ \(bet.game.homeTeam)" : bet.selectedTeam ?? "")
                                 .font(bet.type == .over || bet.type == .under ? .caption2.bold() : .subheadline.bold())
-                                .frame(maxWidth: UIScreen.main.bounds.width / 1.5, alignment: .leading)
                             Spacer()
                             Text("\(bet.odds > 0 ? "+": "")\(bet.odds)")
                                 .font(.subheadline.bold())
                         }
                         
                         HStack {
-                            Text((bet.type == .over || bet.type == .under) ? bet.type.rawValue + " " + bet.betOption.betString.dropFirst(2) : bet.type == .spread ? "Spread " + bet.betString : bet.type.rawValue)
+                            Text(betText)
                                 .font(.subheadline.bold())
+                                .lineLimit(nil)
+                                .fixedSize(horizontal: false, vertical: true)
                             Spacer()
                             Text("(\(bet.betOption.dayType?.rawValue ?? "") \(bets.filter({ $0.betOption.dayType == bet.betOption.dayType && bet.week == viewModel.currentWeek }).count)/\(bet.betOption.maxBets ?? 0))")
                                 .font(.caption.bold())
@@ -178,11 +179,11 @@ struct PlacedBetView: View {
                     
                     VStack(alignment: .leading) {
                         Text("Points: \(abs(bet.points!))")
-                        RoundedRectangle(cornerRadius: 0.5)
-                            .frame(width: 80, height: 1)
+                        RoundedRectangle(cornerRadius: 1)
+                            .frame(width: 80, height: 2)
                             .foregroundStyle(.secondary)
                     }
-                    .font(.caption.bold())
+                    .bold()
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                 .padding(24)
@@ -230,7 +231,7 @@ struct PlacedBetView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                 .padding(.bottom, 12)
                 .matchedGeometryEffect(id: "trash", in: trash)
-            } else {
+            } else if bet.result == .pending {
                 Image(systemName: "trash")
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
@@ -249,6 +250,17 @@ struct PlacedBetView: View {
         .cornerRadius(20)
         .padding(.horizontal, 20)
         .shadow(radius: 10)
+    }
+    
+    var betText: String {
+        if bet.type == .over || bet.type == .under {
+            let truncatedString = bet.betOption.betString.dropFirst(2).split(separator: "\n").first ?? ""
+            return bet.type.rawValue + " " + truncatedString
+        } else if bet.type == .spread {
+            return "Spread " + bet.betString
+        } else {
+            return bet.type.rawValue
+        }
     }
 }
 
@@ -295,11 +307,11 @@ struct PlacedParlayView: View {
                         
                         VStack(alignment: .leading) {
                             Text("Points: \(abs(parlay.totalPoints))")
-                            RoundedRectangle(cornerRadius: 0.5)
-                                .frame(width: 80, height: 1)
+                            RoundedRectangle(cornerRadius: 1)
+                                .frame(width: 80, height: 2)
                                 .foregroundStyle(.secondary)
                         }
-                        .font(.caption.bold())
+                        .bold()
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                 }

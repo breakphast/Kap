@@ -42,6 +42,7 @@ struct Home: View {
             }
         }
         .tint(.white)
+        .preferredColorScheme(.dark)
         .task {
             do {
                 viewModel.users = try await UserViewModel().fetchAllUsers()

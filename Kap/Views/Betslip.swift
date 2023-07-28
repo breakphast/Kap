@@ -16,6 +16,7 @@ struct Betslip: View {
     private let dismissThreshold: CGFloat = 100.0
     @State private var offset: CGFloat = 0.0
     @State private var shouldDismiss = false
+    @State private var bets: [Bet] = []
     
     var body: some View {
         ZStack {
@@ -24,7 +25,7 @@ struct Betslip: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 20) {
                     ForEach(viewModel.selectedBets, id: \.id) { bet in
-                        BetView(bet: bet)
+                        BetView(bets: $bets, bet: bet)
                     }
                     
                     ForEach(viewModel.activeParlays, id: \.id) { parlay in
@@ -42,6 +43,15 @@ struct Betslip: View {
                             }
                     }
                 }
+            }
+        }
+        .task {
+            do {
+                let fetchedBets = try await BetViewModel().fetchBets(games: viewModel.games)
+                bets = fetchedBets.filter({ $0.playerID == viewModel.activeUser?.id })
+                bets = bets.filter({ $0.week == viewModel.currentWeek })
+            } catch {
+                print("Error fetching bets: \(error)")
             }
         }
         .gesture(
@@ -80,6 +90,7 @@ struct BetView: View {
     @State var isValid = true
     @State var isPlaced = false
     @Environment(\.dismiss) var dismiss
+    @Binding var bets: [Bet]
     let bet: Bet
     
     var body: some View {
@@ -108,10 +119,10 @@ struct BetView: View {
         .padding(.horizontal, 20)
         .shadow(radius: 10)
         .onAppear {
-            isValid = viewModel.bets.filter({ $0.betOption.dayType == bet.betOption.dayType }).count < bet.betOption.maxBets ?? 0
+            isValid = bets.filter({ $0.betOption.dayType == bet.betOption.dayType }).count < bet.betOption.maxBets ?? 0
         }
-        .onChange(of: viewModel.bets.count) { oldValue, newValue in
-            isValid = viewModel.bets.filter({ $0.betOption.dayType == bet.betOption.dayType }).count < bet.betOption.maxBets ?? 0
+        .onChange(of: bets.count) { oldValue, newValue in
+            isValid = bets.filter({ $0.betOption.dayType == bet.betOption.dayType }).count < bet.betOption.maxBets ?? 0
         }
     }
     
@@ -145,11 +156,12 @@ struct BetView: View {
             .bold()
             
             HStack {
-                Text((bet.type == .over || bet.type == .under) ? bet.type.rawValue + " " + bet.betOption.betString.dropFirst(2) : bet.type == .spread ? "Spread " + bet.betString : bet.type.rawValue)
-                    .foregroundStyle(.secondary)
-                    .bold()
+                Text(betText)
+                    .font(.subheadline.bold())
+                    .lineLimit(nil)
+                    .fixedSize(horizontal: false, vertical: true)
                 Spacer()
-                Text("(\(bet.betOption.dayType?.rawValue ?? "") \(viewModel.bets.filter({ $0.betOption.dayType == bet.betOption.dayType && bet.week == viewModel.currentWeek }).count)/\(bet.betOption.maxBets ?? 0))")
+                Text("(\(bet.betOption.dayType?.rawValue ?? "") \(bets.filter({ $0.betOption.dayType == bet.betOption.dayType && bet.week == viewModel.currentWeek }).count)/\(bet.betOption.maxBets ?? 0))")
                     .font(.caption.bold())
                     .foregroundStyle(.secondary)
             }
@@ -162,9 +174,13 @@ struct BetView: View {
                 Task {
                     let placedBet = BetViewModel().makeBet(for: bet.game, betOption: bet.betOption, playerID: viewModel.activeUser?.id ?? "", week: viewModel.currentWeek)
                     
-                    if !viewModel.bets.contains(where: { $0.game.id == placedBet.game.id }) {
+                    if !bets.contains(where: { $0.game.id == placedBet.game.id }) {
                         try await BetViewModel().addBet(bet: placedBet)
-                        let _ = try await BetViewModel().fetchBets(games: viewModel.games)
+                        
+                        let fetchedBets = try await BetViewModel().fetchBets(games: viewModel.games)
+                        let newBets = fetchedBets.filter({ $0.playerID == viewModel.activeUser?.id })
+                        bets = newBets.filter({ $0.week == viewModel.currentWeek })
+                        
                         isPlaced = true
                         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                             withAnimation {
@@ -197,6 +213,9 @@ struct BetView: View {
             Button {
                 withAnimation {
                     viewModel.selectedBets.removeAll(where: { $0.id == bet.id })
+                    if viewModel.selectedBets.isEmpty {
+                        dismiss()
+                    }
                 }
             } label: {
                 ZStack {
@@ -212,6 +231,17 @@ struct BetView: View {
                 .shadow(radius: 10)
             }
             .zIndex(100)
+        }
+    }
+    
+    var betText: String {
+        if bet.type == .over || bet.type == .under {
+            let truncatedString = bet.betOption.betString.dropFirst(2).split(separator: "\n").first ?? ""
+            return bet.type.rawValue + " " + truncatedString
+        } else if bet.type == .spread {
+            return "Spread " + bet.betString
+        } else {
+            return bet.type.rawValue
         }
     }
 }

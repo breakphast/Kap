@@ -183,6 +183,7 @@ struct GameRow: View {
                 ForEach(bets, id: \.id) { bet in
                     CustomButton(bet: bet, buttonText: bet.betOption.betString) {
                         withAnimation {
+                            bet.week = viewModel.currentWeek
                             if viewModel.selectedBets.contains(where: { $0.id == bet.id }) {
                                 viewModel.selectedBets.removeAll(where: { $0.id == bet.id })
                             } else {

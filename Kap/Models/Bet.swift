@@ -66,7 +66,7 @@ class Bet {
     let betString: String
     let selectedTeam: String?
     let playerID: String
-    let week: Int
+    var week: Int
     
     init(id: UUID, betOption: BetOption, game: Game, type: BetType, result: BetResult?, odds: Int, selectedTeam: String?, playerID: String, week: Int) {
         self.id = id
