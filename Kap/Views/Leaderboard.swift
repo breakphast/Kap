@@ -13,6 +13,7 @@ struct Leaderboard: View {
     
     @State private var users: [User] = []
     @State var selectedOption = "Week 1"
+    @State private var pointsDifferences: [String: Int] = [:]
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -28,6 +29,7 @@ struct Leaderboard: View {
                             viewModel.currentWeek = 1
                             Task {
                                 users = await LeaderboardViewModel().getLeaderboardData(leagueID: viewModel.activeLeague?.id ?? "", users: viewModel.users, bets: viewModel.bets, week: viewModel.currentWeek)
+                                await updatePointsDifferences()
                             }
                         }
                     })
@@ -37,6 +39,7 @@ struct Leaderboard: View {
                             viewModel.currentWeek = 2
                             Task {
                                 users = await LeaderboardViewModel().getLeaderboardData(leagueID: viewModel.activeLeague?.id ?? "", users: viewModel.users, bets: viewModel.bets, week: viewModel.currentWeek)
+                                await updatePointsDifferences()
                             }
                         }
                     })
@@ -89,15 +92,20 @@ struct Leaderboard: View {
                                                 Text("Total points: \((user.totalPoints ?? 0))")
                                                     .font(.caption.bold())
                                                     .foregroundStyle(.secondary)
-                                                Text("\(user.totalPoints ?? 0 > 0 ? "+" : "")\(user.totalPoints ?? 0)")
-                                                    .font(.caption2)
-                                                    .foregroundStyle(user.totalPoints! < 0 ? .red : .bean)
+                                                if viewModel.currentWeek != 1 {
+                                                    let userPointsDifference = pointsDifference(for: user)
+                                                    Text("\(userPointsDifference > 0 ? "+" : "")\(userPointsDifference)")
+                                                        .font(.caption2)
+                                                        .foregroundStyle(userPointsDifference < 0 ? .red : .bean)
+                                                }
                                             }
                                         }
-                                        Spacer()
-                                        Image(systemName: index == 0 ? "minus" : user.totalPoints! >= 0 ? "chevron.up.circle" : "chevron.down.circle")
-                                            .font(.title2.bold())
-                                            .foregroundStyle(index == 0 ? .secondary : user.totalPoints! >= 0 ? Color.bean : Color.red)
+                                        if viewModel.currentWeek != 1 {
+                                            Spacer()
+                                            Image(systemName: index == 0 ? "minus" : user.totalPoints! >= 0 ? "chevron.up.circle" : "chevron.down.circle")
+                                                .font(.title2.bold())
+                                                .foregroundStyle(index == 0 ? .secondary : user.totalPoints! >= 0 ? Color.bean : Color.red)
+                                        }
                                     }
                                     .padding(.horizontal)
                                     .padding(.trailing, index == 0 ? 1 : 0)
@@ -115,8 +123,23 @@ struct Leaderboard: View {
         .fontDesign(.rounded)
         .task {
             users = await LeaderboardViewModel().getLeaderboardData(leagueID: viewModel.activeLeague?.id ?? "", users: viewModel.users, bets: viewModel.bets, week: viewModel.currentWeek)
+            await updatePointsDifferences()
         }
     }
+    
+    private func pointsDifference(for user: User) -> Int {
+        return pointsDifferences[user.id ?? ""] ?? 0
+    }
+    
+    private func updatePointsDifferences() async {
+        var newPointsDifferences: [String: Int] = [:]
+        for user in users {
+            let diff = await LeaderboardViewModel().getWeeklyPointsDifference(user: user, bets: viewModel.bets, currentWeek: viewModel.currentWeek, leagueID: viewModel.activeLeague!.id!)
+            newPointsDifferences[user.id ?? ""] = diff
+        }
+        pointsDifferences = newPointsDifferences
+    }
+
 }
 
 #Preview {

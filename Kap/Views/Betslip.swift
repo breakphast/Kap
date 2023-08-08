@@ -48,19 +48,7 @@ struct Betslip: View {
             }
         }
         .task {
-            do {
-                let fetchedBets = try await BetViewModel().fetchBets(games: viewModel.games)
-                bets = fetchedBets.filter({ $0.playerID == viewModel.activeUser?.id })
-                bets = bets.filter({ $0.week == viewModel.currentWeek })
-                
-                let fetchedParlays = try await ParlayViewModel().fetchParlays(games: viewModel.games)
-                parlays = fetchedParlays.filter({ $0.playerID == viewModel.activeUser?.id ?? ""})
-                parlays = parlays.filter({ $0.week == viewModel.currentWeek })
-                
-                allDisabled = false
-            } catch {
-                print("Error fetching bets: \(error)")
-            }
+            await fetchData()
         }
         .gesture(
             DragGesture()
@@ -89,6 +77,22 @@ struct Betslip: View {
                 Text("Betslip")
                     .font(.system(size: 32, weight: .bold, design: .rounded))
             }
+        }
+    }
+    
+    private func fetchData() async {
+        do {
+            let fetchedBets = try await BetViewModel().fetchBets(games: viewModel.games)
+            bets = fetchedBets.filter({ $0.playerID == viewModel.activeUser?.id })
+            bets = bets.filter({ $0.week == viewModel.currentWeek })
+            
+            let fetchedParlays = try await ParlayViewModel().fetchParlays(games: viewModel.games)
+            parlays = fetchedParlays.filter({ $0.playerID == viewModel.activeUser?.id ?? ""})
+            parlays = parlays.filter({ $0.week == viewModel.currentWeek })
+            
+            allDisabled = false
+        } catch {
+            print("Error fetching bets: \(error)")
         }
     }
 }
@@ -129,11 +133,11 @@ struct BetView: View {
         .shadow(radius: 10)
         .onAppear {
             isValid = bets.filter({ $0.betOption.dayType == bet.betOption.dayType }).count < bet.betOption.maxBets ?? 0
-            isValid = bets.filter({ $0.betOption.game.id == bet.game.id }).count < bet.betOption.maxBets ?? 0
+            isValid = bets.filter({ $0.betOption.game.id == bet.game.id }).count < 1
         }
         .onChange(of: bets.count) { oldValue, newValue in
             isValid = bets.filter({ $0.betOption.dayType == bet.betOption.dayType }).count < bet.betOption.maxBets ?? 0
-            isValid = bets.filter({ $0.betOption.game.id == bet.game.id }).count < bet.betOption.maxBets ?? 0
+            isValid = bets.filter({ $0.betOption.game.id == bet.game.id }).count < 1
         }
     }
     

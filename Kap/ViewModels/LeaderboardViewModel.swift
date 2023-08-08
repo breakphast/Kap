@@ -31,6 +31,13 @@ class LeaderboardViewModel {
         return points
     }
     
+    func getWeeklyPointsDifference(user: User, bets: [Bet], currentWeek: Int, leagueID: String) async -> Int {
+        let currentWeekPoints = await getWeeklyPoints(user: user, bets: bets, week: currentWeek, leagueID: leagueID)
+        let previousWeekPoints = await getWeeklyPoints(user: user, bets: bets, week: currentWeek - 1, leagueID: leagueID)
+        
+        return currentWeekPoints - previousWeekPoints
+    }
+    
     func generateLeaderboards(leagueID: String, users: [User], bets: [Bet], weeks: [Int]) async -> [[User]] {
         var boards = [[User]]()
         
@@ -55,7 +62,7 @@ class LeaderboardViewModel {
 
             let rankDifference = week1Rank - week2Rank
             
-            if abs(rankDifference) > 1 {
+            if abs(rankDifference) >= 3 {
                 bigMovers.append((user, up: rankDifference > 0))
             }
         }

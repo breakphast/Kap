@@ -95,7 +95,6 @@
 		3EA650342A5F7565007CA5ED = {
 			isa = PBXGroup;
 			children = (
-				3E195C772A747D8300FB0CAD /* LeaderboardViewModel.swift */,
 				3EA6503F2A5F7565007CA5ED /* Kap */,
 				3EA6503E2A5F7565007CA5ED /* Products */,
 			);
@@ -142,6 +141,7 @@
 				3EFA18782A70C192002D6E94 /* LeagueViewModel.swift */,
 				3EFA18722A709843002D6E94 /* BetViewModel.swift */,
 				3EFA187A2A70C1C7002D6E94 /* PlayerViewModel.swift */,
+				3E195C772A747D8300FB0CAD /* LeaderboardViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
