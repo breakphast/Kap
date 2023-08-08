@@ -16,6 +16,7 @@ struct MyBets: View {
     
     @State private var bets: [Bet] = []
     @State private var parlays: [Parlay] = []
+    @State private var weeklyPoints = 0
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -66,6 +67,10 @@ struct MyBets: View {
                             .font(.system(.body, design: .rounded, weight: .bold))
                             .foregroundStyle(.lion)
                         
+                        Text("TOTAL POINTS: \(weeklyPoints)")
+                            .font(.system(.body, design: .rounded, weight: .bold))
+                            .padding(.vertical, 4)
+                        
                         ScrollView(showsIndicators: false) {
                             VStack(spacing: 20) {
                                 ForEach(bets.filter({ $0.result != .pending }), id: \.id) { bet in
@@ -104,6 +109,11 @@ struct MyBets: View {
             }
         }
         .fontDesign(.rounded)
+        .onAppear {
+            Task {
+                weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(user: viewModel.activeUser!, bets: viewModel.bets, week: viewModel.currentWeek, leagueID: viewModel.activeLeague?.id ?? "")
+            }
+        }
         .onChange(of: bets.count, { _, _ in
             Task {
                 do {
@@ -114,6 +124,8 @@ struct MyBets: View {
                     let fetchedParlays = try await ParlayViewModel().fetchParlays(games: viewModel.games)
                     parlays = fetchedParlays.filter({ $0.playerID == viewModel.activeUser?.id ?? ""})
                     parlays = parlays.filter({ $0.week == viewModel.currentWeek })
+                    
+                    weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(user: viewModel.activeUser!, bets: viewModel.bets, week: viewModel.currentWeek, leagueID: viewModel.activeLeague?.id ?? "")
                 } catch {
                     print("Error fetching bets: \(error)")
                 }
@@ -126,8 +138,10 @@ struct MyBets: View {
                 bets = bets.filter({ $0.week == viewModel.currentWeek })
                 
                 let fetchedParlays = try await ParlayViewModel().fetchParlays(games: viewModel.games)
-                parlays = fetchedParlays.filter({ $0.playerID == viewModel.activeUser?.id ?? ""})
-                parlays = parlays.filter({ $0.week == viewModel.currentWeek })
+                parlays = fetchedParlays.filter({ $0.playerID == viewModel.activeUser?.id })
+                parlays = parlays.filter({ $0.week == 1 })
+                
+                weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(user: viewModel.activeUser!, bets: viewModel.bets, week: viewModel.currentWeek, leagueID: viewModel.activeLeague?.id ?? "")
             } catch {
                 print("Error fetching bets: \(error)")
             }
@@ -145,6 +159,17 @@ struct PlacedBetView: View {
     @Namespace var trash
     let bet: Bet
     @Binding var bets: [Bet]
+    
+    func pointsColor(for result: BetResult) -> Color {
+        switch result {
+        case .win:
+            return .bean
+        case .loss:
+            return .redd
+        case .push, .pending:
+            return .primary
+        }
+    }
     
     var body: some View {
         ZStack(alignment: .topLeading) {
@@ -187,6 +212,7 @@ struct PlacedBetView: View {
                     
                     VStack(alignment: .leading) {
                         Text("Points: \(abs(bet.points!))")
+                            .foregroundStyle(pointsColor(for: bet.result ?? .pending))
                         RoundedRectangle(cornerRadius: 1)
                             .frame(width: 100, height: 2)
                             .foregroundStyle(.secondary)
@@ -284,8 +310,8 @@ struct PlacedParlayView: View {
         ZStack(alignment: .topLeading) {
             Color("onyxLightish")
             HStack(spacing: 8) {
-                VStack(alignment: .leading, spacing: 12) {
-                    VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading) {
+                    VStack(alignment: .leading, spacing: 8) {
                         HStack {
                             Text("\(legs) Leg Parlay")
                             
@@ -295,23 +321,23 @@ struct PlacedParlayView: View {
                         }
                         .font(.subheadline.bold())
                         
-                        HStack {
+                        HStack(alignment: .top) {
+                            ScrollView(showsIndicators: false) {
+                                VStack(alignment: .leading) {
+                                    ForEach(formattedBets, id: \.self) { bet in
+                                        Text(bet).lineLimit(1)
+                                    }
+                                }
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                            }
+                            .frame(width: 200, height: 60, alignment: .leading)
+                            
                             Spacer()
                             Text("Parlay Bonus")
                                 .font(.caption.bold())
                                 .foregroundStyle(.secondary)
                         }
-                        
-                        ScrollView(showsIndicators: false) {
-                            VStack(alignment: .leading) {
-                                ForEach(formattedBets, id: \.self) { bet in
-                                    Text(bet).lineLimit(1)
-                                }
-                            }
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                        }
-                        .frame(width: 200, height: 60, alignment: .leading)
                         
                         VStack(alignment: .leading) {
                             Text("Points: \(abs(parlay.totalPoints))")
@@ -324,7 +350,7 @@ struct PlacedParlayView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                .padding(.horizontal, 24)
+                .padding(24)
             }
             .fontDesign(.rounded)
             .foregroundStyle(.white)
@@ -336,8 +362,7 @@ struct PlacedParlayView: View {
                     .foregroundColor(parlay.result == .win ? .bean : parlay.result == .loss ? .redd : .secondary)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-            .padding(.trailing, 24)
-            .padding(.bottom, 12)
+            .padding(24)
             
             if deleteActive {
                 HStack(spacing: 12) {
@@ -368,7 +393,7 @@ struct PlacedParlayView: View {
                         }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                .padding(.bottom, 8)
+                .padding(.bottom, 12)
                 .matchedGeometryEffect(id: "trash", in: trash)
             } else {
                 Image(systemName: "trash")
@@ -385,7 +410,7 @@ struct PlacedParlayView: View {
                     .matchedGeometryEffect(id: "trash", in: trash)
             }
         }
-        .frame(height: 180)
+        .frame(height: 160)
         .cornerRadius(20)
         .padding(.horizontal, 20)
         .shadow(radius: 10)

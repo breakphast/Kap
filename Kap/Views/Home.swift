@@ -44,7 +44,7 @@ struct Home: View {
         .task {
             do {
                 viewModel.users = try await UserViewModel().fetchAllUsers()
-                viewModel.activeUser = viewModel.users.filter({ $0.name == "RingoMingo" }).randomElement()
+                viewModel.activeUser = viewModel.users.filter({ $0.name == "Mingy" }).randomElement()
                 
                 print(viewModel.activeUser?.name ?? "")
                 
@@ -57,6 +57,8 @@ struct Home: View {
                 viewModel.bets = try await BetViewModel().fetchBets(games: viewModel.games)
                 
                 viewModel.parlays = try await ParlayViewModel().fetchParlays(games: viewModel.games)
+                
+                let leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: viewModel.activeLeague?.id ?? "", users: viewModel.users, bets: viewModel.bets, weeks: [1,2])
                 
 //                let playerIDs = viewModel.activeLeague?.players.map { $0 == viewModel.activeUser?.id ?? ""}
 //                viewModel.players = try await PlayerViewModel().fetchAllPlayers()

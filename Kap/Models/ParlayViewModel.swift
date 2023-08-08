@@ -72,7 +72,7 @@ class ParlayViewModel {
             "result": parlay.result.rawValue,
             "totalOdds": parlay.totalOdds,
             "totalPoints": parlay.totalPoints,
-            "betString": parlay.betString,
+            "betString": parlay.bets.map { $0.betString }.joined(separator: ", "),
             "playerID": parlay.playerID,
             "week": parlay.week
         ]

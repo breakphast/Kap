@@ -74,11 +74,23 @@ class BetViewModel {
         let _ = try await db.collection("bets").document(bet.id.uuidString).setData(newBet)
     }
 
-    
     func makeBet(for game: Game, betOption: BetOption, playerID: String, week: Int) -> Bet {
         let bet = Bet(id: UUID(), betOption: betOption, game: game, type: betOption.betType, result: [.pending, .loss, .win].randomElement(), odds: betOption.odds, selectedTeam: betOption.selectedTeam, playerID: playerID, week: week)
         
         return bet
+    }
+    
+    func updateBet(bet: Bet) {
+        let newbet = db.collection("bets").document(bet.id.uuidString)
+        newbet.updateData([
+            "betString": bet.betString
+        ]) { err in
+            if let err = err {
+                print("Error updating document: \(err)")
+            } else {
+                print("Document successfully updated")
+            }
+        }
     }
     
     func deleteBet(betID: String) async throws {

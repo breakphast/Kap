@@ -18,6 +18,7 @@ struct Betslip: View {
     @State private var shouldDismiss = false
     @State private var bets: [Bet] = []
     @State private var parlays: [Parlay] = []
+    @State private var allDisabled = true
     
     var body: some View {
         ZStack {
@@ -26,11 +27,11 @@ struct Betslip: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 20) {
                     ForEach(viewModel.selectedBets, id: \.id) { bet in
-                        BetView(bets: $bets, bet: bet)
+                        BetView(bets: $bets, allDisabled: $allDisabled, bet: bet)
                     }
                     
                     ForEach(viewModel.activeParlays, id: \.id) { parlay in
-                        ParlayView(parlays: $parlays, parlay: parlay)
+                        ParlayView(parlays: $parlays, allDisabled: $allDisabled, parlay: parlay)
                     }
                 }
                 .padding(.top, 20)
@@ -55,6 +56,8 @@ struct Betslip: View {
                 let fetchedParlays = try await ParlayViewModel().fetchParlays(games: viewModel.games)
                 parlays = fetchedParlays.filter({ $0.playerID == viewModel.activeUser?.id ?? ""})
                 parlays = parlays.filter({ $0.week == viewModel.currentWeek })
+                
+                allDisabled = false
             } catch {
                 print("Error fetching bets: \(error)")
             }
@@ -92,10 +95,11 @@ struct Betslip: View {
 
 struct BetView: View {
     @Environment(\.viewModel) private var viewModel
-    @State var isValid = true
+    @State var isValid = false
     @State var isPlaced = false
     @Environment(\.dismiss) var dismiss
     @Binding var bets: [Bet]
+    @Binding var allDisabled: Bool
     let bet: Bet
     
     var body: some View {
@@ -125,9 +129,11 @@ struct BetView: View {
         .shadow(radius: 10)
         .onAppear {
             isValid = bets.filter({ $0.betOption.dayType == bet.betOption.dayType }).count < bet.betOption.maxBets ?? 0
+            isValid = bets.filter({ $0.betOption.game.id == bet.game.id }).count < bet.betOption.maxBets ?? 0
         }
         .onChange(of: bets.count) { oldValue, newValue in
             isValid = bets.filter({ $0.betOption.dayType == bet.betOption.dayType }).count < bet.betOption.maxBets ?? 0
+            isValid = bets.filter({ $0.betOption.game.id == bet.game.id }).count < bet.betOption.maxBets ?? 0
         }
     }
     
@@ -202,18 +208,18 @@ struct BetView: View {
                     Color.onyxLightish
                     Text("Place Bet")
                         .font(.system(.caption, design: .rounded, weight: .bold))
-                        .foregroundStyle(isValid ? .lion : .white)
+                        .foregroundStyle(isValid || allDisabled ? .lion : .white)
                         .lineLimit(2)
                 }
                 .overlay {
-                    Color.onyxLightish.opacity(isValid ? 0.0 : 0.7).ignoresSafeArea()
+                    Color.onyxLightish.opacity(isValid || allDisabled ? 0.0 : 0.7).ignoresSafeArea()
                 }
                 .frame(width: 100, height: 50)
                 .cornerRadius(15)
                 .shadow(radius: 10)
             }
             .zIndex(100)
-            .disabled(!isValid)
+            .disabled(!isValid || allDisabled)
             
             Button {
                 withAnimation {
@@ -255,6 +261,7 @@ struct ParlayView: View {
     @Environment(\.viewModel) private var viewModel
     @State var isValid = true
     @Binding var parlays: [Parlay]
+    @Binding var allDisabled: Bool
     let parlay: Parlay
     
     var body: some View {
@@ -338,18 +345,18 @@ struct ParlayView: View {
                 Color.onyxLightish
                 Text("Place Parlay")
                     .font(.system(.caption, design: .rounded, weight: .bold))
-                    .foregroundStyle(isValid ? .lion : .white)
+                    .foregroundStyle(isValid || allDisabled ? .lion : .white)
                     .lineLimit(2)
             }
             .overlay {
-                Color.onyxLightish.opacity(isValid ? 0.0 : 0.7).ignoresSafeArea()
+                Color.onyxLightish.opacity(isValid || allDisabled ? 0.0 : 0.7).ignoresSafeArea()
             }
             .frame(width: 100, height: 40)
             .cornerRadius(15)
             .shadow(radius: 10)
         }
         .zIndex(100)
-        .disabled(!isValid)
+        .disabled(!isValid || allDisabled)
     }
 }
 

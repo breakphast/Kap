@@ -108,6 +108,12 @@ class Bet {
         } else {
             return 0
         }
+        
+        if bet.result == .loss {
+            points *= -1
+            points = points / 2
+        }
+        
         return Int(round(points))
     }
     

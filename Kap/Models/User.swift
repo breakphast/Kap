@@ -14,4 +14,5 @@ struct User: Codable, Identifiable {
     var email: String
     var name: String
     var leagues: [String]  // Store league IDs the user is part of
+    var totalPoints: Int?
 }

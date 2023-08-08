@@ -11,7 +11,7 @@ struct Board: View {
     let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 3)
     @Environment(\.viewModel) private var viewModel
     @Environment(\.dismiss) var dismiss
-    @State var selectedOption = "League A"
+    @State var selectedOption = "DowgHouse"
     
     var body: some View {
         NavigationStack {
@@ -23,17 +23,17 @@ struct Board: View {
                         .navigationBarBackButtonHidden()
                         .toolbar {
                             ToolbarItem(placement: .topBarLeading) {
-                                Text("Board")
+                                Text(viewModel.activeUser?.name ?? "")
                                     .font(.system(size: 18, weight: .bold, design: .rounded))
                             }
                             
                             ToolbarItem(placement: .principal) {
                                 Menu {
-                                    Button("Option 1", action: {
-                                        selectedOption = "League A"
+                                    Button("DowgHouse", action: {
+                                        selectedOption = "DowgHouse"
                                     })
-                                    Button("Option 2", action: {
-                                        selectedOption = "League B"
+                                    Button("Studwell ggs", action: {
+                                        selectedOption = "Studwell ggs"
                                     })
                                 } label: {
                                     HStack(spacing: 4) {

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		3E195C762A74683200FB0CAD /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E195C752A74683200FB0CAD /* Constants.swift */; };
+		3E195C782A747D8300FB0CAD /* LeaderboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E195C772A747D8300FB0CAD /* LeaderboardViewModel.swift */; };
 		3E3596BF2A6C0B1800948A38 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 3E3596BE2A6C0B1800948A38 /* FirebaseAuth */; };
 		3E3596C12A6C0B1800948A38 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 3E3596C02A6C0B1800948A38 /* FirebaseFirestore */; };
 		3E3596C32A6C0B1800948A38 /* FirebaseFirestoreSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 3E3596C22A6C0B1800948A38 /* FirebaseFirestoreSwift */; };
@@ -40,6 +41,7 @@
 
 /* Begin PBXFileReference section */
 		3E195C752A74683200FB0CAD /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		3E195C772A747D8300FB0CAD /* LeaderboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaderboardViewModel.swift; sourceTree = "<group>"; };
 		3E5D8D222A639B5300634DBE /* Board.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Board.swift; sourceTree = "<group>"; };
 		3E5D8D242A63A4F100634DBE /* CustomButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomButton.swift; sourceTree = "<group>"; };
 		3E5D8D262A64718C00634DBE /* MyBets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyBets.swift; sourceTree = "<group>"; };
@@ -93,6 +95,7 @@
 		3EA650342A5F7565007CA5ED = {
 			isa = PBXGroup;
 			children = (
+				3E195C772A747D8300FB0CAD /* LeaderboardViewModel.swift */,
 				3EA6503F2A5F7565007CA5ED /* Kap */,
 				3EA6503E2A5F7565007CA5ED /* Products */,
 			);
@@ -274,6 +277,7 @@
 				3EE35E5D2A60D7FB0026F952 /* Game.swift in Sources */,
 				3E5D8D252A63A4F100634DBE /* CustomButton.swift in Sources */,
 				3E5D8D272A64718C00634DBE /* MyBets.swift in Sources */,
+				3E195C782A747D8300FB0CAD /* LeaderboardViewModel.swift in Sources */,
 				3EE35E552A60D77A0026F952 /* User.swift in Sources */,
 				3EE35E532A5F86CB0026F952 /* Home.swift in Sources */,
 				3EF3991B2A71CF5100E03B76 /* Player.swift in Sources */,
@@ -430,7 +434,7 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -461,7 +465,7 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
