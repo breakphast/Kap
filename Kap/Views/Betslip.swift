@@ -132,12 +132,10 @@ struct BetView: View {
         .padding(.horizontal, 20)
         .shadow(radius: 10)
         .onAppear {
-            isValid = bets.filter({ $0.betOption.dayType == bet.betOption.dayType }).count < bet.betOption.maxBets ?? 0
-            isValid = bets.filter({ $0.betOption.game.id == bet.game.id }).count < 1
+            isValid = bets.filter({ $0.betOption.dayType == bet.betOption.dayType }).count < bet.betOption.maxBets ?? 0 && bets.filter({ $0.betOption.game.id == bet.game.id }).count < 1
         }
         .onChange(of: bets.count) { oldValue, newValue in
-            isValid = bets.filter({ $0.betOption.dayType == bet.betOption.dayType }).count < bet.betOption.maxBets ?? 0
-            isValid = bets.filter({ $0.betOption.game.id == bet.game.id }).count < 1
+            isValid = bets.filter({ $0.betOption.dayType == bet.betOption.dayType }).count < bet.betOption.maxBets ?? 0 && bets.filter({ $0.betOption.game.id == bet.game.id }).count < 1
         }
     }
     

@@ -57,7 +57,7 @@ class ParlayViewModel {
     }
     
     func addParlay(parlay: Parlay) async throws {
-        let newParlay: [String: Any] = [
+        var newParlay: [String: Any] = [
             "id": UUID().uuidString,
             "bets": parlay.bets.map { bet in
                 [
@@ -72,10 +72,24 @@ class ParlayViewModel {
             "result": parlay.result.rawValue,
             "totalOdds": parlay.totalOdds,
             "totalPoints": parlay.totalPoints,
-            "betString": parlay.bets.map { $0.betString }.joined(separator: ", "),
             "playerID": parlay.playerID,
             "week": parlay.week
         ]
+        
+        var betString: String {
+            var strings: [String] = []
+            
+            for bet in parlay.bets {
+                if bet.type == .spread {
+                    strings.append("\(bet.selectedTeam ?? "") \(bet.betString)")
+                } else {
+                    strings.append(bet.betString)
+                }
+            }
+            return strings.joined(separator: ", ")
+        }
+        
+        newParlay["betString"] = betString
 
         let _ = try await db.collection("parlays").addDocument(data: newParlay)
     }

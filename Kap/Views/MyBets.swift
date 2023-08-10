@@ -29,7 +29,7 @@ struct MyBets: View {
             
             TabView {
                 VStack {
-                    if bets.filter({ $0.result == .pending }).isEmpty {
+                    if bets.filter({ $0.result == .pending }).isEmpty && parlays.filter({ $0.result == .pending }).isEmpty {
                         Text("No active bets")
                             .foregroundColor(.white)
                             .font(.largeTitle.bold())

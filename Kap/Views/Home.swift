@@ -8,7 +8,6 @@
 import SwiftUI
 import Observation
 import Firebase
-//import FirebaseFirestore
 import FirebaseFirestoreSwift
 
 struct Home: View {
@@ -66,7 +65,7 @@ struct Home: View {
 //                viewModel.players = try await PlayerViewModel().fetchAllPlayers()
 //                let _ = try await LeagueViewModel().addPlayerToLeague(leagueId: viewModel.activeLeague?.id ?? "", playerId: viewModel.activeUser?.id ?? "")
                 
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     withAnimation(.smooth) {
                         self.showingSplashScreen = false
                     }
@@ -82,7 +81,7 @@ struct Home: View {
                     Color.lion
                         .ignoresSafeArea()
                         .overlay(
-                            Image(.mün)
+                            Image(.loch)
                                 .resizable()
                                 .frame(width: 200, height: 200)
                                 .scaledToFit()
