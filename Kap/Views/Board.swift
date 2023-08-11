@@ -25,6 +25,9 @@ struct Board: View {
                             ToolbarItem(placement: .topBarLeading) {
                                 Text(viewModel.activeUser?.name ?? "")
                                     .font(.system(size: 18, weight: .bold, design: .rounded))
+                                    .onTapGesture {
+                                        viewModel.activeUser = viewModel.users.randomElement()
+                                    }
                             }
                             
                             ToolbarItem(placement: .principal) {
@@ -72,12 +75,12 @@ struct Board: View {
                     Spacer()
                     NavigationLink(destination: Betslip()) {
                         ZStack {
-                            Color.onyxLightish
+                            Color.lion
                             
                             Text("Betslip")
                             .font(.title.bold())
                             .fontDesign(.rounded)
-                            .foregroundStyle(.lion)
+                            .foregroundStyle(.oW)
                         }
                         .frame(height: 60)
                         .clipShape(TopRoundedRectangle(radius: 20))
@@ -141,15 +144,20 @@ struct GameListingView: View {
 }
 
 struct SectionView: View {
+    @Environment(\.viewModel) private var viewModel
     var title: String
     var games: [Game]
     
+    @State private var dayType: String = ""
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(title)
-                .font(.subheadline.bold())
-                .foregroundStyle(.lion)
-                .padding(.bottom)
+            HStack {
+                Text(title)
+                    .font(.subheadline.bold())
+                    .foregroundStyle(.lion)
+                    .padding(.bottom)
+            }
             
             ForEach(games, id: \.id) { game in
                 GameRow(game: game)
@@ -167,11 +175,23 @@ struct GameRow: View {
     var body: some View {
         HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 10) {
-                Text(nflTeams[game.awayTeam] ?? "")
+                HStack {
+                    Image("\(nflLogos[game.awayTeam]!)")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 40)
+                    Text(nflTeams[game.awayTeam] ?? "")
+                }
                 Text("@")
-                Text(nflTeams[game.homeTeam] ?? "")
+                HStack {
+                    Image("\(nflLogos[game.homeTeam]!)")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 40)
+                    Text(nflTeams[game.homeTeam] ?? "")
+                }
             }
-            .font(.headline.bold())
+            .font(.subheadline.bold())
             .frame(maxWidth: UIScreen.main.bounds.width / 3, alignment: .leading)
             
             Spacer()

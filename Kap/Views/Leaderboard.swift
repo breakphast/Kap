@@ -12,8 +12,11 @@ struct Leaderboard: View {
     let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 3)
     
     @State private var users: [User] = []
-    @State var selectedOption = "Week 1"
+    @State private var selectedOption = "Week 1"
+    @State private var week = 1
     @State private var pointsDifferences: [String: Int] = [:]
+    @State private var leaderboards: [[User]] = [[]]
+    @State private var bigMovers: [(User, up: Bool)]?
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -26,9 +29,9 @@ struct Leaderboard: View {
                     Button("Week 1", action: {
                         withAnimation {
                             selectedOption = "Week 1"
-                            viewModel.currentWeek = 1
+                            week = 1
                             Task {
-                                users = await LeaderboardViewModel().getLeaderboardData(leagueID: viewModel.activeLeague?.id ?? "", users: viewModel.users, bets: viewModel.bets, week: viewModel.currentWeek)
+                                users = await LeaderboardViewModel().getLeaderboardData(leagueID: viewModel.activeLeague?.id ?? "", users: viewModel.users, bets: viewModel.bets, week: 1)
                                 await updatePointsDifferences()
                             }
                         }
@@ -36,9 +39,9 @@ struct Leaderboard: View {
                     Button("Week 2", action: {
                         withAnimation {
                             selectedOption = "Week 2"
-                            viewModel.currentWeek = 2
+                            week = 2
                             Task {
-                                users = await LeaderboardViewModel().getLeaderboardData(leagueID: viewModel.activeLeague?.id ?? "", users: viewModel.users, bets: viewModel.bets, week: viewModel.currentWeek)
+                                users = await LeaderboardViewModel().getLeaderboardData(leagueID: viewModel.activeLeague?.id ?? "", users: viewModel.users, bets: viewModel.bets, week: 2)
                                 await updatePointsDifferences()
                             }
                         }
@@ -66,7 +69,7 @@ struct Leaderboard: View {
                                     .font(.title3.bold())
                                 
                                 ZStack(alignment: .leading) {
-                                    if index == Int.random(in: 0 ..< users.count) || index == 0 {
+                                    if index == 0 {
                                         RoundedRectangle(cornerRadius: 20)
                                             .fill(Color.clear)
                                             .frame(minWidth: 0, maxWidth: .infinity)
@@ -92,7 +95,7 @@ struct Leaderboard: View {
                                                 Text("Total points: \((user.totalPoints ?? 0))")
                                                     .font(.caption.bold())
                                                     .foregroundStyle(.secondary)
-                                                if viewModel.currentWeek != 1 {
+                                                if selectedOption != "Week 1" {
                                                     let userPointsDifference = pointsDifference(for: user)
                                                     Text("\(userPointsDifference > 0 ? "+" : "")\(userPointsDifference)")
                                                         .font(.caption2)
@@ -100,11 +103,12 @@ struct Leaderboard: View {
                                                 }
                                             }
                                         }
-                                        if viewModel.currentWeek != 1 {
+                                        if selectedOption != "Week 1" {
                                             Spacer()
-                                            Image(systemName: index == 0 ? "minus" : user.totalPoints! >= 0 ? "chevron.up.circle" : "chevron.down.circle")
+                                            Image(systemName: pointsDifference(for: user) >= 0 ? "chevron.up.circle" : "chevron.down.circle")
                                                 .font(.title2.bold())
-                                                .foregroundStyle(index == 0 ? .secondary : user.totalPoints! >= 0 ? Color.bean : Color.red)
+                                                .foregroundStyle(pointsDifference(for: user) >= 0 ? Color.bean : Color.red)
+                                            
                                         }
                                     }
                                     .padding(.horizontal)
@@ -122,8 +126,27 @@ struct Leaderboard: View {
         }
         .fontDesign(.rounded)
         .task {
-            users = await LeaderboardViewModel().getLeaderboardData(leagueID: viewModel.activeLeague?.id ?? "", users: viewModel.users, bets: viewModel.bets, week: viewModel.currentWeek)
+            week = viewModel.currentWeek
+            selectedOption = "Week \(week)"
+            
+            users = await LeaderboardViewModel().getLeaderboardData(leagueID: viewModel.activeLeague?.id ?? "", users: viewModel.users, bets: viewModel.bets, week: week)
             await updatePointsDifferences()
+            
+            leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: viewModel.activeLeague!.id!, users: viewModel.users, bets: viewModel.bets, weeks: [1, 2])
+            
+            bigMovers = LeaderboardViewModel().bigMover(from: leaderboards[0], to: leaderboards[1])
+            
+        }
+        .onChange(of: viewModel.changed) { _, _ in
+            print("WEnt")
+            Task {
+                users = await LeaderboardViewModel().getLeaderboardData(leagueID: viewModel.activeLeague?.id ?? "", users: viewModel.users, bets: viewModel.bets, week: week)
+                await updatePointsDifferences()
+                
+                leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: viewModel.activeLeague!.id!, users: viewModel.users, bets: viewModel.bets, weeks: [1, 2])
+                
+                bigMovers = LeaderboardViewModel().bigMover(from: leaderboards[0], to: leaderboards[1])
+            }
         }
     }
     

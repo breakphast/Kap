@@ -16,7 +16,7 @@ struct MyBets: View {
     
     @State private var bets: [Bet] = []
     @State private var parlays: [Parlay] = []
-    @State private var weeklyPoints = 0
+    @State private var weeklyPoints: Int?
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -67,7 +67,7 @@ struct MyBets: View {
                             .font(.system(.body, design: .rounded, weight: .bold))
                             .foregroundStyle(.lion)
                         
-                        Text("TOTAL POINTS: \(weeklyPoints)")
+                        Text("TOTAL POINTS: \(weeklyPoints ?? 0)")
                             .font(.system(.body, design: .rounded, weight: .bold))
                             .padding(.vertical, 4)
                         
@@ -111,7 +111,7 @@ struct MyBets: View {
         .fontDesign(.rounded)
         .onAppear {
             Task {
-                weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(user: viewModel.activeUser!, bets: viewModel.bets, week: viewModel.currentWeek, leagueID: viewModel.activeLeague?.id ?? "")
+                weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(user: viewModel.activeUser!, bets: bets, week: viewModel.currentWeek, leagueID: viewModel.activeLeague?.id ?? "")
             }
         }
         .onChange(of: bets.count, { _, _ in
@@ -125,7 +125,7 @@ struct MyBets: View {
                     parlays = fetchedParlays.filter({ $0.playerID == viewModel.activeUser?.id ?? ""})
                     parlays = parlays.filter({ $0.week == viewModel.currentWeek })
                     
-                    weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(user: viewModel.activeUser!, bets: viewModel.bets, week: viewModel.currentWeek, leagueID: viewModel.activeLeague?.id ?? "")
+                    weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(user: viewModel.activeUser!, bets: bets, week: viewModel.currentWeek, leagueID: viewModel.activeLeague?.id ?? "")
                 } catch {
                     print("Error fetching bets: \(error)")
                 }
@@ -141,7 +141,7 @@ struct MyBets: View {
                 parlays = fetchedParlays.filter({ $0.playerID == viewModel.activeUser?.id })
                 parlays = parlays.filter({ $0.week == 1 })
                 
-                weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(user: viewModel.activeUser!, bets: viewModel.bets, week: viewModel.currentWeek, leagueID: viewModel.activeLeague?.id ?? "")
+                weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(user: viewModel.activeUser!, bets: bets, week: viewModel.currentWeek, leagueID: viewModel.activeLeague?.id ?? "")
             } catch {
                 print("Error fetching bets: \(error)")
             }
@@ -235,10 +235,10 @@ struct PlacedBetView: View {
             .padding(24)
             
             if deleteActive {
-                HStack(spacing: 12) {
+                HStack(spacing: 14) {
                     Image(systemName: "xmark")
-                        .foregroundColor(.red)
-                        .font(.headline.bold())
+                        .foregroundColor(.redd)
+                        .font(.title.bold())
                         .fontDesign(.rounded)
                         .padding(.bottom, 12)
                         .onTapGesture {
@@ -249,7 +249,7 @@ struct PlacedBetView: View {
                     
                     Image(systemName: "checkmark")
                         .foregroundColor(.bean)
-                        .font(.headline.bold())
+                        .font(.title.bold())
                         .fontDesign(.rounded)
                         .padding(.bottom, 12)
                         .onTapGesture {

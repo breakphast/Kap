@@ -189,6 +189,7 @@ struct BetView: View {
                     
                     if !bets.contains(where: { $0.game.id == placedBet.game.id }) {
                         try await BetViewModel().addBet(bet: placedBet)
+                        viewModel.changed.toggle()
                         
                         let fetchedBets = try await BetViewModel().fetchBets(games: viewModel.games)
                         let newBets = fetchedBets.filter({ $0.playerID == viewModel.activeUser?.id })
@@ -207,10 +208,10 @@ struct BetView: View {
                 }
             } label: {
                 ZStack {
-                    Color.onyxLightish
+                    Color.lion
                     Text("Place Bet")
                         .font(.system(.caption, design: .rounded, weight: .bold))
-                        .foregroundStyle(isValid || allDisabled ? .lion : .white)
+                        .foregroundStyle(isValid || allDisabled ? .oW : .gray)
                         .lineLimit(2)
                 }
                 .overlay {
@@ -232,11 +233,11 @@ struct BetView: View {
                 }
             } label: {
                 ZStack {
-                    Color.redd.opacity(0.8)
+                    Color.oW.opacity(0.8)
                     Text("Cancel Bet")
                         .font(.caption.bold())
                         .fontDesign(.rounded)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(.redd.opacity(0.8))
                         .lineLimit(2)
                 }
                 .frame(width: 100, height: 50)

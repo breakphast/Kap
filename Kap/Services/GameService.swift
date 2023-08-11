@@ -7,6 +7,8 @@
 import Foundation
 import SwiftUI
 import Firebase
+import FirebaseFirestore
+import FirebaseFirestoreSwift
 
 struct ScoreElement: Codable {
     let id: String
@@ -15,7 +17,35 @@ struct ScoreElement: Codable {
 
 class GameService {
     var games: [Game] = []
+    private var db = Firestore.firestore()
     
+    func updateGameScore(game: Game) async throws {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+
+        let scores = try await loadnflScoresData()
+        let scoresData = try decoder.decode([ScoreElement].self, from: scores)
+        
+        game.awayScore = scoresData[0].scores[0].score
+        game.homeScore = scoresData[0].scores[1].score
+
+        // Get the specific game document from Firestore asynchronously
+        let querySnapshot = try await db.collection("nflGames").whereField("id", isEqualTo: game.id).getDocuments()
+
+        // If we found a matching game in Firestore, update its score
+        if let newGameDocument = querySnapshot.documents.first {
+            // If you need to update based on the scoresData, include that logic here
+
+            try await newGameDocument.reference.updateData([
+                "homeScore": game.homeScore,
+                "awayScore": game.awayScore
+            ])
+            print("Document successfully updated")
+        } else {
+            print("No matching game found in Firestore")
+        }
+    }
+
     func getGames() async throws -> [Game] {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
@@ -24,14 +54,18 @@ class GameService {
         let gamesData = try decoder.decode([GameElement].self, from: odds)
         
         let scores = try await loadnflScoresData()
-        let scoresData = try decoder.decode([GameElement].self, from: scores)
+        let scoresData = try decoder.decode([ScoreElement].self, from: scores)
         
         games = gamesData.compactMap { Game(gameElement: $0) }
         
         for score in scoresData { 
             if let gameIndex = games.firstIndex(where: { $0.id == score.id }) {
-                games[gameIndex].awayScore = score.scores?[0].score
-                games[gameIndex].homeScore = score.scores?[1].score
+                print("Got em", score.scores)
+                games[gameIndex].awayScore = score.scores[0].score
+                games[gameIndex].homeScore = score.scores[1].score
+                
+                print(games[gameIndex].awayScore)
+                print(games[gameIndex].homeScore)
             }
         }
         return games

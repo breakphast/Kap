@@ -1,162 +1,142 @@
 [
     {
-        "id": "2b3d7457dc4137c5e85e04f43a9afb19",
+        "id": "3c4e8458ed5238d6f96f15e54bacdf20",
         "sport_key": "football_nfl",
         "sport_title": "NFL",
         "commence_time": "2023-07-15T23:05:00Z",
-        "completed": false,
-        "home_team": "Baltimore Orioles",
-        "away_team": "Miami Marlins",
+        "completed": true,
+        "home_team": "Dallas Cowboys",
+        "away_team": "New York Giants",
         "scores": [
-          {
-            "name": "Baltimore Orioles",
-            "score": "5"
-          },
-          {
-            "name": "Miami Marlins",
-            "score": "5"
-          }
+            {
+                "name": "Dallas Cowboys",
+                "score": "17"
+            },
+            {
+                "name": "New York Giants",
+                "score": "3"
+            }
         ],
         "last_update": "2023-07-16T01:26:58Z"
-      },
+    },
     {
-        "id": "c6fff13045fbce32a116b480967d092d",
+        "id": "4d5f9559ff6349e7g78g26j67kdefg31",
         "sport_key": "football_nfl",
         "sport_title": "NFL",
         "commence_time": "2023-07-15T23:05:00Z",
-        "completed": false,
-        "home_team": "Philadelphia Phillies",
-        "away_team": "San Diego Padres",
+        "completed": true,
+        "home_team": "San Francisco 49ers",
+        "away_team": "Seattle Seahawks",
         "scores": [
-          {
-            "name": "Philadelphia Phillies",
-            "score": "6"
-          },
-          {
-            "name": "San Diego Padres",
-            "score": "2"
-          }
+            {
+                "name": "San Francisco 49ers",
+                "score": "23"
+            },
+            {
+                "name": "Seattle Seahawks",
+                "score": "38"
+            }
         ],
         "last_update": "2023-07-16T01:26:58Z"
-      },
+    },
     {
-        "id": "57c6313cd1f43a06b212d36f1132d07e",
+        "id": "5e6g9560gg7410h8i89i37k78lophg42",
         "sport_key": "football_nfl",
         "sport_title": "NFL",
         "commence_time": "2023-07-15T23:07:00Z",
-        "completed": false,
-        "home_team": "Oakland Athletics",
-        "away_team": "Minnesota Twins",
+        "completed": true,
+        "home_team": "Kansas City Chiefs",
+        "away_team": "Denver Broncos",
         "scores": [
-          {
-            "name": "Oakland Athletics",
-            "score": "7"
-          },
-          {
-            "name": "Minnesota Twins",
-            "score": "8"
-          }
+            {
+                "name": "Kansas City Chiefs",
+                "score": "24"
+            },
+            {
+                "name": "Denver Broncos",
+                "score": "10"
+            }
         ],
         "last_update": "2023-07-16T01:26:58Z"
-      },
+    },
     {
-        "id": "4c6cb11b7f1faf14cadb44b994cbf645",
+        "id": "6f7h8671hh8522i9j01j48l89mpqi953",
         "sport_key": "football_nfl",
         "sport_title": "NFL",
         "commence_time": "2023-07-15T23:15:00Z",
-        "completed": false,
-        "home_team": "Atlanta Braves",
-        "away_team": "Chicago White Sox",
+        "completed": true,
+        "home_team": "Green Bay Packers",
+        "away_team": "Chicago Bears",
         "scores": [
-          {
-            "name": "Atlanta Braves",
-            "score": "4"
-          },
-          {
-            "name": "Chicago White Sox",
-            "score": "6"
-          }
+            {
+                "name": "Green Bay Packers",
+                "score": "13"
+            },
+            {
+                "name": "Chicago Bears",
+                "score": "14"
+            }
         ],
         "last_update": "2023-07-16T01:26:58Z"
-      },
+    },
     {
-        "id": "ff892884362b2e76e0c400c4e9b8bd29",
+        "id": "x9y8z7a6b5c4d3e2f1g0h9i8j7k6l5m4",
         "sport_key": "football_nfl",
         "sport_title": "NFL",
         "commence_time": "2023-07-15T23:45:41Z",
-        "completed": false,
-        "home_team": "Pittsburgh Pirates",
-        "away_team": "San Francisco Giants",
+        "completed": true,
+        "home_team": "New Orleans Saints",
+        "away_team": "Tampa Bay Buccaneers",
         "scores": [
-          {
-            "name": "Pittsburgh Pirates",
-            "score": "1"
-          },
-          {
-            "name": "San Francisco Giants",
-            "score": "1"
-          }
+            {
+                "name": "New Orleans Saints",
+                "score": "32"
+            },
+            {
+                "name": "Tampa Bay Buccaneers",
+                "score": "17"
+            }
         ],
         "last_update": "2023-07-16T01:26:58Z"
-      },
+    },
     {
-        "id": "8bb2891992be97ffc9c848337394fb1a",
+        "id": "w1x2y3z4a5b6c7d8e9f0g1h2i3j4k5l6m7",
         "sport_key": "football_nfl",
         "sport_title": "NFL",
         "commence_time": "2023-07-16T00:20:00Z",
-        "completed": false,
-        "home_team": "St. Louis Cardinals",
-        "away_team": "Washington Nationals",
+        "completed": true,
+        "home_team": "Philadelphia Eagles",
+        "away_team": "Washington Football Team",
         "scores": [
-          {
-            "name": "St. Louis Cardinals",
-            "score": "4"
-          },
-          {
-            "name": "Washington Nationals",
-            "score": "2"
-          }
+            {
+                "name": "Philadelphia Eagles",
+                "score": "10"
+            },
+            {
+                "name": "Washington Football Team",
+                "score": "13"
+            }
         ],
         "last_update": "2023-07-16T01:26:58Z"
-      },
+    },
     {
-        "id": "6b14ad4273b605e5a4f4928bdf00199f",
+        "id": "m7n6o5p4q3r2s1t0u9v8w7x6y5z4a3b2",
         "sport_key": "football_nfl",
         "sport_title": "NFL",
         "commence_time": "2023-07-16T00:25:00Z",
-        "completed": false,
-        "home_team": "Cincinnati Reds",
-        "away_team": "Milwaukee Brewers",
+        "completed": true,
+        "home_team": "Miami Dolphins",
+        "away_team": "New England Patriots",
         "scores": [
-          {
-            "name": "Cincinnati Reds",
-            "score": "0"
-          },
-          {
-            "name": "Milwaukee Brewers",
-            "score": "2"
-          }
+            {
+                "name": "Miami Dolphins",
+                "score": "0"
+            },
+            {
+                "name": "New England Patriots",
+                "score": "10"
+            }
         ],
         "last_update": "2023-07-16T01:26:58Z"
-      },
-    {
-        "id": "1f8fe19e46375e3d26056578084cdd2e",
-        "sport_key": "football_nfl",
-        "sport_title": "NFL",
-        "commence_time": "2023-07-16T01:07:00Z",
-        "completed": false,
-        "home_team": "Los Angeles Angels",
-        "away_team": "Houston Astros",
-        "scores": [
-          {
-            "name": "Los Angeles Angels",
-            "score": "0"
-          },
-          {
-            "name": "Houston Astros",
-            "score": "0"
-          }
-        ],
-        "last_update": "2023-07-16T01:26:58Z"
-      }
+    }
 ]

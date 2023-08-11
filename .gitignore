@@ -1,2 +1,6 @@
 
 *.xcbkptlist
+
+Kap.xcodeproj/project.xcworkspace/xcuserdata/dfitch.xcuserdatad/UserInterfaceState.xcuserstate
+
+.DS_Store

@@ -43,7 +43,7 @@ struct Home: View {
         .task {
             do {
                 viewModel.users = try await UserViewModel().fetchAllUsers()
-                viewModel.activeUser = viewModel.users.filter({ $0.name == "Mingy" }).randomElement()
+                viewModel.activeUser = viewModel.users.randomElement()
                 
                 print(viewModel.activeUser?.name ?? "")
                 
@@ -57,8 +57,10 @@ struct Home: View {
                 
                 viewModel.parlays = try await ParlayViewModel().fetchParlays(games: viewModel.games)
                 
-                let leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: viewModel.activeLeague?.id ?? "", users: viewModel.users, bets: viewModel.bets, weeks: [1,2])
+                let _ = await LeaderboardViewModel().generateLeaderboards(leagueID: viewModel.activeLeague?.id ?? "", users: viewModel.users, bets: viewModel.bets, weeks: [1,2])
 //                let games = try await GameService().getGames()
+                let _ = try await GameService().updateGameScore(game: viewModel.games[0])
+                print("HERE", viewModel.games[0].id)
 //                GameService().addGames(games: games)
                 
 //                let playerIDs = viewModel.activeLeague?.players.map { $0 == viewModel.activeUser?.id ?? ""}
@@ -79,6 +81,7 @@ struct Home: View {
             Group {
                 if showingSplashScreen {
                     Color.lion
+                    
                         .ignoresSafeArea()
                         .overlay(
                             Image(.loch)

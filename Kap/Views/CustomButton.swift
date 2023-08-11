@@ -21,11 +21,11 @@ struct CustomButton: View {
             }
         }) {
             ZStack {
-                viewModel.selectedBets.contains(where: { $0.id == bet.id }) ? Color.onyxLightish : Color.lion
+                viewModel.selectedBets.contains(where: { $0.id == bet.id }) ? Color.lion : Color.oW
                 Text(buttonText)
                     .font(.caption2.bold())
                     .fontDesign(.rounded)
-                    .foregroundStyle(viewModel.selectedBets.contains(where: { $0.id == bet.id }) ? .lion : .onyx)
+                    .foregroundStyle(viewModel.selectedBets.contains(where: { $0.id == bet.id }) ? .oW : .onyx)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
             }

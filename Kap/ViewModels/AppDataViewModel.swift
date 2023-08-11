@@ -23,8 +23,10 @@ import FirebaseFirestore
     
     var activePlayer: Player?
     var activeUser: User?
-    var currentWeek = 1
+    var currentWeek = 2
     var activeLeague: League?
+    
+    var changed: Bool = false
     
     init() {
         self.users = [
