@@ -53,21 +53,18 @@ class GameService {
         let odds = try await loadnflData()
         let gamesData = try decoder.decode([GameElement].self, from: odds)
         
-        let scores = try await loadnflScoresData()
-        let scoresData = try decoder.decode([ScoreElement].self, from: scores)
+//        let scores = try await loadnflScoresData()
+//        let scoresData = try decoder.decode([ScoreElement].self, from: scores)
         
         games = gamesData.compactMap { Game(gameElement: $0) }
         
-        for score in scoresData { 
-            if let gameIndex = games.firstIndex(where: { $0.id == score.id }) {
-                print("Got em", score.scores)
-                games[gameIndex].awayScore = score.scores[0].score
-                games[gameIndex].homeScore = score.scores[1].score
-                
-                print(games[gameIndex].awayScore)
-                print(games[gameIndex].homeScore)
-            }
-        }
+//        for score in scoresData { 
+//            if let gameIndex = games.firstIndex(where: { $0.id == score.id }) {
+//                print("Got em", score.scores)
+//                games[gameIndex].awayScore = score.scores[0].score
+//                games[gameIndex].homeScore = score.scores[1].score
+//            }
+//        }
         return games
     }
     

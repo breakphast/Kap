@@ -47,9 +47,10 @@ struct Home: View {
                 
                 print(viewModel.activeUser?.name ?? "")
                 
-                viewModel.games = try await GameService().fetchGamesFromFirestore()
-                GameService().updateDayType(for: &viewModel.games)
-                
+//                viewModel.games = try await GameService().fetchGamesFromFirestore().chunked(into: 7)[0]
+//                GameService().updateDayType(for: &viewModel.games)
+//                print("OFFICIAL", viewModel.games)
+//                print("Regular fetch...", try await GameService().fetchGamesFromFirestore())
                 viewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
                 viewModel.activeLeague = viewModel.leagues.first
                 
@@ -58,15 +59,13 @@ struct Home: View {
                 viewModel.parlays = try await ParlayViewModel().fetchParlays(games: viewModel.games)
                 
                 let _ = await LeaderboardViewModel().generateLeaderboards(leagueID: viewModel.activeLeague?.id ?? "", users: viewModel.users, bets: viewModel.bets, weeks: [1,2])
-//                let games = try await GameService().getGames()
-                let _ = try await GameService().updateGameScore(game: viewModel.games[0])
-                print("HERE", viewModel.games[0].id)
-//                GameService().addGames(games: games)
+                let games = try await GameService().getGames()
+//                let _ = try await GameService().updateGameScore(game: viewModel.games[0])
+                GameService().addGames(games: games)
                 
 //                let playerIDs = viewModel.activeLeague?.players.map { $0 == viewModel.activeUser?.id ?? ""}
 //                viewModel.players = try await PlayerViewModel().fetchAllPlayers()
 //                let _ = try await LeagueViewModel().addPlayerToLeague(leagueId: viewModel.activeLeague?.id ?? "", playerId: viewModel.activeUser?.id ?? "")
-                
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     withAnimation(.smooth) {
                         self.showingSplashScreen = false

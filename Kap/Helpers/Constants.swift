@@ -73,6 +73,6 @@ let nflLogos = [
     "Arizona Cardinals": "cardinals",
     "Atlanta Falcons": "falcons",
     "New Orleans Saints": "saints",
-    "Tampa Bay Buccaneers": "buccaneers",
+    "Tampa Bay Buccaneers": "bucs",
     "Carolina Panthers": "panthers"
 ]

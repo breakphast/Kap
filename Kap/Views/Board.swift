@@ -174,7 +174,7 @@ struct GameRow: View {
     
     var body: some View {
         HStack(alignment: .center) {
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     Image("\(nflLogos[game.awayTeam]!)")
                         .resizable()
@@ -193,6 +193,7 @@ struct GameRow: View {
             }
             .font(.subheadline.bold())
             .frame(maxWidth: UIScreen.main.bounds.width / 3, alignment: .leading)
+            .lineLimit(2)
             
             Spacer()
             
