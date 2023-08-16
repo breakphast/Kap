@@ -176,7 +176,7 @@ struct GameRow: View {
         HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
-                    Image("\(nflLogos[game.awayTeam]!)")
+                    Image("\(nflLogos[game.awayTeam] ?? "")")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 40)
@@ -184,7 +184,7 @@ struct GameRow: View {
                 }
                 Text("@")
                 HStack {
-                    Image("\(nflLogos[game.homeTeam]!)")
+                    Image("\(nflLogos[game.homeTeam] ?? "")")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 40)

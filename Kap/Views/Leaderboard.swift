@@ -138,7 +138,6 @@ struct Leaderboard: View {
             
         }
         .onChange(of: viewModel.changed) { _, _ in
-            print("WEnt")
             Task {
                 users = await LeaderboardViewModel().getLeaderboardData(leagueID: viewModel.activeLeague?.id ?? "", users: viewModel.users, bets: viewModel.bets, week: week)
                 await updatePointsDifferences()

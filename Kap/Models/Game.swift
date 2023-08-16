@@ -142,7 +142,7 @@ struct GameElement: Codable {
 
 struct Score: Codable {
     let name: String
-    let score: String
+    let score: String?
 }
 
 // MARK: - Bookmaker
