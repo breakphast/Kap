@@ -194,9 +194,54 @@ enum Title: String, Codable {
 }
 
 enum SportKey: String, Codable {
-    case football_nfl = "football_nfl"
+    case americanfootball_nfl = "americanfootball_nfl"
 }
 
 enum SportTitle: String, Codable {
     case NFL = "NFL"
+}
+
+extension Game {
+    func betResult(for option: BetOption) -> BetResult {
+        guard completed, let homeScore = Int(self.homeScore ?? ""), let awayScore = Int(self.awayScore ?? "") else {
+            return .pending
+        }
+        
+        switch option.betType {
+        case .moneyline:
+            if option.selectedTeam == homeTeam {
+                return homeScore > awayScore ? .win : .loss
+            } else {
+                return awayScore > homeScore ? .win : .loss
+            }
+            
+        case .spread:
+            let spread = option.spread
+            if option.selectedTeam == homeTeam {
+                let resultScore = homeScore - awayScore
+                if Double(resultScore) > spread ?? 0 {
+                    return .win
+                } else if Double(resultScore) < spread ?? 0 {
+                    return .loss
+                } else {
+                    return .push
+                }
+            } else {
+                let resultScore = awayScore - homeScore
+                if Double(resultScore) > spread ?? 0 {
+                    return .win
+                } else if Double(resultScore) < spread ?? 0 {
+                    return .loss
+                } else {
+                    return .push
+                }
+            }
+            
+        case .over:
+            return Double(homeScore + awayScore) > option.over ? .win : .loss
+            
+        case .under:
+            return Double(homeScore + awayScore) < option.under ? .win : .loss
+        }
+    }
 }

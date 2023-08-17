@@ -43,23 +43,25 @@ struct Home: View {
         .task {
             do {
                 viewModel.users = try await UserViewModel().fetchAllUsers()
-                viewModel.activeUser = viewModel.users.randomElement()
+                viewModel.activeUser = viewModel.users.first(where: { $0.name == "Brokeee" })
                 
-                print(viewModel.activeUser?.name ?? "")
-                
-                viewModel.games = try await GameService().fetchGamesFromFirestore().chunked(into: 16)[0]
-                let _ = try await GameService().updateGameScore(game: viewModel.games[0])
-                GameService().updateDayType(for: &viewModel.games)
                 viewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
                 viewModel.activeLeague = viewModel.leagues.first
                 
-                viewModel.bets = try await BetViewModel().fetchBets(games: viewModel.games)
+                viewModel.games = try await GameService().fetchGamesFromFirestore().chunked(into: 16)[0]
+                GameService().updateDayType(for: &viewModel.games)
+                try await GameService().updateGameScore(game: viewModel.games[0])
                 
+                viewModel.bets = try await BetViewModel().fetchBets(games: viewModel.games)
                 viewModel.parlays = try await ParlayViewModel().fetchParlays(games: viewModel.games)
                 
                 let _ = await LeaderboardViewModel().generateLeaderboards(leagueID: viewModel.activeLeague?.id ?? "", users: viewModel.users, bets: viewModel.bets, weeks: [1,2])
+                
+                
 //                let games = try await GameService().getGames()
 //                GameService().addGames(games: games)
+                
+                
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     withAnimation(.smooth) {
                         self.showingSplashScreen = false
@@ -74,7 +76,6 @@ struct Home: View {
             Group {
                 if showingSplashScreen {
                     Color.lion
-                    
                         .ignoresSafeArea()
                         .overlay(
                             Image(.loch)

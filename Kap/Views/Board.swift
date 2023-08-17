@@ -11,7 +11,6 @@ struct Board: View {
     let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 3)
     @Environment(\.viewModel) private var viewModel
     @Environment(\.dismiss) var dismiss
-    @State var selectedOption = "DowgHouse"
     
     var body: some View {
         NavigationStack {
@@ -23,32 +22,8 @@ struct Board: View {
                         .navigationBarBackButtonHidden()
                         .toolbar {
                             ToolbarItem(placement: .topBarLeading) {
-                                Text(viewModel.activeUser?.name ?? "")
-                                    .font(.system(size: 18, weight: .bold, design: .rounded))
-                                    .onTapGesture {
-                                        viewModel.activeUser = viewModel.users.randomElement()
-                                    }
-                            }
-                            
-                            ToolbarItem(placement: .principal) {
-                                Menu {
-                                    Button("DowgHouse", action: {
-                                        selectedOption = "DowgHouse"
-                                    })
-                                    Button("Studwell ggs", action: {
-                                        selectedOption = "Studwell ggs"
-                                    })
-                                } label: {
-                                    HStack(spacing: 4) {
-                                        Text(selectedOption.isEmpty ? (viewModel.activeLeague?.name ?? "") : selectedOption)
-                                        Image(systemName: "chevron.down")
-                                            .font(.caption2.bold())
-                                    }
-                                    .font(.system(size: 12, weight: .bold, design: .rounded))
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 8)// Adjust padding as needed
-                                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.gray.opacity(0.2)))
-                                }
+                                Text("Loch Sports")
+                                    .font(.system(size: 14, weight: .bold, design: .rounded))
                             }
                             
                             ToolbarItem(placement: .navigationBarTrailing) {
@@ -83,7 +58,7 @@ struct Board: View {
                             .foregroundStyle(.oW)
                         }
                         .frame(height: 60)
-                        .clipShape(TopRoundedRectangle(radius: 20))
+                        .clipShape(TopRoundedRectangle(radius: 12))
                         .shadow(radius: 10)
                     }
                     .zIndex(100)
