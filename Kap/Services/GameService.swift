@@ -144,7 +144,7 @@ class GameService {
             let overPriceTemp = data["overPriceTemp"] as? Double ?? 0.0
             let underPriceTemp = data["underPriceTemp"] as? Double ?? 0.0
             
-            let gameElement = GameElement(id: id, sportKey: .football_nfl, sportTitle: .NFL, commenceTime: date ?? Date(), completed: completed, homeTeam: homeTeam, awayTeam: awayTeam, bookmakers: nil, scores: [Score(name: homeTeam, score: homeScore ?? ""), Score(name: awayTeam, score: awayScore ?? "")])
+            let gameElement = GameElement(id: id, sportKey: .americanfootball_nfl, sportTitle: .NFL, commenceTime: date ?? Date(), completed: completed, homeTeam: homeTeam, awayTeam: awayTeam, bookmakers: nil, scores: [Score(name: homeTeam, score: homeScore ?? ""), Score(name: awayTeam, score: awayScore ?? "")])
             
             let game = Game(gameElement: gameElement)
             game.homeSpread = homeSpread

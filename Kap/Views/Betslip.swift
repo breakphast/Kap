@@ -82,11 +82,11 @@ struct Betslip: View {
     private func fetchData() async {
         do {
             let fetchedBets = try await BetViewModel().fetchBets(games: viewModel.games)
-            bets = fetchedBets.filter({ $0.playerID == viewModel.activeUser?.id })
+            bets = fetchedBets.filter({ $0.playerID == viewModel.activeUserID })
             bets = bets.filter({ $0.week == viewModel.currentWeek })
             
             let fetchedParlays = try await ParlayViewModel().fetchParlays(games: viewModel.games)
-            parlays = fetchedParlays.filter({ $0.playerID == viewModel.activeUser?.id ?? ""})
+            parlays = fetchedParlays.filter({ $0.playerID == viewModel.activeUserID })
             parlays = parlays.filter({ $0.week == viewModel.currentWeek })
         } catch {
             print("Error fetching bets: \(error)")
@@ -181,13 +181,13 @@ struct BetView: View {
         HStack {
             Button {
                 Task {
-                    let placedBet = BetViewModel().makeBet(for: bet.game, betOption: bet.betOption, playerID: viewModel.activeUser?.id ?? "", week: viewModel.currentWeek)
+                    let placedBet = BetViewModel().makeBet(for: bet.game, betOption: bet.betOption, playerID: viewModel.activeUserID, week: viewModel.currentWeek)
                     
                     if !bets.contains(where: { $0.game.id == placedBet.game.id }) {
                         try await BetViewModel().addBet(bet: placedBet)
                         
                         let fetchedBets = try await BetViewModel().fetchBets(games: viewModel.games)
-                        let newBets = fetchedBets.filter({ $0.playerID == viewModel.activeUser?.id })
+                        let newBets = fetchedBets.filter({ $0.playerID == viewModel.activeUserID})
                         bets = newBets.filter({ $0.week == viewModel.currentWeek })
                         
                         isPlaced = true
@@ -331,7 +331,7 @@ struct ParlayView: View {
     
     var buttons: some View {
         Button {
-            let placedParlay = ParlayViewModel().makeParlay(for: parlay.bets, playerID: viewModel.activeUser?.id ?? "", week: viewModel.currentWeek)
+            let placedParlay = ParlayViewModel().makeParlay(for: parlay.bets, playerID: viewModel.activeUserID ?? "", week: viewModel.currentWeek)
             Task {
                 try await ParlayViewModel().addParlay(parlay: placedParlay)
                 parlays.append(placedParlay)

@@ -125,7 +125,7 @@ extension Player {
         }
         
         self.name = name
-        self.user = User(id: userId, email: "", name: "", leagues: [])  // You'd likely want to fetch more user data here or adjust the structure.
+        self.user = User(id: userId, email: "", username: "", leagues: [])  // You'd likely want to fetch more user data here or adjust the structure.
         self.leagueID = leagueID
         self.bets = []
         self.parlays = []

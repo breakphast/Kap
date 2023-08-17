@@ -22,20 +22,14 @@ import FirebaseFirestore
     var players: [Player] = []
     
     var activePlayer: Player?
-    var activeUser: User?
+    var activeUserID: String
     var currentWeek = 1
     var activeLeague: League?
     
     var changed: Bool = false
     
-    init() {
-        self.users = [
-            User(email: "desmond@gmail.com", name: "ThePhast", leagues: []),
-            User(email: "desmond@gmail.com", name: "RingoMingo", leagues: []),
-            User(email: "desmond@gmail.com", name: "Harch", leagues: []),
-            User(email: "desmond@gmail.com", name: "Brokeee", leagues: []),
-            User(email: "desmond@gmail.com", name: "Mingy", leagues: [])
-        ]
+    init(activeUserID: String) {
+        self.activeUserID = activeUserID
     }
     
     enum FetchError: Error {

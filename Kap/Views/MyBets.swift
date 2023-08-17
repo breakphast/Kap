@@ -31,14 +31,14 @@ struct MyBets: View {
                         week = 1
                         Task {
                             let fetchedBets = try await BetViewModel().fetchBets(games: viewModel.games)
-                            bets = fetchedBets.filter({ $0.playerID == viewModel.activeUser?.id })
+                            bets = fetchedBets.filter({ $0.playerID == viewModel.activeUserID })
                             bets = bets.filter({ $0.week == 1 })
                             
                             let fetchedParlays = try await ParlayViewModel().fetchParlays(games: viewModel.games)
-                            parlays = fetchedParlays.filter({ $0.playerID == viewModel.activeUser?.id ?? ""})
+                            parlays = fetchedParlays.filter({ $0.playerID == viewModel.activeUserID })
                             parlays = parlays.filter({ $0.week == 1 })
                             
-                            weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(user: viewModel.activeUser!, bets: bets, week: 1, leagueID: viewModel.activeLeague?.id ?? "")
+                            weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: viewModel.activeUserID, bets: bets, week: 1, leagueID: viewModel.activeLeague?.id ?? "")
                         }
                     }
                 })
@@ -48,14 +48,14 @@ struct MyBets: View {
                         week = 2
                         Task {
                             let fetchedBets = try await BetViewModel().fetchBets(games: viewModel.games)
-                            bets = fetchedBets.filter({ $0.playerID == viewModel.activeUser?.id })
+                            bets = fetchedBets.filter({ $0.playerID == viewModel.activeUserID })
                             bets = bets.filter({ $0.week == 2 })
                             
                             let fetchedParlays = try await ParlayViewModel().fetchParlays(games: viewModel.games)
-                            parlays = fetchedParlays.filter({ $0.playerID == viewModel.activeUser?.id ?? ""})
+                            parlays = fetchedParlays.filter({ $0.playerID == viewModel.activeUserID })
                             parlays = parlays.filter({ $0.week == 2 })
                             
-                            weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(user: viewModel.activeUser!, bets: bets, week: 2, leagueID: viewModel.activeLeague?.id ?? "")
+                            weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: viewModel.activeUserID, bets: bets, week: 2, leagueID: viewModel.activeLeague?.id ?? "")
                         }
                     }
                 })
@@ -77,10 +77,6 @@ struct MyBets: View {
                             .foregroundColor(.white)
                             .font(.largeTitle.bold())
                     } else {
-                        Text("Active Bets")
-                            .font(.system(.body, design: .rounded, weight: .bold))
-                            .foregroundStyle(.lion)
-                        
                         ScrollView(showsIndicators: false) {
                             VStack(spacing: 20) {
                                 ForEach(bets.filter({ $0.result == .pending }), id: \.id) { bet in
@@ -106,10 +102,6 @@ struct MyBets: View {
                             .foregroundColor(.white)
                             .font(.largeTitle.bold())
                     } else {
-                        Text("Settled Bets")
-                            .font(.system(.body, design: .rounded, weight: .bold))
-                            .foregroundStyle(.lion)
-                        
                         Text("POINTS: \(weeklyPoints ?? 0)")
                             .font(.system(.body, design: .rounded, weight: .bold))
                             .padding(.vertical, 4)
@@ -161,14 +153,14 @@ struct MyBets: View {
             Task {
                 do {
                     let fetchedBets = try await BetViewModel().fetchBets(games: viewModel.games)
-                    bets = fetchedBets.filter({ $0.playerID == viewModel.activeUser?.id })
+                    bets = fetchedBets.filter({ $0.playerID == viewModel.activeUserID })
                     bets = bets.filter({ $0.week == week })
                     
                     let fetchedParlays = try await ParlayViewModel().fetchParlays(games: viewModel.games)
-                    parlays = fetchedParlays.filter({ $0.playerID == viewModel.activeUser?.id ?? ""})
+                    parlays = fetchedParlays.filter({ $0.playerID == viewModel.activeUserID })
                     parlays = parlays.filter({ $0.week == viewModel.currentWeek })
                     
-                    weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(user: viewModel.activeUser!, bets: bets, week: week, leagueID: viewModel.activeLeague?.id ?? "")
+                    weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: viewModel.activeUserID, bets: bets, week: week, leagueID: viewModel.activeLeague?.id ?? "")
                 } catch {
                     print("Error fetching bets: \(error)")
                 }
@@ -179,14 +171,14 @@ struct MyBets: View {
             selectedOption = "Week \(week)"
             do {
                 let fetchedBets = try await BetViewModel().fetchBets(games: viewModel.games)
-                bets = fetchedBets.filter({ $0.playerID == viewModel.activeUser?.id })
+                bets = fetchedBets.filter({ $0.playerID == viewModel.activeUserID })
                 bets = bets.filter({ $0.week == week })
                 
                 let fetchedParlays = try await ParlayViewModel().fetchParlays(games: viewModel.games)
-                parlays = fetchedParlays.filter({ $0.playerID == viewModel.activeUser?.id })
+                parlays = fetchedParlays.filter({ $0.playerID == viewModel.activeUserID })
                 parlays = parlays.filter({ $0.week == 1 })
                 
-                weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(user: viewModel.activeUser!, bets: bets, week: week, leagueID: viewModel.activeLeague?.id ?? "")
+                weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: viewModel.activeUserID, bets: bets, week: week, leagueID: viewModel.activeLeague?.id ?? "")
             } catch {
                 print("Error fetching bets: \(error)")
             }

@@ -89,7 +89,7 @@ struct Leaderboard: View {
                                             .clipShape(Circle())
                                             .frame(width: 40)
                                         VStack(alignment: .leading, spacing: 4) {
-                                            Text(user.name)
+                                            Text(user.username)
                                                 .fontWeight(.bold)
                                             HStack(spacing: 4) {
                                                 Text("Points: \((user.totalPoints ?? 0))")
@@ -156,7 +156,7 @@ struct Leaderboard: View {
     private func updatePointsDifferences() async {
         var newPointsDifferences: [String: Int] = [:]
         for user in users {
-            let diff = await LeaderboardViewModel().getWeeklyPointsDifference(user: user, bets: viewModel.bets, currentWeek: week, leagueID: viewModel.activeLeague!.id!)
+            let diff = await LeaderboardViewModel().getWeeklyPointsDifference(userID: user.id ?? "", bets: viewModel.bets, currentWeek: week, leagueID: viewModel.activeLeague!.id!)
             newPointsDifferences[user.id ?? ""] = diff
         }
         pointsDifferences = newPointsDifferences
