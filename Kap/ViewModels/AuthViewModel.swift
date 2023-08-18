@@ -9,6 +9,8 @@ import SwiftUI
 import Firebase
 import Observation
 import SwiftData
+import FirebaseFirestoreSwift
+import FirebaseAuth
 
 @Observable class AuthViewModel {
     var userSession: FirebaseAuth.User? = nil

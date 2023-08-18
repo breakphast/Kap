@@ -177,6 +177,7 @@ struct BetView: View {
         }
     }
     
+    // place bet button
     var buttons: some View {
         HStack {
             Button {

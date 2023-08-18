@@ -35,7 +35,7 @@ struct Home: View {
                         Label("Leaderboard", systemImage: "rosette")
                     }
                 
-                Login(loggedIn: $loggedIn)
+                Profile()
                 .tabItem {
                     Label("Profile", systemImage: "person.fill")
                 }

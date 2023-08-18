@@ -12,7 +12,7 @@ struct Login: View {
     let authViewModel = AuthViewModel()
     
     @State private var email = "harch@loch.io"
-    @State private var password = ""
+    @State private var password = "harchy"
     @State private var username = ""
     @State private var fullName = ""
     
@@ -76,23 +76,28 @@ struct Login: View {
                     .padding()
             }
             
-            Button("Login") {
-                authViewModel.login(withEmail: email.lowercased(), password: password.lowercased()) { userID in
-                    viewModel.activeUserID = userID ?? ""
+            Button {
+                withAnimation {
+                    authViewModel.login(withEmail: email.lowercased(), password: password.lowercased()) { userID in
+                        viewModel.activeUserID = userID ?? ""
+                    }
+                    
+                    loggedIn.toggle()
                 }
-                
-                loggedIn.toggle()
+            } label: {
+                Text("Login")
+                    .font(.title.bold())
+                    .foregroundStyle(.oW)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(.lion)
+                    .cornerRadius(8)
             }
-            .buttonStyle(.borderedProminent)
-            .foregroundStyle(.lion)
-            .bold()
-            .frame(width: 200)
-            .tint(.oW)
+            .autocorrectionDisabled()
+            .textInputAutocapitalization(.never)
         }
         .frame(maxHeight: .infinity, alignment: .center)
         .padding(.horizontal)
-        .autocorrectionDisabled()
-        .textInputAutocapitalization(.never)
     }
     var registerView: some View {
         VStack {

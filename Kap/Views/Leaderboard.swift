@@ -17,6 +17,7 @@ struct Leaderboard: View {
     @State private var pointsDifferences: [String: Int] = [:]
     @State private var leaderboards: [[User]] = [[]]
     @State private var bigMovers: [(User, up: Bool)]?
+    @State private var points: Int = 0
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -137,7 +138,7 @@ struct Leaderboard: View {
             bigMovers = LeaderboardViewModel().bigMover(from: leaderboards[0], to: leaderboards[1])
             
         }
-        .onChange(of: viewModel.changed) { _, _ in
+        .onChange(of: viewModel.selectedBets.count) { _, _ in
             Task {
                 users = await LeaderboardViewModel().getLeaderboardData(leagueID: viewModel.activeLeague?.id ?? "", users: viewModel.users, bets: viewModel.bets, week: week)
                 await updatePointsDifferences()
@@ -145,6 +146,9 @@ struct Leaderboard: View {
                 leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: viewModel.activeLeague!.id!, users: viewModel.users, bets: viewModel.bets, weeks: [1, 2])
                 
                 bigMovers = LeaderboardViewModel().bigMover(from: leaderboards[0], to: leaderboards[1])
+                
+                viewModel.bets = try await BetViewModel().fetchBets(games: viewModel.games)
+                viewModel.parlays = try await ParlayViewModel().fetchParlays(games: viewModel.games)
             }
         }
     }

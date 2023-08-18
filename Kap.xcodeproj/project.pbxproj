@@ -23,6 +23,8 @@
 		3EDBFCD22A8E901B00EB8628 /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EDBFCD12A8E901B00EB8628 /* AuthViewModel.swift */; };
 		3EDBFCD42A8E907500EB8628 /* UserService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EDBFCD32A8E907500EB8628 /* UserService.swift */; };
 		3EDBFCD62A8EA18000EB8628 /* Login.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EDBFCD52A8EA18000EB8628 /* Login.swift */; };
+		3EDBFCD82A8EE20100EB8628 /* BetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EDBFCD72A8EE20100EB8628 /* BetViews.swift */; };
+		3EDBFCDA2A8EEE0D00EB8628 /* Profile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EDBFCD92A8EEE0D00EB8628 /* Profile.swift */; };
 		3EE35E532A5F86CB0026F952 /* Home.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EE35E522A5F86CB0026F952 /* Home.swift */; };
 		3EE35E552A60D77A0026F952 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EE35E542A60D77A0026F952 /* User.swift */; };
 		3EE35E572A60D7940026F952 /* League.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EE35E562A60D7940026F952 /* League.swift */; };
@@ -57,6 +59,8 @@
 		3EDBFCD12A8E901B00EB8628 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
 		3EDBFCD32A8E907500EB8628 /* UserService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserService.swift; sourceTree = "<group>"; };
 		3EDBFCD52A8EA18000EB8628 /* Login.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Login.swift; sourceTree = "<group>"; };
+		3EDBFCD72A8EE20100EB8628 /* BetViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BetViews.swift; sourceTree = "<group>"; };
+		3EDBFCD92A8EEE0D00EB8628 /* Profile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Profile.swift; sourceTree = "<group>"; };
 		3EE35E522A5F86CB0026F952 /* Home.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home.swift; sourceTree = "<group>"; };
 		3EE35E542A60D77A0026F952 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		3EE35E562A60D7940026F952 /* League.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = League.swift; sourceTree = "<group>"; };
@@ -174,9 +178,11 @@
 				3E5D8D222A639B5300634DBE /* Board.swift */,
 				3ED8EC3A2A65F47400E05FF2 /* Betslip.swift */,
 				3E5D8D262A64718C00634DBE /* MyBets.swift */,
+				3EDBFCD72A8EE20100EB8628 /* BetViews.swift */,
 				3EE35E692A61C8C00026F952 /* Leaderboard.swift */,
 				3EDBFCD52A8EA18000EB8628 /* Login.swift */,
 				3E5D8D242A63A4F100634DBE /* CustomButton.swift */,
+				3EDBFCD92A8EEE0D00EB8628 /* Profile.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -292,6 +298,7 @@
 				3EF3991B2A71CF5100E03B76 /* Player.swift in Sources */,
 				3E5D8D232A639B5300634DBE /* Board.swift in Sources */,
 				3EFA187B2A70C1C7002D6E94 /* PlayerViewModel.swift in Sources */,
+				3EDBFCD82A8EE20100EB8628 /* BetViews.swift in Sources */,
 				3E195C762A74683200FB0CAD /* Constants.swift in Sources */,
 				3EA650412A5F7565007CA5ED /* KapApp.swift in Sources */,
 				3EFA18712A7094F2002D6E94 /* UserViewModel.swift in Sources */,
@@ -304,6 +311,7 @@
 				3EDBFCD62A8EA18000EB8628 /* Login.swift in Sources */,
 				3EE35E592A60D7B30026F952 /* Bet.swift in Sources */,
 				3ED8EC3B2A65F47400E05FF2 /* Betslip.swift in Sources */,
+				3EDBFCDA2A8EEE0D00EB8628 /* Profile.swift in Sources */,
 				3EFA18732A709843002D6E94 /* BetViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
