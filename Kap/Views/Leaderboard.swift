@@ -84,7 +84,7 @@ struct Leaderboard: View {
                                     }
                                     
                                     HStack {
-                                        Image("avatar\(index)")
+                                        Image("avatar\(user.avatar ?? 0)")
                                             .resizable()
                                             .scaledToFill()
                                             .clipShape(Circle())

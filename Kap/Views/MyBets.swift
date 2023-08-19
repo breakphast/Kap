@@ -21,26 +21,26 @@ struct MyBets: View {
     @State private var selectedOption = "Week 1"
     @State private var week = 1
     
+    @State private var selectedSegment = 0
+    
     var body: some View {
         VStack(spacing: 40) {
-            ZStack(alignment: .top) {
+            ZStack(alignment: .topLeading) {
                 Color.onyx.ignoresSafeArea()
-                menu
-                configureTabView()
-                .navigationBarBackButtonHidden()
-                .toolbar {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 18, weight: .bold, design: .rounded))
-                            .onTapGesture {
-                                dismiss()
-                            }
+                VStack(alignment: .leading) {
+                    Picker("", selection: $selectedSegment) {
+                        Text("Active").tag(0)
+                        Text("Settled").tag(1)
                     }
-                    
-                    ToolbarItem(placement: .principal) {
-                        Text("My Bets")
-                            .font(.system(size: 32, weight: .bold, design: .rounded))
-                    }
+                    .pickerStyle(SegmentedPickerStyle())
+                    menu
+                }
+                .padding(.horizontal, 24)
+                
+                if selectedSegment == 0 {
+                    activeBetsTab
+                } else {
+                    settledBetsTab
                 }
             }
         }
@@ -59,15 +59,16 @@ struct MyBets: View {
         VStack(spacing: 8) {
             if isEmptyBets(for: .win) && isEmptyBets(for: .loss) && isEmptyBets(for: .push) {
                 Text("No settled bets")
-                    .foregroundColor(.white)
                     .font(.largeTitle.bold())
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             } else {
                 Text("POINTS: \(weeklyPoints ?? 0)")
                     .font(.system(.body, design: .rounded, weight: .bold))
-                    .padding(.vertical, 4)
+                    .padding(.top, 4)
                 
                 ScrollView(showsIndicators: false) {
                     betSection(for: .tnf, settled: true)
+                        .padding(.top)
                     betSection(for: .sunday, settled: true)
                     betSection(for: .snf, settled: true)
                     betSection(for: .mnf, settled: true)
@@ -76,8 +77,10 @@ struct MyBets: View {
                         PlacedParlayView(parlay: parlay)
                     }
                 }
+                .padding(.top)
             }
         }
+        .padding(.top, 50)
     }
     
     var activeBetsTab: some View {
@@ -86,9 +89,11 @@ struct MyBets: View {
                 Text("No active bets")
                     .foregroundColor(.white)
                     .font(.largeTitle.bold())
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             } else {
                 ScrollView(showsIndicators: false) {
                     betSection(for: .tnf, settled: false)
+                        .padding(.top)
                     betSection(for: .sunday, settled: false)
                     betSection(for: .snf, settled: false)
                     betSection(for: .mnf, settled: false)
@@ -97,8 +102,10 @@ struct MyBets: View {
                         PlacedParlayView(parlay: parlay)
                     }
                 }
+                .padding(.top, 40)
             }
         }
+        .padding(.top, 60)
     }
     
     var menu: some View {
@@ -146,8 +153,11 @@ struct MyBets: View {
             .font(.system(size: 14, weight: .bold, design: .rounded))
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
-            .background(RoundedRectangle(cornerRadius: 10).fill(Color.gray.opacity(0.2)))
-        }.zIndex(1000)
+            .background(RoundedRectangle(cornerRadius: 10).fill(.onyxLightish))
+        }
+        .zIndex(1000)
+        .padding(.top, 10)
+//        .padding(.leading, 24)
     }
     
     func betSection(for dayType: DayType, settled: Bool) -> some View {
@@ -201,15 +211,16 @@ struct MyBets: View {
     private func configureTabView() -> some View {
         TabView {
             activeBetsTab
-                .padding(.top, 40)
+//                .padding(.top, 40)
                 .tabItem { Text("Active Bets") }
 
             settledBetsTab
-                .padding(.top, 40)
+//                .padding(.top, 40)
                 .tabItem { Text("Settled Bets") }
         }
         .accentColor(.white)  // For the circle indicator
         .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
+        .padding(.top, 40)
     }
 }
 

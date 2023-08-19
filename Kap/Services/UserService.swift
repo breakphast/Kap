@@ -7,6 +7,7 @@
 
 import Firebase
 import FirebaseFirestoreSwift
+import FirebaseFirestore
 
 struct UserService {
     

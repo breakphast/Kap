@@ -17,6 +17,7 @@ struct Login: View {
     @State private var fullName = ""
     
     @State private var login = true
+    @State private var loginFailed = false
     @Binding var loggedIn: Bool
     
     var body: some View {
@@ -53,6 +54,11 @@ struct Login: View {
     
     var loginView: some View {
         VStack {
+            if loginFailed {
+                Text("Login failed. Please try again.")
+                    .font(.system(.subheadline, weight: .semibold))
+                    .foregroundStyle(.oW)
+            }
             ZStack {
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
                     .foregroundStyle(.lion)
@@ -77,12 +83,15 @@ struct Login: View {
             }
             
             Button {
-                withAnimation {
-                    authViewModel.login(withEmail: email.lowercased(), password: password.lowercased()) { userID in
-                        viewModel.activeUserID = userID ?? ""
+                authViewModel.login(withEmail: email.lowercased(), password: password.lowercased()) { userID in
+                    if let validUserID = userID {
+                        viewModel.activeUserID = validUserID
+                        loggedIn.toggle()
+                        loginFailed = false
+                    } else {
+                        print("Login failed")
+                        loginFailed = true
                     }
-                    
-                    loggedIn.toggle()
                 }
             } label: {
                 Text("Login")
@@ -148,6 +157,9 @@ struct Login: View {
             
             Button("Register") {
                 AuthViewModel().register(withEmail: email, password: password, username: username, fullName: fullName)
+                AuthViewModel().login(withEmail: email, password: password) { userID in
+                    viewModel.activeUserID = userID ?? ""
+                }
                 loggedIn.toggle()
             }
             .buttonStyle(.borderedProminent)

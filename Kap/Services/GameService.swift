@@ -121,8 +121,8 @@ class GameService {
     func fetchGamesFromFirestore() async throws -> [Game] {
         let db = Firestore.firestore()
         let querySnapshot = try await db.collection("nflGames").getDocuments()
-        
-        return querySnapshot.documents.map { queryDocumentSnapshot -> Game in
+
+        var games = querySnapshot.documents.map { queryDocumentSnapshot -> Game in
             let data = queryDocumentSnapshot.data()
             let id = data["id"] as? String ?? ""
             let homeTeam = data["homeTeam"] as? String ?? ""
@@ -158,7 +158,7 @@ class GameService {
             game.overPriceTemp = overPriceTemp
             game.underPriceTemp = underPriceTemp
             game.completed = completed
-            
+
             if let betOptionsDictionaries = data["betOptions"] as? [[String: Any]] {
                 game.betOptions = betOptionsDictionaries.compactMap {
                     BetOption.fromDictionary($0, game: game)
@@ -166,7 +166,12 @@ class GameService {
             }
             return game
         }
+        
+        games.sort(by: { $0.date < $1.date })
+
+        return games
     }
+
     
     func dateFromISOString(_ string: String) -> Date? {
         let formatter = DateFormatter()

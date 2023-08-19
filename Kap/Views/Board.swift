@@ -109,10 +109,10 @@ struct GameListingView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            SectionView(title: "Thursday Night Football", games: thursdayNightGame)
-            SectionView(title: "Sunday Afternoon", games: sundayGames)
-            SectionView(title: "Sunday Night Football", games: sundayNightGame)
-            SectionView(title: "Monday Night Football", games: mondayNightGame)
+            SectionView(title: "Thursday Night Football", games: thursdayNightGame, first: true, dayType: .tnf)
+            SectionView(title: "Sunday Afternoon", games: sundayGames, dayType: .sunday)
+            SectionView(title: "Sunday Night Football", games: sundayNightGame, dayType: .snf)
+            SectionView(title: "Monday Night Football", games: mondayNightGame, dayType: .mnf)
         }
         .padding()
     }
@@ -122,16 +122,37 @@ struct SectionView: View {
     @Environment(\.viewModel) private var viewModel
     var title: String
     var games: [Game]
-    
-    @State private var dayType: String = ""
+    var first: Bool?
+    let dayType: DayType
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text(title)
-                    .font(.subheadline.bold())
-                    .foregroundStyle(.lion)
+                Text(dayType.rawValue)
+                    .font(.caption.bold())
+                    .foregroundColor(.oW)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(.lion)
+                    .cornerRadius(4)
                     .padding(.bottom)
+                
+                Spacer()
+
+                if first != nil {
+                    HStack(spacing: 10) {
+                        Text("Spread")
+                            .frame(maxWidth: UIScreen.main.bounds.width / (1.75 * 3), alignment: .center) // Adjust width according to each placeholder.
+                        Text("ML")
+                            .frame(maxWidth: UIScreen.main.bounds.width / (1.75 * 3), alignment: .center)
+                        Text("Totals")
+                            .frame(maxWidth: UIScreen.main.bounds.width / (1.75 * 3), alignment: .center)
+                    }
+                    .frame(maxWidth: UIScreen.main.bounds.width / 1.75)
+                    .font(.caption.bold())
+
+                    .padding(.bottom)
+                }
             }
             
             ForEach(games, id: \.id) { game in
@@ -142,56 +163,94 @@ struct SectionView: View {
 }
 
 
+
 struct GameRow: View {
     var game: Game
     let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 3)
     @Environment(\.viewModel) private var viewModel
     
     var body: some View {
-        HStack(alignment: .center) {
-            VStack(alignment: .leading, spacing: 6) {
-                HStack {
-                    Image("\(nflLogos[game.awayTeam] ?? "")")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 40)
-                    Text(nflTeams[game.awayTeam] ?? "")
+        VStack(alignment: .leading, spacing: 16) {
+            Text(convertDateToDesiredFormat(game.date))
+                .font(.system(.caption2, design: .rounded, weight: .semibold))
+            
+            HStack(alignment: .center) {
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack {
+                        Image("\(nflLogos[game.awayTeam] ?? "")")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 40)
+                        Text(nflTeams[game.awayTeam] ?? "")
+                    }
+                    Text("@")
+                    HStack {
+                        Image("\(nflLogos[game.homeTeam] ?? "")")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 40)
+                        Text(nflTeams[game.homeTeam] ?? "")
+                    }
                 }
-                Text("@")
-                HStack {
-                    Image("\(nflLogos[game.homeTeam] ?? "")")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 40)
-                    Text(nflTeams[game.homeTeam] ?? "")
-                }
-            }
-            .font(.subheadline.bold())
-            .frame(maxWidth: UIScreen.main.bounds.width / 3, alignment: .leading)
-            .lineLimit(2)
-            
-            Spacer()
-            
-            let bets = BetViewModel().generateBetsForGame(game)
-            
-            LazyVGrid(columns: columns, spacing: 10) {
-                ForEach(bets, id: \.id) { bet in
-                    CustomButton(bet: bet, buttonText: bet.betOption.betString) {
-                        withAnimation {
-                            bet.week = viewModel.currentWeek
-                            if viewModel.selectedBets.contains(where: { $0.id == bet.id }) {
-                                viewModel.selectedBets.removeAll(where: { $0.id == bet.id })
-                            } else {
-                                viewModel.selectedBets.append(bet)
+                .font(.subheadline.bold())
+                .frame(maxWidth: UIScreen.main.bounds.width / 3, alignment: .leading)
+                .lineLimit(2)
+                
+                Spacer()
+                
+                let bets = BetViewModel().generateBetsForGame(game)
+                
+                LazyVGrid(columns: columns, spacing: 10) {
+                    ForEach(bets, id: \.id) { bet in
+                        CustomButton(bet: bet, buttonText: bet.betOption.betString) {
+                            withAnimation {
+                                bet.week = viewModel.currentWeek
+                                if viewModel.selectedBets.contains(where: { $0.id == bet.id }) {
+                                    viewModel.selectedBets.removeAll(where: { $0.id == bet.id })
+                                } else {
+                                    viewModel.selectedBets.append(bet)
+                                }
                             }
                         }
                     }
                 }
+                .frame(maxWidth: UIScreen.main.bounds.width / 1.75)
             }
-            .frame(maxWidth: UIScreen.main.bounds.width / 1.75)
         }
         .padding(.bottom, 20)
     }
+}
+
+func convertDateToDesiredFormat(_ date: Date) -> String {
+    let dateFormatter = DateFormatter()
+    
+    // Convert to Eastern Time
+    dateFormatter.timeZone = TimeZone(identifier: "America/New_York")
+    dateFormatter.dateFormat = "EEE  h:mma"
+    
+    var resultStr = dateFormatter.string(from: date).uppercased()
+    
+//        // Append 'ET' to the end
+//        resultStr += "  ET"
+    
+    return resultStr
+}
+
+func convertDateForBetCard(_ date: Date) -> String {
+    let dateFormatter = DateFormatter()
+    
+    // Convert to Eastern Time
+    dateFormatter.timeZone = TimeZone(identifier: "America/New_York")
+    
+    // Setting the desired format
+    dateFormatter.dateFormat = "MMM d, h:mma"
+    
+    var resultStr = dateFormatter.string(from: date).uppercased()
+    
+    // Append 'ET' to the end
+    resultStr += " ET"
+    
+    return resultStr
 }
 
 struct TopRoundedRectangle: Shape {

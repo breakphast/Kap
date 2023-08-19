@@ -9,8 +9,6 @@ import SwiftUI
 import Firebase
 import Observation
 import SwiftData
-import FirebaseFirestoreSwift
-import FirebaseAuth
 
 @Observable class AuthViewModel {
     var userSession: FirebaseAuth.User? = nil
@@ -40,6 +38,7 @@ import FirebaseAuth
         auth.signIn(withEmail: email, password: password) { result, error in
             if let error = error {
                 print("Failed to sign in: \(error)")
+                completion(nil)
                 return
             }
             
@@ -85,6 +84,7 @@ import FirebaseAuth
     func signOut() {
         userSession = nil
         try? auth.signOut()
+        print("Signed out")
     }
     
 //    func uploadProfileImage(_ image: UIImage) {

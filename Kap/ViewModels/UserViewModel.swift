@@ -15,10 +15,14 @@ class UserViewModel: ObservableObject {
     func fetchAllUsers() async throws -> [User] {
         let querySnapshot = try await db.collection("users").getDocuments()
 
-        let users: [User] = querySnapshot.documents.compactMap { document in
+        var users: [User] = querySnapshot.documents.compactMap { document in
             try? document.data(as: User.self)
         }
-
+        
+        for index in users.indices {
+            users[index].avatar = index
+        }
+        
         return users
     }
 

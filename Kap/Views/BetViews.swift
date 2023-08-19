@@ -51,42 +51,37 @@ struct PlacedBetView: View {
                         }
                     }
                     
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("\(bet.game.awayTeam) @ \(bet.game.homeTeam)")
-                            .font(.caption2.bold())
-                            .lineLimit(1)
-                        Text("9/12/2023")
-                            .font(.caption2)
-                        Text("7PM EST")
-                            .font(.caption2)
-                    }
-                    .foregroundStyle(.secondary)
-                    .frame(width: 200, alignment: .leading)
-                    .padding(.trailing, 20)
                     
-                    VStack(alignment: .leading) {
-                        Text("Points: \(abs(bet.points!))")
-                            .foregroundStyle(pointsColor(for: bet.result ?? .pending))
-                        RoundedRectangle(cornerRadius: 1)
-                            .frame(width: 100, height: 2)
-                            .foregroundStyle(.secondary)
+                    HStack {
+                        Text("\(bet.game.awayTeam) @ \(bet.game.homeTeam)")
+                        Spacer()
+                        Text(convertDateForBetCard(bet.game.date))
                     }
-                    .bold()
+                    .font(.caption2.bold())
+                    .lineLimit(1)
+//                    .foregroundStyle(.secondary)
+//                    .padding(.trailing, 20)
+                    
+                    HStack {
+                        HStack(spacing: 4) {
+                            Text("Points:")
+                                .font(.headline.bold())
+                            Text("\(bet.result != .pending ? bet.points! < 0 ? "-" : "+" : "")\(abs(bet.points!))")
+                                .font(.title2.bold())
+                                .foregroundStyle(pointsColor(for: bet.result ?? .pending))
+                        }
+                        Spacer()
+                        Image(systemName: bet.result == .win ? "checkmark.circle" : bet.result == .loss ? "xmark.circle" : "hourglass.circle")
+                            .font(.title.bold())
+                            .foregroundColor(bet.result == .win ? .bean : bet.result == .loss ? .redd : .secondary)
+                    }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                .padding(24)
+                .padding(.horizontal, 24)
             }
             .fontDesign(.rounded)
-            .foregroundStyle(.white)
+//            .foregroundStyle(.white)
             .multilineTextAlignment(.leading)
-            
-            VStack {
-                Image(systemName: bet.result == .win ? "checkmark.circle" : bet.result == .loss ? "xmark.circle" : "hourglass.circle")
-                    .font(.largeTitle.bold())
-                    .foregroundColor(bet.result == .win ? .bean : bet.result == .loss ? .redd : .secondary)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-            .padding(24)
             
             if deleteActive {
                 HStack(spacing: 14) {
@@ -133,10 +128,10 @@ struct PlacedBetView: View {
                     .matchedGeometryEffect(id: "trash", in: trash)
             }
         }
-        .frame(height: 180)
+        .frame(height: 150)
         .cornerRadius(20)
         .padding(.horizontal, 20)
-        .shadow(radius: 10)
+//        .shadow(radius: 10)
     }
     
     var betText: String {
@@ -267,7 +262,7 @@ struct PlacedParlayView: View {
         .frame(height: 160)
         .cornerRadius(20)
         .padding(.horizontal, 20)
-        .shadow(radius: 10)
+//        .shadow(radius: 10)
         .task {
             formattedBets = parlay.betString?.split(separator: ",").map { String($0.trimmingCharacters(in: .whitespaces))
             } ?? []

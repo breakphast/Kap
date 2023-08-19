@@ -40,8 +40,8 @@ struct Home: View {
                     Label("Profile", systemImage: "person.fill")
                 }
             }
-            .tint(.white)
-            .preferredColorScheme(.dark)
+            .tint(.oW)
+//            .preferredColorScheme(.dark)
             .task {
                 do {
                     viewModel.users = try await UserViewModel().fetchAllUsers()

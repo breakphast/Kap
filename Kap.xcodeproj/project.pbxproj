@@ -25,6 +25,8 @@
 		3EDBFCD62A8EA18000EB8628 /* Login.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EDBFCD52A8EA18000EB8628 /* Login.swift */; };
 		3EDBFCD82A8EE20100EB8628 /* BetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EDBFCD72A8EE20100EB8628 /* BetViews.swift */; };
 		3EDBFCDA2A8EEE0D00EB8628 /* Profile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EDBFCD92A8EEE0D00EB8628 /* Profile.swift */; };
+		3EDBFCDC2A8FC03000EB8628 /* LiveScore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EDBFCDB2A8FC03000EB8628 /* LiveScore.swift */; };
+		3EDBFCDE2A8FC04900EB8628 /* LiveScoreViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EDBFCDD2A8FC04900EB8628 /* LiveScoreViewModel.swift */; };
 		3EE35E532A5F86CB0026F952 /* Home.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EE35E522A5F86CB0026F952 /* Home.swift */; };
 		3EE35E552A60D77A0026F952 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EE35E542A60D77A0026F952 /* User.swift */; };
 		3EE35E572A60D7940026F952 /* League.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EE35E562A60D7940026F952 /* League.swift */; };
@@ -61,6 +63,8 @@
 		3EDBFCD52A8EA18000EB8628 /* Login.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Login.swift; sourceTree = "<group>"; };
 		3EDBFCD72A8EE20100EB8628 /* BetViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BetViews.swift; sourceTree = "<group>"; };
 		3EDBFCD92A8EEE0D00EB8628 /* Profile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Profile.swift; sourceTree = "<group>"; };
+		3EDBFCDB2A8FC03000EB8628 /* LiveScore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveScore.swift; sourceTree = "<group>"; };
+		3EDBFCDD2A8FC04900EB8628 /* LiveScoreViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveScoreViewModel.swift; sourceTree = "<group>"; };
 		3EE35E522A5F86CB0026F952 /* Home.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home.swift; sourceTree = "<group>"; };
 		3EE35E542A60D77A0026F952 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		3EE35E562A60D7940026F952 /* League.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = League.swift; sourceTree = "<group>"; };
@@ -153,6 +157,7 @@
 				3EFA18722A709843002D6E94 /* BetViewModel.swift */,
 				3EFA187A2A70C1C7002D6E94 /* PlayerViewModel.swift */,
 				3E195C772A747D8300FB0CAD /* LeaderboardViewModel.swift */,
+				3EDBFCDD2A8FC04900EB8628 /* LiveScoreViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -183,6 +188,7 @@
 				3EDBFCD52A8EA18000EB8628 /* Login.swift */,
 				3E5D8D242A63A4F100634DBE /* CustomButton.swift */,
 				3EDBFCD92A8EEE0D00EB8628 /* Profile.swift */,
+				3EDBFCDB2A8FC03000EB8628 /* LiveScore.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -286,8 +292,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3EDBFCDE2A8FC04900EB8628 /* LiveScoreViewModel.swift in Sources */,
 				3EE35E572A60D7940026F952 /* League.swift in Sources */,
 				3EFA18772A709A99002D6E94 /* ParlayViewModel.swift in Sources */,
+				3EDBFCDC2A8FC03000EB8628 /* LiveScore.swift in Sources */,
 				3EE35E6A2A61C8C00026F952 /* Leaderboard.swift in Sources */,
 				3EE35E5D2A60D7FB0026F952 /* Game.swift in Sources */,
 				3E5D8D252A63A4F100634DBE /* CustomButton.swift in Sources */,
