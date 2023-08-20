@@ -8,9 +8,9 @@
 import SwiftUI
 
 struct Login: View {
-    @Environment(\.viewModel) private var viewModel
-    let authViewModel = AuthViewModel()
-    
+    @EnvironmentObject var homeViewModel: AppDataViewModel
+    @EnvironmentObject var authViewModel: AuthViewModel
+
     @State private var email = "harch@loch.io"
     @State private var password = "harchy"
     @State private var username = ""
@@ -85,7 +85,7 @@ struct Login: View {
             Button {
                 authViewModel.login(withEmail: email.lowercased(), password: password.lowercased()) { userID in
                     if let validUserID = userID {
-                        viewModel.activeUserID = validUserID
+//                        self.homeViewModel.activeUserID = validUserID
                         loggedIn.toggle()
                         loginFailed = false
                     } else {
@@ -157,10 +157,11 @@ struct Login: View {
             
             Button("Register") {
                 AuthViewModel().register(withEmail: email, password: password, username: username, fullName: fullName)
-                AuthViewModel().login(withEmail: email, password: password) { userID in
-                    viewModel.activeUserID = userID ?? ""
-                }
-                loggedIn.toggle()
+                login = true
+//                AuthViewModel().login(withEmail: email, password: password) { userID in
+//                    homeViewModel.activeUserID = userID ?? ""
+//                }
+//                loggedIn.toggle()
             }
             .buttonStyle(.borderedProminent)
             .foregroundStyle(.lion)

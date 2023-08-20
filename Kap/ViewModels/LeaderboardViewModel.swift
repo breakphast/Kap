@@ -68,7 +68,12 @@ class LeaderboardViewModel {
         return bigMovers
     }
     
-    
+    func rankDifference(for user: User, from week1: [User], to week2: [User]) -> Int {
+        let week1Rank = rank(of: user, in: week1)
+        let week2Rank = rank(of: user, in: week2)
+        
+        return week1Rank - week2Rank
+    }
 //    let movers = bigMover(from: week1Ranked, to: week2Ranked)
 //    for (player, up) in movers {
 //        print("\(player.name) is a big mover and they moved \(up ? "up" : "down")!")

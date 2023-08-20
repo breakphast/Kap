@@ -7,6 +7,7 @@
 
 import Foundation
 import FirebaseFirestoreSwift
+import FirebaseFirestore
 import Firebase
 
 class BetViewModel {
@@ -53,7 +54,7 @@ class BetViewModel {
         return bets
     }
     
-    func addBet(bet: Bet) async throws {
+    func addBet(bet: Bet, playerID: String) async throws {
         let db = Firestore.firestore()
         
         let newBet: [String: Any] = [
@@ -67,7 +68,7 @@ class BetViewModel {
             "stake": 100,
             "betString": bet.betString,
             "selectedTeam": bet.selectedTeam ?? "",
-            "playerID": bet.playerID,
+            "playerID": playerID,
             "week": bet.week
         ]
         
@@ -75,7 +76,7 @@ class BetViewModel {
     }
 
     func makeBet(for game: Game, betOption: BetOption, playerID: String, week: Int) -> Bet {
-        let bet = Bet(id: UUID(), betOption: betOption, game: game, type: betOption.betType, result: [.pending, .loss, .win].randomElement(), odds: betOption.odds, selectedTeam: betOption.selectedTeam, playerID: playerID, week: week)
+        let bet = Bet(id: betOption.id, betOption: betOption, game: game, type: betOption.betType, result: [.pending, .loss, .win].randomElement(), odds: betOption.odds, selectedTeam: betOption.selectedTeam, playerID: playerID, week: week)
         
         return bet
     }
@@ -133,7 +134,7 @@ class BetViewModel {
                 team = game.homeTeam
             }
             
-            let bet = Bet(id: UUID(), betOption: options[i], game: game, type: type, result: .pending, odds: options[i].odds, selectedTeam: team, playerID: "", week: 0)
+            let bet = Bet(id: options[i].id, betOption: options[i], game: game, type: type, result: .pending, odds: options[i].odds, selectedTeam: team, playerID: "", week: 0)
             bets.append(bet)
         }
         let betss = [3, 4, 2, 0, 1, 5].compactMap { index in

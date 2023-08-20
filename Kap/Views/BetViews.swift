@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct PlacedBetView: View {
-    @Environment(\.viewModel) private var viewModel
+    @EnvironmentObject var homeViewModel: AppDataViewModel
     @State var deleteActive = false
     @Namespace var trash
     let bet: Bet
@@ -45,7 +45,7 @@ struct PlacedBetView: View {
                                 .lineLimit(nil)
                                 .fixedSize(horizontal: false, vertical: true)
                             Spacer()
-                            Text("(\(bet.betOption.dayType?.rawValue ?? "") \(bets.filter({ $0.betOption.dayType == bet.betOption.dayType && bet.week == viewModel.currentWeek }).count)/\(bet.betOption.maxBets ?? 0))")
+                            Text("(\(bet.betOption.dayType?.rawValue ?? "") \(bets.filter({ $0.betOption.dayType == bet.betOption.dayType && bet.week == homeViewModel.currentWeek }).count)/\(bet.betOption.maxBets ?? 0))")
                                 .font(.caption.bold())
                                 .foregroundStyle(.secondary)
                         }
@@ -71,9 +71,11 @@ struct PlacedBetView: View {
                                 .foregroundStyle(pointsColor(for: bet.result ?? .pending))
                         }
                         Spacer()
-                        Image(systemName: bet.result == .win ? "checkmark.circle" : bet.result == .loss ? "xmark.circle" : "hourglass.circle")
-                            .font(.title.bold())
-                            .foregroundColor(bet.result == .win ? .bean : bet.result == .loss ? .redd : .secondary)
+                        if bet.result != .pending {
+                            Image(systemName: bet.result == .win ? "checkmark.circle" : "xmark.circle")
+                                .font(.title.bold())
+                                .foregroundColor(bet.result == .win ? .bean : bet.result == .loss ? .redd : .secondary)
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
@@ -147,7 +149,7 @@ struct PlacedBetView: View {
 }
 
 struct PlacedParlayView: View {
-    @Environment(\.viewModel) private var viewModel
+    @EnvironmentObject var homeViewModel: AppDataViewModel
     @State var deleteActive = false
     @Namespace var trash
     let parlay: Parlay

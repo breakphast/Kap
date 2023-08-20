@@ -11,12 +11,13 @@ import Firebase
 import FirebaseFirestoreSwift
 
 struct Home: View {
-    @Environment(\.viewModel) private var viewModel
+    @EnvironmentObject var homeViewModel: AppDataViewModel
+    @EnvironmentObject var authViewModel: AuthViewModel
     @State private var showingSplashScreen = true
     @State private var loggedIn = false
     
     var body: some View {
-        if !loggedIn {
+        if authViewModel.currentUser == nil || loggedIn == false {
             Login(loggedIn: $loggedIn)
         } else {
             TabView {
@@ -35,7 +36,7 @@ struct Home: View {
                         Label("Leaderboard", systemImage: "rosette")
                     }
                 
-                Profile()
+                Profile(loggedIn: $loggedIn)
                 .tabItem {
                     Label("Profile", systemImage: "person.fill")
                 }
@@ -44,20 +45,20 @@ struct Home: View {
 //            .preferredColorScheme(.dark)
             .task {
                 do {
-                    viewModel.users = try await UserViewModel().fetchAllUsers()
-//                    viewModel.activeUser = viewModel.users.first(where: { $0.username == "Brokeee" })
+                    homeViewModel.users = try await UserViewModel().fetchAllUsers()
+//                    homeViewModel.activeUser = homeViewModel.users.first(where: { $0.username == "Brokeee" })
                     
-                    viewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
-                    viewModel.activeLeague = viewModel.leagues.first
+                    homeViewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
+                    homeViewModel.activeLeague = homeViewModel.leagues.first
                     
-                    viewModel.games = try await GameService().fetchGamesFromFirestore().chunked(into: 16)[0]
-                    GameService().updateDayType(for: &viewModel.games)
-    //                try await GameService().updateGameScore(game: viewModel.games[0])
+                    homeViewModel.games = try await GameService().fetchGamesFromFirestore().chunked(into: 16)[0]
+                    GameService().updateDayType(for: &homeViewModel.games)
+    //                try await GameService().updateGameScore(game: homeViewModel.games[0])
                     
-                    viewModel.bets = try await BetViewModel().fetchBets(games: viewModel.games)
-                    viewModel.parlays = try await ParlayViewModel().fetchParlays(games: viewModel.games)
+                    homeViewModel.bets = try await BetViewModel().fetchBets(games: homeViewModel.games)
+                    homeViewModel.parlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.games)
                     
-                    let _ = await LeaderboardViewModel().generateLeaderboards(leagueID: viewModel.activeLeague?.id ?? "", users: viewModel.users, bets: viewModel.bets, weeks: [1,2])
+                    let _ = await LeaderboardViewModel().generateLeaderboards(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, weeks: [1,2])
                     
                     
     //                let games = try await GameService().getGames()
@@ -96,15 +97,4 @@ struct Home: View {
 
 #Preview {
     Home()
-}
-
-extension EnvironmentValues {
-    var viewModel: AppDataViewModel {
-        get { self[ViewModelKey.self] }
-        set { self[ViewModelKey.self] = newValue }
-    }
-}
-
-private struct ViewModelKey: EnvironmentKey {
-    static var defaultValue: AppDataViewModel = AppDataViewModel(activeUserID: "")
 }

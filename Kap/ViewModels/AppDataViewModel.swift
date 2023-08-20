@@ -11,22 +11,23 @@ import SwiftData
 import Firebase
 import FirebaseFirestore
 
-@Observable class AppDataViewModel {
-    var users: [User] = []
-    var leagues: [League] = []
-    var games: [Game] = []
-    var bets: [Bet] = []
-    var parlays: [Parlay] = []
-    var selectedBets: [Bet] = []
-    var activeParlays: [Parlay] = []
-    var players: [Player] = []
+class AppDataViewModel: ObservableObject {
+    @Published var users: [User] = []
+    @Published var leagues: [League] = []
+    @Published var games: [Game] = []
+    @Published var bets: [Bet] = []
+    @Published var generatedBets: [Bet] = []
+    @Published var parlays: [Parlay] = []
+    @Published var selectedBets: [Bet] = []
+    @Published var activeParlays: [Parlay] = []
+    @Published var players: [Player] = []
     
-    var activePlayer: Player?
-    var activeUserID: String
-    var currentWeek = 2
-    var activeLeague: League?
+    @Published var activePlayer: Player?
+    @Published var activeUserID: String
+    @Published var currentWeek = 1
+    @Published var activeLeague: League?
     
-    var changed: Bool = false
+    @Published var changed: Bool = false
     
     init(activeUserID: String) {
         self.activeUserID = activeUserID
@@ -34,9 +35,5 @@ import FirebaseFirestore
     
     enum FetchError: Error {
         case noDocumentsFound
-    }
-    
-    func generateRandomNumberInRange(range: ClosedRange<Int>) -> Int {
-        return Int.random(in: range)
     }
 }

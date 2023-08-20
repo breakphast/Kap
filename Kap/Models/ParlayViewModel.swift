@@ -6,6 +6,7 @@
 
 import Foundation
 import Firebase
+import FirebaseFirestore
 
 class ParlayViewModel {
     private let db = Firestore.firestore()

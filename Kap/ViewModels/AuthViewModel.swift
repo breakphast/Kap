@@ -10,7 +10,7 @@ import Firebase
 import Observation
 import SwiftData
 
-@Observable class AuthViewModel {
+class AuthViewModel: ObservableObject {
     var userSession: FirebaseAuth.User? = nil
     var didAuthenticateUser = false
     var currentUser: User? // optional because we have to reach out to our api to get data before we set it so it will originally be nil... app launches before we fetch the data
@@ -18,6 +18,7 @@ import SwiftData
     private let service = UserService()
     
     private var tempUserSession: FirebaseAuth.User?
+    @Published var loggedIn = false
     
     let auth = Auth.auth()
     
@@ -50,6 +51,7 @@ import SwiftData
             self.fetchUser()
             print(user.uid)
             completion(user.uid)
+            self.loggedIn = true
             print("Successfully logged in user.")
         }
     }
@@ -85,6 +87,7 @@ import SwiftData
         userSession = nil
         try? auth.signOut()
         print("Signed out")
+        loggedIn = false
     }
     
 //    func uploadProfileImage(_ image: UIImage) {

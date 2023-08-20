@@ -9,7 +9,8 @@ import SwiftUI
 
 struct Board: View {
     let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 3)
-    @Environment(\.viewModel) private var viewModel
+    @EnvironmentObject var homeViewModel: AppDataViewModel
+    @EnvironmentObject var authViewModel: AuthViewModel
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
@@ -27,10 +28,10 @@ struct Board: View {
                             }
                             
                             ToolbarItem(placement: .navigationBarTrailing) {
-                                if viewModel.selectedBets.count > 1 && calculateParlayOdds(bets: viewModel.selectedBets) >= 400 {
+                                if homeViewModel.selectedBets.count > 1 && calculateParlayOdds(bets: homeViewModel.selectedBets) >= 400 {
                                     HStack(spacing: 2) {
                                         Image(systemName: "gift.fill")
-                                        Text("+\(calculateParlayOdds(bets: viewModel.selectedBets))".replacingOccurrences(of: ",", with: ""))
+                                        Text("+\(calculateParlayOdds(bets: homeViewModel.selectedBets))".replacingOccurrences(of: ",", with: ""))
                                             .font(.caption2)
                                             .offset(y: -4)
                                     }
@@ -46,7 +47,7 @@ struct Board: View {
                 }
                 .fontDesign(.rounded)
                 
-                if viewModel.selectedBets.count > 0 {
+                if homeViewModel.selectedBets.count > 0 {
                     Spacer()
                     NavigationLink(destination: Betslip()) {
                         ZStack {
@@ -65,14 +66,14 @@ struct Board: View {
                     .simultaneousGesture(
                         TapGesture()
                             .onEnded { _ in
-                                if viewModel.selectedBets.count > 1 {
-                                    viewModel.activeParlays = []
-                                    let parlay = ParlayViewModel().makeParlay(for: viewModel.selectedBets, playerID: viewModel.activeUserID, week: viewModel.currentWeek)
+                                if homeViewModel.selectedBets.count > 1 {
+                                    homeViewModel.activeParlays = []
+                                    let parlay = ParlayViewModel().makeParlay(for: homeViewModel.selectedBets, playerID: authViewModel.currentUser?.id ?? "", week: homeViewModel.currentWeek)
                                     if parlay.totalOdds >= 400 {
-                                        viewModel.activeParlays.append(parlay)
+                                        homeViewModel.activeParlays.append(parlay)
                                     }
                                 } else {
-                                    viewModel.activeParlays = []
+                                    homeViewModel.activeParlays = []
                                 }
                             }
                     )
@@ -89,22 +90,22 @@ struct Board: View {
 }
 
 struct GameListingView: View {
-    @Environment(\.viewModel) private var viewModel
+    @EnvironmentObject var homeViewModel: AppDataViewModel
     
     private var thursdayNightGame: [Game] {
-        Array(viewModel.games.prefix(1))
+        Array(homeViewModel.games.prefix(1))
     }
     
     private var sundayGames: [Game] {
-        Array(viewModel.games.dropFirst().dropLast(2))
+        Array(homeViewModel.games.dropFirst().dropLast(2))
     }
     
     private var sundayNightGame: [Game] {
-        Array(viewModel.games.suffix(2).prefix(1))
+        Array(homeViewModel.games.suffix(2).prefix(1))
     }
     
     private var mondayNightGame: [Game] {
-        Array(viewModel.games.suffix(1))
+        Array(homeViewModel.games.suffix(1))
     }
     
     var body: some View {
@@ -119,7 +120,7 @@ struct GameListingView: View {
 }
 
 struct SectionView: View {
-    @Environment(\.viewModel) private var viewModel
+    @EnvironmentObject var homeViewModel: AppDataViewModel
     var title: String
     var games: [Game]
     var first: Bool?
@@ -167,7 +168,7 @@ struct SectionView: View {
 struct GameRow: View {
     var game: Game
     let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 3)
-    @Environment(\.viewModel) private var viewModel
+    @EnvironmentObject var homeViewModel: AppDataViewModel
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -204,11 +205,11 @@ struct GameRow: View {
                     ForEach(bets, id: \.id) { bet in
                         CustomButton(bet: bet, buttonText: bet.betOption.betString) {
                             withAnimation {
-                                bet.week = viewModel.currentWeek
-                                if viewModel.selectedBets.contains(where: { $0.id == bet.id }) {
-                                    viewModel.selectedBets.removeAll(where: { $0.id == bet.id })
+                                bet.week = homeViewModel.currentWeek
+                                if homeViewModel.selectedBets.contains(where: { $0.id == bet.id }) {
+                                    homeViewModel.selectedBets.removeAll(where: { $0.id == bet.id })
                                 } else {
-                                    viewModel.selectedBets.append(bet)
+                                    homeViewModel.selectedBets.append(bet)
                                 }
                             }
                         }

@@ -217,7 +217,7 @@ class GameService {
             game.betOptions = game.betOptions.map { bet in
                 let mutableBet = bet
                 mutableBet.dayType = .sunday
-                mutableBet.maxBets = 3
+                mutableBet.maxBets = 7
                 return mutableBet
             }
         }

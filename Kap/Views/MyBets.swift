@@ -11,7 +11,8 @@ import Observation
 struct MyBets: View {
     let results: [Image] = [Image(systemName: "checkmark"), Image(systemName: "x.circle")]
     
-    @Environment(\.viewModel) private var viewModel
+    @EnvironmentObject var homeViewModel: AppDataViewModel
+    @EnvironmentObject var authViewModel: AuthViewModel
     @Environment(\.dismiss) private var dismiss
     
     @State private var bets: [Bet] = []
@@ -49,7 +50,7 @@ struct MyBets: View {
             fetchData()
         })
         .task { 
-            week = viewModel.currentWeek
+            week = homeViewModel.currentWeek
             selectedOption = "Week \(week)"
             fetchData()
         }
@@ -115,15 +116,15 @@ struct MyBets: View {
                     selectedOption = "Week 1"
                     week = 1
                     Task {
-                        let fetchedBets = try await BetViewModel().fetchBets(games: viewModel.games)
-                        bets = fetchedBets.filter({ $0.playerID == viewModel.activeUserID })
+                        let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.games)
+                        bets = fetchedBets.filter({ $0.playerID == authViewModel.currentUser?.id })
                         bets = bets.filter({ $0.week == 1 })
                         
-                        let fetchedParlays = try await ParlayViewModel().fetchParlays(games: viewModel.games)
-                        parlays = fetchedParlays.filter({ $0.playerID == viewModel.activeUserID })
+                        let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.games)
+                        parlays = fetchedParlays.filter({ $0.playerID == authViewModel.currentUser?.id })
                         parlays = parlays.filter({ $0.week == 1 })
                         
-                        weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: viewModel.activeUserID, bets: bets, week: 1, leagueID: viewModel.activeLeague?.id ?? "")
+                        weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: authViewModel.currentUser?.id ?? "", bets: bets, week: 1, leagueID: homeViewModel.activeLeague?.id ?? "")
                     }
                 }
             })
@@ -132,21 +133,21 @@ struct MyBets: View {
                     selectedOption = "Week 2"
                     week = 2
                     Task {
-                        let fetchedBets = try await BetViewModel().fetchBets(games: viewModel.games)
-                        bets = fetchedBets.filter({ $0.playerID == viewModel.activeUserID })
+                        let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.games)
+                        bets = fetchedBets.filter({ $0.playerID == authViewModel.currentUser?.id })
                         bets = bets.filter({ $0.week == 2 })
                         
-                        let fetchedParlays = try await ParlayViewModel().fetchParlays(games: viewModel.games)
-                        parlays = fetchedParlays.filter({ $0.playerID == viewModel.activeUserID })
+                        let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.games)
+                        parlays = fetchedParlays.filter({ $0.playerID == authViewModel.currentUser?.id })
                         parlays = parlays.filter({ $0.week == 2 })
                         
-                        weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: viewModel.activeUserID, bets: bets, week: 2, leagueID: viewModel.activeLeague?.id ?? "")
+                        weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: authViewModel.currentUser?.id ?? "", bets: bets, week: 2, leagueID: homeViewModel.activeLeague?.id ?? "")
                     }
                 }
             })
         } label: {
             HStack(spacing: 4) {
-                Text(selectedOption.isEmpty ? (viewModel.activeLeague?.name ?? "") : selectedOption)
+                Text(selectedOption.isEmpty ? (homeViewModel.activeLeague?.name ?? "") : selectedOption)
                 Image(systemName: "chevron.down")
                     .font(.caption2.bold())
             }
@@ -195,13 +196,13 @@ struct MyBets: View {
     private func fetchData(_ value: Int? = nil) {
         Task {
             do {
-                let fetchedBets = try await BetViewModel().fetchBets(games: viewModel.games)
-                bets = fetchedBets.filter({ $0.playerID == viewModel.activeUserID && $0.week == week })
+                let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.games)
+                bets = fetchedBets.filter({ $0.playerID == authViewModel.currentUser?.id && $0.week == week })
                 
-                let fetchedParlays = try await ParlayViewModel().fetchParlays(games: viewModel.games)
-                parlays = fetchedParlays.filter({ $0.playerID == viewModel.activeUserID && $0.week == (value != nil ? viewModel.currentWeek : 1) })
+                let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.games)
+                parlays = fetchedParlays.filter({ $0.playerID == authViewModel.currentUser?.id && $0.week == (value != nil ? homeViewModel.currentWeek : 1) })
                 
-                weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: viewModel.activeUserID, bets: bets, week: week, leagueID: viewModel.activeLeague?.id ?? "")
+                weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: authViewModel.currentUser?.id ?? "", bets: bets, week: week, leagueID: homeViewModel.activeLeague?.id ?? "")
             } catch {
                 print("Error fetching bets: \(error)")
             }

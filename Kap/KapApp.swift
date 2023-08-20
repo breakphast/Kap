@@ -10,7 +10,8 @@ import Firebase
 
 @main
 struct KapApp: App {
-    @State private var viewModel = AppDataViewModel(activeUserID: "")
+    @StateObject private var homeViewModel = AppDataViewModel(activeUserID: "")
+    @StateObject private var authViewModel = AuthViewModel()
 
     init() {
         FirebaseApp.configure()
@@ -19,7 +20,8 @@ struct KapApp: App {
     var body: some Scene {
         WindowGroup {
             Home()
-                .environment(\.viewModel, viewModel)
+                .environmentObject(homeViewModel)
+                .environmentObject(authViewModel)
         }
     }
 }
