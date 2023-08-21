@@ -215,4 +215,5 @@ enum DayType: String {
     case sunday = "SUN"
     case snf = "SNF"
     case mnf = "MNF"
+    case parlay = "PARLAY BONUS"
 }

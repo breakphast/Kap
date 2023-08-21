@@ -38,25 +38,23 @@ struct Leaderboard: View {
             week = homeViewModel.currentWeek
             selectedOption = "Week \(week)"
             
-            users = await LeaderboardViewModel().getLeaderboardData(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, week: week)
+            users = await LeaderboardViewModel().getLeaderboardData(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, week: week)
             await updatePointsDifferences()
-            print(homeViewModel.currentWeek - 1)
-            print(homeViewModel.currentWeek)
                         
-            leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: homeViewModel.activeLeague!.id!, users: homeViewModel.users, bets: homeViewModel.bets, weeks: [1, 2])
+            leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: homeViewModel.activeLeague!.id!, users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, weeks: [1, 2])
             
             bigMovers = LeaderboardViewModel().bigMover(from: leaderboards[0], to: leaderboards[1])
             
         }
         .onChange(of: self.homeViewModel.selectedBets.count) { _, _ in
             Task {
-                users = await LeaderboardViewModel().getLeaderboardData(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, week: week)
+                users = await LeaderboardViewModel().getLeaderboardData(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, week: week)
                 await updatePointsDifferences()
                 
                 homeViewModel.bets = try await BetViewModel().fetchBets(games: homeViewModel.games)
                 homeViewModel.parlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.games)
                 
-                leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: homeViewModel.activeLeague!.id!, users: homeViewModel.users, bets: homeViewModel.bets, weeks: [1, 2])
+                leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: homeViewModel.activeLeague!.id!, users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, weeks: [1, 2])
                 
                 bigMovers = LeaderboardViewModel().bigMover(from: leaderboards[0], to: leaderboards[1])
             }
@@ -127,7 +125,7 @@ struct Leaderboard: View {
                     selectedOption = "Week 1"
                     week = 1
                     Task {
-                        users = await LeaderboardViewModel().getLeaderboardData(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, week: 1)
+                        users = await LeaderboardViewModel().getLeaderboardData(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, week: 1)
                         await updatePointsDifferences()
                     }
                 }
@@ -137,7 +135,7 @@ struct Leaderboard: View {
                     selectedOption = "Week 2"
                     week = 2
                     Task {
-                        users = await LeaderboardViewModel().getLeaderboardData(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, week: 2)
+                        users = await LeaderboardViewModel().getLeaderboardData(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, week: 2)
                         await updatePointsDifferences()
                     }
                 }
@@ -211,7 +209,7 @@ struct Leaderboard: View {
     private func updatePointsDifferences() async {
         var newPointsDifferences: [String: Int] = [:]
         for user in users {
-            let diff = await LeaderboardViewModel().getWeeklyPointsDifference(userID: user.id ?? "", bets: homeViewModel.bets, currentWeek: week, leagueID: homeViewModel.activeLeague!.id!)
+            let diff = await LeaderboardViewModel().getWeeklyPointsDifference(userID: user.id ?? "", bets: homeViewModel.bets, parlays: homeViewModel.parlays, currentWeek: week, leagueID: homeViewModel.activeLeague!.id!)
             newPointsDifferences[user.id ?? ""] = diff
         }
         pointsDifferences = newPointsDifferences

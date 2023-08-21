@@ -8,13 +8,14 @@
 import Foundation
 
 class LeaderboardViewModel {
-    func getLeaderboardData(leagueID: String, users: [User], bets: [Bet], week: Int) async -> [User] {
+    func getLeaderboardData(leagueID: String, users: [User], bets: [Bet], parlays: [Parlay], week: Int) async -> [User] {
         var rankedUsers = [User]()
         
         for user in users {
             var newUser = user
             let bets = bets.filter({ $0.playerID == user.id ?? "" && $0.week == week && $0.result != .pending})
-            let points = bets.map { $0.points ?? 0 }.reduce(0, +)
+            let parlay = parlays.filter({ $0.playerID == user.id ?? "" && $0.week == week && $0.result != .pending})
+            let points = bets.map { $0.points ?? 0 }.reduce(0, +) + (parlay.first?.totalPoints ?? 0)
             newUser.totalPoints = points
             rankedUsers.append(newUser)
         }
@@ -24,23 +25,24 @@ class LeaderboardViewModel {
         return rankedUsers
     }
     
-    func getWeeklyPoints(userID: String, bets: [Bet], week: Int, leagueID: String) async -> Int {
+    func getWeeklyPoints(userID: String, bets: [Bet], parlays: [Parlay], week: Int, leagueID: String) async -> Int {
         let bets = bets.filter({ $0.playerID == userID && $0.week == week && $0.result != .pending})
-        let points = bets.map { $0.points ?? 0 }.reduce(0, +)
+        let parlays = parlays.filter({ $0.playerID == userID && $0.week == week && $0.result != .pending})
+        let points = bets.map { $0.points ?? 0 }.reduce(0, +) + (parlays.first?.totalPoints ?? 0)
         return points
     }
     
-    func getWeeklyPointsDifference(userID: String, bets: [Bet], currentWeek: Int, leagueID: String) async -> Int {
-        let currentWeekPoints = await getWeeklyPoints(userID: userID, bets: bets, week: currentWeek, leagueID: leagueID)
-        let previousWeekPoints = await getWeeklyPoints(userID: userID, bets: bets, week: currentWeek - 1, leagueID: leagueID)
+    func getWeeklyPointsDifference(userID: String, bets: [Bet], parlays: [Parlay], currentWeek: Int, leagueID: String) async -> Int {
+        let currentWeekPoints = await getWeeklyPoints(userID: userID, bets: bets, parlays: parlays, week: currentWeek, leagueID: leagueID)
+        let previousWeekPoints = await getWeeklyPoints(userID: userID, bets: bets, parlays: parlays, week: currentWeek - 1, leagueID: leagueID)
         return currentWeekPoints - previousWeekPoints
     }
     
-    func generateLeaderboards(leagueID: String, users: [User], bets: [Bet], weeks: [Int]) async -> [[User]] {
+    func generateLeaderboards(leagueID: String, users: [User], bets: [Bet], parlays: [Parlay], weeks: [Int]) async -> [[User]] {
         var boards = [[User]]()
         
         for week in weeks {
-            let board = await getLeaderboardData(leagueID: leagueID, users: users, bets: bets, week: week)
+            let board = await getLeaderboardData(leagueID: leagueID, users: users, bets: bets, parlays: parlays, week: week)
             boards.append(board)
         }
         

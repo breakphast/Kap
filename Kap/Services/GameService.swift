@@ -55,9 +55,6 @@ class GameService {
         do {
             let scoresData = try decoder.decode([ScoreElement].self, from: scores)
             print("Decoded successfully")
-            
-            print(scoresData.first!.documentId)
-            print(game.documentId)
 
             // Filtering out the exact score data that matches the game id
             if let scoreElement = scoresData.first(where: { $0.documentId == game.documentId }) {

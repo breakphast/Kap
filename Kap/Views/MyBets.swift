@@ -74,8 +74,8 @@ struct MyBets: View {
                     betSection(for: .snf, settled: true)
                     betSection(for: .mnf, settled: true)
                     
-                    ForEach(parlays.filter { $0.result != .pending }, id: \.id) { parlay in
-                        PlacedParlayView(parlay: parlay)
+                    if !parlays.filter({ $0.result != .pending }).isEmpty {
+                        parlaySection(settled: true)
                     }
                 }
                 .padding(.top)
@@ -99,11 +99,11 @@ struct MyBets: View {
                     betSection(for: .snf, settled: false)
                     betSection(for: .mnf, settled: false)
                     
-                    ForEach(parlays.filter { $0.result == .pending }, id: \.id) { parlay in
-                        PlacedParlayView(parlay: parlay)
+                    if !parlays.filter({ $0.result == .pending }).isEmpty {
+                        parlaySection(settled: false)
                     }
                 }
-                .padding(.top, 40)
+                .padding(.top)
             }
         }
         .padding(.top, 60)
@@ -124,7 +124,7 @@ struct MyBets: View {
                         parlays = fetchedParlays.filter({ $0.playerID == authViewModel.currentUser?.id })
                         parlays = parlays.filter({ $0.week == 1 })
                         
-                        weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: authViewModel.currentUser?.id ?? "", bets: bets, week: 1, leagueID: homeViewModel.activeLeague?.id ?? "")
+                        weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: authViewModel.currentUser?.id ?? "", bets: bets, parlays: homeViewModel.parlays, week: 1, leagueID: homeViewModel.activeLeague?.id ?? "")
                     }
                 }
             })
@@ -141,7 +141,7 @@ struct MyBets: View {
                         parlays = fetchedParlays.filter({ $0.playerID == authViewModel.currentUser?.id })
                         parlays = parlays.filter({ $0.week == 2 })
                         
-                        weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: authViewModel.currentUser?.id ?? "", bets: bets, week: 2, leagueID: homeViewModel.activeLeague?.id ?? "")
+                        weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: authViewModel.currentUser?.id ?? "", bets: bets, parlays: homeViewModel.parlays, week: 2, leagueID: homeViewModel.activeLeague?.id ?? "")
                     }
                 }
             })
@@ -159,6 +159,43 @@ struct MyBets: View {
         .zIndex(1000)
         .padding(.top, 10)
 //        .padding(.leading, 24)
+    }
+    
+    func parlaySection(settled: Bool) -> some View {
+        let filteredParlays = parlays.filter { parlay in
+            (parlay.result != .pending)
+        }
+        return AnyView(
+            VStack(alignment: .leading, spacing: 16) {
+                HStack(spacing: 8) {
+                    Text("PARLAY")
+                        .font(.caption.bold())
+                        .foregroundColor(.oW)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(.lion)
+                        .cornerRadius(4)
+                    
+                    Image(systemName: "gift.fill")
+                        .fontDesign(.rounded)
+                        .fontWeight(.black)
+                        .foregroundStyle(Color("lion"))
+                        .font(.title2)
+                }
+                .padding(.leading, 24)
+                .padding(.vertical, 8)
+                
+                if settled {
+                    ForEach(parlays.filter { $0.result != .pending }, id: \.id) { parlay in
+                        PlacedParlayView(parlay: parlay)
+                    }
+                } else {
+                    ForEach(parlays.filter { $0.result == .pending }, id: \.id) { parlay in
+                        PlacedParlayView(parlay: parlay)
+                    }
+                }
+            }
+        )
     }
     
     func betSection(for dayType: DayType, settled: Bool) -> some View {
@@ -202,7 +239,7 @@ struct MyBets: View {
                 let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.games)
                 parlays = fetchedParlays.filter({ $0.playerID == authViewModel.currentUser?.id && $0.week == (value != nil ? homeViewModel.currentWeek : 1) })
                 
-                weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: authViewModel.currentUser?.id ?? "", bets: bets, week: week, leagueID: homeViewModel.activeLeague?.id ?? "")
+                weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: authViewModel.currentUser?.id ?? "", bets: bets, parlays: homeViewModel.parlays, week: week, leagueID: homeViewModel.activeLeague?.id ?? "")
             } catch {
                 print("Error fetching bets: \(error)")
             }
