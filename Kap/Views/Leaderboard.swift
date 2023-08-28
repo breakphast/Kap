@@ -37,13 +37,12 @@ struct Leaderboard: View {
         .task {
             week = homeViewModel.currentWeek
             selectedOption = "Week \(week)"
-            
             users = await LeaderboardViewModel().getLeaderboardData(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, week: week)
             await updatePointsDifferences()
                         
-            leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: homeViewModel.activeLeague!.id!, users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, weeks: [1, 2])
+            leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, weeks: [1, 2])
             
-            bigMovers = LeaderboardViewModel().bigMover(from: leaderboards[0], to: leaderboards[1])
+            bigMovers = LeaderboardViewModel().bigMover(from: homeViewModel.leaderboards[0], to: homeViewModel.leaderboards[1])
             
         }
         .onChange(of: self.homeViewModel.selectedBets.count) { _, _ in
@@ -54,9 +53,9 @@ struct Leaderboard: View {
                 homeViewModel.bets = try await BetViewModel().fetchBets(games: homeViewModel.games)
                 homeViewModel.parlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.games)
                 
-                leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: homeViewModel.activeLeague!.id!, users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, weeks: [1, 2])
+                leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: homeViewModel.activeLeague!.id!, users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, weeks: [homeViewModel.currentWeek - 1, homeViewModel.currentWeek])
                 
-                bigMovers = LeaderboardViewModel().bigMover(from: leaderboards[0], to: leaderboards[1])
+                bigMovers = LeaderboardViewModel().bigMover(from: homeViewModel.leaderboards[0], to: homeViewModel.leaderboards[1])
             }
         }
     }
@@ -112,7 +111,9 @@ struct Leaderboard: View {
     func determineColor(for user: User) -> Color {
         if week != 1 {
             if let bigMove = bigMoverDirection(for: user) {
-                return bigMove ? Color.bean : Color.red
+                if homeViewModel.bets.filter({ $0.playerID == user.id }).count != 0 {
+                    return bigMove ? Color.bean : Color.red
+                }
             }
         }
         return Color("onyxLightish")
@@ -179,16 +180,16 @@ struct Leaderboard: View {
                 }
             }
             
-            if selectedOption != "Week 1" {
+            if selectedOption != "Week 1" && homeViewModel.bets.filter({ $0.playerID == user.id }).count != 0 {
                 Spacer()
                 Image(systemName:
-                        LeaderboardViewModel().rankDifference(for: user, from: leaderboards[0], to: leaderboards[1]) > 0 ?
+                        LeaderboardViewModel().rankDifference(for: user, from: homeViewModel.leaderboards[0], to: homeViewModel.leaderboards[1]) > 0 ?
                       "chevron.up.circle" :
-                        (LeaderboardViewModel().rankDifference(for: user, from: leaderboards[0], to: leaderboards[1]) < 0 ?
+                        (LeaderboardViewModel().rankDifference(for: user, from: homeViewModel.leaderboards[0], to: homeViewModel.leaderboards[1]) < 0 ?
                          "chevron.down.circle" : "minus")
                 )
                 .font(.title2.bold())
-                .foregroundStyle(LeaderboardViewModel().rankDifference(for: user, from: leaderboards[0], to: leaderboards[1]) > 0 ? Color.bean : (LeaderboardViewModel().rankDifference(for: user, from: leaderboards[0], to: leaderboards[1]) < 0 ? Color.red : Color.oW)
+                .foregroundStyle(LeaderboardViewModel().rankDifference(for: user, from: homeViewModel.leaderboards[0], to: homeViewModel.leaderboards[1]) > 0 ? Color.bean : (LeaderboardViewModel().rankDifference(for: user, from: homeViewModel.leaderboards[0], to: homeViewModel.leaderboards[1]) < 0 ? Color.red : Color.oW)
                 )
             }
         }

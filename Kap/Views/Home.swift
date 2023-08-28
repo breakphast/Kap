@@ -58,8 +58,7 @@ struct Home: View {
                     homeViewModel.bets = try await BetViewModel().fetchBets(games: homeViewModel.games)
                     homeViewModel.parlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.games)
                     
-                    let _ = await LeaderboardViewModel().generateLeaderboards(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, weeks: [1,2])
-                    
+                    homeViewModel.leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, weeks: [homeViewModel.currentWeek - 1, homeViewModel.currentWeek])
                     
     //                let games = try await GameService().getGames()
     //                GameService().addGames(games: games)

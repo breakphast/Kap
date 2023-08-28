@@ -21,10 +21,11 @@ class AppDataViewModel: ObservableObject {
     @Published var selectedBets: [Bet] = []
     @Published var activeParlays: [Parlay] = []
     @Published var players: [Player] = []
+    @Published var leaderboards: [[User]] = [[]]
     
     @Published var activePlayer: Player?
     @Published var activeUserID: String
-    @Published var currentWeek = 1
+    @Published var currentWeek = 2
     @Published var activeLeague: League?
     
     @Published var changed: Bool = false

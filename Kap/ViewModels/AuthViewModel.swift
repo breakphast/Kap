@@ -49,7 +49,6 @@ class AuthViewModel: ObservableObject {
             }
             self.userSession = user
             self.fetchUser()
-            print(user.uid)
             completion(user.uid)
             self.loggedIn = true
             print("Successfully logged in user.")

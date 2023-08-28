@@ -35,37 +35,3 @@ struct CustomButton: View {
         .cornerRadius(10)
     }
 }
-
-//struct CustomButton: View {
-//    var bet: Bet
-//    var buttonText: String
-////    let homeViewModel: AppDataViewModel
-//    @Environment(\.dismiss) var dismiss
-//    @EnvironmentObject var homeViewModel: AppDataViewModel
-//    
-//    var action: () -> Void
-//    
-//    var body: some View {
-//        Button(action: {
-//            withAnimation {
-//                self.action()
-//            }
-//        }) {
-//            ZStack {
-//                homeViewModel.selectedBets.contains(where: { $0.id == bet.id }) ? Color.lion : Color.oW
-//                Text(buttonText)
-//                    .font(.caption2.bold())
-//                    .fontDesign(.rounded)
-//                    .foregroundStyle(homeViewModel.selectedBets.contains(where: { $0.id == bet.id }) ? .oW : .onyx)
-//                    .multilineTextAlignment(.center)
-//                    .lineLimit(2)
-//            }
-//        }
-//        .frame(height: 44)
-//        .cornerRadius(10)
-//        .onAppear {
-//            print(bet.id)
-//            print(homeViewModel.selectedBets.map { $0.id })
-//        }
-//    }
-//}
