@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct Leaderboard: View {
-    @EnvironmentObject var homeViewModel: AppDataViewModel
+    @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
     let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 3)
     
@@ -45,7 +45,7 @@ struct Leaderboard: View {
             bigMovers = LeaderboardViewModel().bigMover(from: homeViewModel.leaderboards[0], to: homeViewModel.leaderboards[1])
             
         }
-        .onChange(of: self.homeViewModel.selectedBets.count) { _, _ in
+        .onChange(of: self.homeViewModel.selectedBets.count, perform: { newValue in
             Task {
                 users = await LeaderboardViewModel().getLeaderboardData(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, week: week)
                 await updatePointsDifferences()
@@ -57,7 +57,7 @@ struct Leaderboard: View {
                 
                 bigMovers = LeaderboardViewModel().bigMover(from: homeViewModel.leaderboards[0], to: homeViewModel.leaderboards[1])
             }
-        }
+        })
     }
     
     var scrollViewContent: some View {

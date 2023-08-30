@@ -1,0 +1,467 @@
+[
+  {
+    "id": "1946b488fadcce89dac3ea54d7c1c57c",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2023-08-29T22:40:00Z",
+    "completed": true,
+    "home_team": "Detroit Tigers",
+    "away_team": "New York Yankees",
+    "scores": [
+      {
+        "name": "Detroit Tigers",
+        "score": "2"
+      },
+      {
+        "name": "New York Yankees",
+        "score": "4"
+      }
+    ],
+    "last_update": "2023-08-30T09:51:57Z"
+  },
+  {
+    "id": "0ab0a6de983ab2f31d5ec34b7df791d2",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2023-08-29T22:40:25Z",
+    "completed": true,
+    "home_team": "Miami Marlins",
+    "away_team": "Tampa Bay Rays",
+    "scores": [
+      {
+        "name": "Miami Marlins",
+        "score": "2"
+      },
+      {
+        "name": "Tampa Bay Rays",
+        "score": "11"
+      }
+    ],
+    "last_update": "2023-08-30T09:51:57Z"
+  },
+  {
+    "id": "b6c6ab09f63a785411d5f65609fe229f",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2023-08-29T22:41:42Z",
+    "completed": true,
+    "home_team": "Philadelphia Phillies",
+    "away_team": "Los Angeles Angels",
+    "scores": [
+      {
+        "name": "Philadelphia Phillies",
+        "score": "12"
+      },
+      {
+        "name": "Los Angeles Angels",
+        "score": "7"
+      }
+    ],
+    "last_update": "2023-08-30T09:51:57Z"
+  },
+  {
+    "id": "047965c8a997ace8f4d0ab240e376360",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2023-08-29T23:05:55Z",
+    "completed": true,
+    "home_team": "Baltimore Orioles",
+    "away_team": "Chicago White Sox",
+    "scores": [
+      {
+        "name": "Baltimore Orioles",
+        "score": "9"
+      },
+      {
+        "name": "Chicago White Sox",
+        "score": "3"
+      }
+    ],
+    "last_update": "2023-08-30T09:51:57Z"
+  },
+  {
+    "id": "501c5bd02fff36a452f742e14fe4276a",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2023-08-29T23:07:00Z",
+    "completed": true,
+    "home_team": "Toronto Blue Jays",
+    "away_team": "Washington Nationals",
+    "scores": [
+      {
+        "name": "Toronto Blue Jays",
+        "score": "4"
+      },
+      {
+        "name": "Washington Nationals",
+        "score": "5"
+      }
+    ],
+    "last_update": "2023-08-30T09:51:57Z"
+  },
+  {
+    "id": "7af387cbf91e9162c3d3d199d890189e",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2023-08-29T23:10:00Z",
+    "completed": true,
+    "home_team": "Boston Red Sox",
+    "away_team": "Houston Astros",
+    "scores": [
+      {
+        "name": "Boston Red Sox",
+        "score": "2"
+      },
+      {
+        "name": "Houston Astros",
+        "score": "6"
+      }
+    ],
+    "last_update": "2023-08-30T09:51:57Z"
+  },
+  {
+    "id": "4af21cecce5985e95590a9f2fb85d77a",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2023-08-29T23:10:00Z",
+    "completed": true,
+    "home_team": "New York Mets",
+    "away_team": "Texas Rangers",
+    "scores": [
+      {
+        "name": "New York Mets",
+        "score": "1"
+      },
+      {
+        "name": "Texas Rangers",
+        "score": "2"
+      }
+    ],
+    "last_update": "2023-08-30T09:51:57Z"
+  },
+  {
+    "id": "1c8c18a78461ff7be93e83fa9f646320",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2023-08-29T23:40:00Z",
+    "completed": true,
+    "home_team": "Minnesota Twins",
+    "away_team": "Cleveland Guardians",
+    "scores": [
+      {
+        "name": "Minnesota Twins",
+        "score": "2"
+      },
+      {
+        "name": "Cleveland Guardians",
+        "score": "4"
+      }
+    ],
+    "last_update": "2023-08-30T09:51:57Z"
+  },
+  {
+    "id": "0f1aad2fc4565c1b9aafc50b5e867de3",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2023-08-29T23:45:00Z",
+    "completed": true,
+    "home_team": "St. Louis Cardinals",
+    "away_team": "San Diego Padres",
+    "scores": [
+      {
+        "name": "St. Louis Cardinals",
+        "score": "6"
+      },
+      {
+        "name": "San Diego Padres",
+        "score": "5"
+      }
+    ],
+    "last_update": "2023-08-30T09:51:57Z"
+  },
+  {
+    "id": "8777aa57a2e74466f84e3586ad4f2101",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2023-08-30T00:05:00Z",
+    "completed": true,
+    "home_team": "Chicago Cubs",
+    "away_team": "Milwaukee Brewers",
+    "scores": [
+      {
+        "name": "Chicago Cubs",
+        "score": "1"
+      },
+      {
+        "name": "Milwaukee Brewers",
+        "score": "0"
+      }
+    ],
+    "last_update": "2023-08-30T09:51:57Z"
+  },
+  {
+    "id": "116a92c423b1490b2ce7b90c6971b454",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2023-08-30T00:10:00Z",
+    "completed": true,
+    "home_team": "Kansas City Royals",
+    "away_team": "Pittsburgh Pirates",
+    "scores": [
+      {
+        "name": "Kansas City Royals",
+        "score": "3"
+      },
+      {
+        "name": "Pittsburgh Pirates",
+        "score": "6"
+      }
+    ],
+    "last_update": "2023-08-30T09:51:57Z"
+  },
+  {
+    "id": "1f460c00777eb0712be2a154a5bca0fa",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2023-08-30T00:40:00Z",
+    "completed": true,
+    "home_team": "Colorado Rockies",
+    "away_team": "Atlanta Braves",
+    "scores": [
+      {
+        "name": "Colorado Rockies",
+        "score": "1"
+      },
+      {
+        "name": "Atlanta Braves",
+        "score": "3"
+      }
+    ],
+    "last_update": "2023-08-30T09:51:57Z"
+  },
+  {
+    "id": "eb7193d4ebb12ed18308ce2986100220",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2023-08-30T01:40:00Z",
+    "completed": true,
+    "home_team": "Seattle Mariners",
+    "away_team": "Oakland Athletics",
+    "scores": [
+      {
+        "name": "Seattle Mariners",
+        "score": "1"
+      },
+      {
+        "name": "Oakland Athletics",
+        "score": "3"
+      }
+    ],
+    "last_update": "2023-08-30T09:51:57Z"
+  },
+  {
+    "id": "ac99b2e4fdb9389502537874afda10d5",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2023-08-30T01:45:00Z",
+    "completed": true,
+    "home_team": "San Francisco Giants",
+    "away_team": "Cincinnati Reds",
+    "scores": [
+      {
+        "name": "San Francisco Giants",
+        "score": "6"
+      },
+      {
+        "name": "Cincinnati Reds",
+        "score": "1"
+      }
+    ],
+    "last_update": "2023-08-30T09:51:57Z"
+  },
+  {
+    "id": "2eac91a7476e584b74ba04ae210ea24a",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2023-08-30T02:10:00Z",
+    "completed": true,
+    "home_team": "Los Angeles Dodgers",
+    "away_team": "Arizona Diamondbacks",
+    "scores": [
+      {
+        "name": "Los Angeles Dodgers",
+        "score": "9"
+      },
+      {
+        "name": "Arizona Diamondbacks",
+        "score": "1"
+      }
+    ],
+    "last_update": "2023-08-30T09:51:57Z"
+  },
+  {
+    "id": "aa281fa73af95f5b76b976e78b15de2f",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2023-08-30T17:05:00Z",
+    "completed": false,
+    "home_team": "Baltimore Orioles",
+    "away_team": "Chicago White Sox",
+    "scores": null,
+    "last_update": null
+  },
+  {
+    "id": "1ab63bc596efcbdf77bbeb14406640a5",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2023-08-30T17:05:00Z",
+    "completed": false,
+    "home_team": "Philadelphia Phillies",
+    "away_team": "Los Angeles Angels",
+    "scores": null,
+    "last_update": null
+  },
+  {
+    "id": "b3a4f47ae3d8e88f7138b20164bc49c8",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2023-08-30T17:10:00Z",
+    "completed": false,
+    "home_team": "Minnesota Twins",
+    "away_team": "Cleveland Guardians",
+    "scores": null,
+    "last_update": null
+  },
+  {
+    "id": "3d3e79f57e5a109196cdbf415e672f1a",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2023-08-30T18:15:00Z",
+    "completed": false,
+    "home_team": "St. Louis Cardinals",
+    "away_team": "San Diego Padres",
+    "scores": null,
+    "last_update": null
+  },
+  {
+    "id": "a11b501c88fa8775352412f5d24c17c1",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2023-08-30T18:20:00Z",
+    "completed": false,
+    "home_team": "Chicago Cubs",
+    "away_team": "Milwaukee Brewers",
+    "scores": null,
+    "last_update": null
+  },
+  {
+    "id": "fed89e8b8b7f617fe142fadeea147643",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2023-08-30T19:07:00Z",
+    "completed": false,
+    "home_team": "Toronto Blue Jays",
+    "away_team": "Washington Nationals",
+    "scores": null,
+    "last_update": null
+  },
+  {
+    "id": "41899e5fd2a4d4de83569321e52fc69c",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2023-08-30T19:45:00Z",
+    "completed": false,
+    "home_team": "San Francisco Giants",
+    "away_team": "Cincinnati Reds",
+    "scores": null,
+    "last_update": null
+  },
+  {
+    "id": "808b8912eb01b4c27e38820ca5e7c50a",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2023-08-30T20:10:00Z",
+    "completed": false,
+    "home_team": "Boston Red Sox",
+    "away_team": "Houston Astros",
+    "scores": null,
+    "last_update": null
+  },
+  {
+    "id": "8bdd78805c9a5727638f611d52416acc",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2023-08-30T20:10:00Z",
+    "completed": false,
+    "home_team": "Seattle Mariners",
+    "away_team": "Oakland Athletics",
+    "scores": null,
+    "last_update": null
+  },
+  {
+    "id": "bf81890221f64e880add9f9534129bca",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2023-08-30T22:40:00Z",
+    "completed": false,
+    "home_team": "Detroit Tigers",
+    "away_team": "New York Yankees",
+    "scores": null,
+    "last_update": null
+  },
+  {
+    "id": "09ef921f97c25a51514ce7107f5b4f40",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2023-08-30T22:40:00Z",
+    "completed": false,
+    "home_team": "Miami Marlins",
+    "away_team": "Tampa Bay Rays",
+    "scores": null,
+    "last_update": null
+  },
+  {
+    "id": "6e8523299903bd6814dbddc58f39c84e",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2023-08-30T22:40:00Z",
+    "completed": false,
+    "home_team": "New York Mets",
+    "away_team": "Texas Rangers",
+    "scores": null,
+    "last_update": null
+  },
+  {
+    "id": "64b743a50a98835a1eb1e7310a3468f7",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2023-08-31T00:10:00Z",
+    "completed": false,
+    "home_team": "Kansas City Royals",
+    "away_team": "Pittsburgh Pirates",
+    "scores": null,
+    "last_update": null
+  },
+  {
+    "id": "f91d6398438dff1eaee58e6832a80d08",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2023-08-31T00:40:00Z",
+    "completed": false,
+    "home_team": "Colorado Rockies",
+    "away_team": "Atlanta Braves",
+    "scores": null,
+    "last_update": null
+  },
+  {
+    "id": "59d87cc81905bacafe3ac58c75063533",
+    "sport_key": "baseball_mlb",
+    "sport_title": "MLB",
+    "commence_time": "2023-08-31T02:10:00Z",
+    "completed": false,
+    "home_team": "Los Angeles Dodgers",
+    "away_team": "Arizona Diamondbacks",
+    "scores": null,
+    "last_update": null
+  }
+]

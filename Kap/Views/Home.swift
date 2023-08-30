@@ -11,7 +11,7 @@ import Firebase
 import FirebaseFirestoreSwift
 
 struct Home: View {
-    @EnvironmentObject var homeViewModel: AppDataViewModel
+    @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
     @State private var showingSplashScreen = true
     @State private var loggedIn = false
@@ -45,20 +45,21 @@ struct Home: View {
             .preferredColorScheme(.dark)
             .task {
                 do {
+                    homeViewModel.setCurrentWeek()
+                    print(homeViewModel.currentWeek)
                     homeViewModel.users = try await UserViewModel().fetchAllUsers()
 //                    homeViewModel.activeUser = homeViewModel.users.first(where: { $0.username == "Brokeee" })
                     
                     homeViewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
                     homeViewModel.activeLeague = homeViewModel.leagues.first
                     
-                    homeViewModel.games = try await GameService().fetchGamesFromFirestore().chunked(into: 16)[0]
-                    GameService().updateDayType(for: &homeViewModel.games)
-//                    var alteredGames = homeViewModel.games
-//                    for game in alteredGames {
-//                        try await GameService().updateGameScore(game: game)
-//                    }
-//                    homeViewModel.games = alteredGames
-//                    try await GameService().updateGameScore(game: homeViewModel.games[0])
+                    homeViewModel.games = try await GameService().fetchGamesFromFirestore()
+//                    GameService().updateDayType(for: &homeViewModel.games)
+                    let alteredGames = homeViewModel.games
+                    for game in alteredGames {
+                        try await GameService().updateGameScore(game: game)
+                    }
+                    homeViewModel.games = alteredGames
                     
                     homeViewModel.bets = try await BetViewModel().fetchBets(games: homeViewModel.games)
                     homeViewModel.parlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.games)

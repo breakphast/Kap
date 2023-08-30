@@ -50,31 +50,27 @@ class GameService {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
 
-        let scores = try await fetchNFLScoresData()
+        let scores = try await fetchMLBScoresData()
 
         do {
             let scoresData = try decoder.decode([ScoreElement].self, from: scores)
-            print("Decoded successfully")
 
             // Filtering out the exact score data that matches the game id
             if let scoreElement = scoresData.first(where: { $0.documentId == game.documentId }) {
                 game.homeScore = scoreElement.scores?.first(where: { $0.name == game.homeTeam })?.score
                 game.awayScore = scoreElement.scores?.first(where: { $0.name == game.awayTeam })?.score
                 
-                let querySnapshot = try await db.collection("nflGames").whereField("id", isEqualTo: game.id).getDocuments()
+                let querySnapshot = try await db.collection("mlbGames").whereField("id", isEqualTo: game.id).getDocuments()
 
                 if let newGameDocument = querySnapshot.documents.first {
                     try await newGameDocument.reference.updateData([
                         "homeScore": game.homeScore as Any,
                         "awayScore": game.awayScore as Any
                     ])
-                    print("Document successfully updated")
                 } else {
                     print("No matching game found in Firestore")
                 }
 
-            } else {
-                print("No matching score found in scores data for game id: \(scoresData.first!.documentId)")
             }
         } catch {
             print("Error decoding scores data:", error)
@@ -88,7 +84,7 @@ class GameService {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         
-        let odds = try await fetchNFLOddsData()
+        let odds = try await fetchMLBOddsData()
         let gamesData = try decoder.decode([GameElement].self, from: odds)
         
         //        let scores = try await loadnflScoresData()
@@ -117,7 +113,7 @@ class GameService {
     
     func fetchGamesFromFirestore() async throws -> [Game] {
         let db = Firestore.firestore()
-        let querySnapshot = try await db.collection("nflGames").getDocuments()
+        let querySnapshot = try await db.collection("mlbGames").getDocuments()
 
         var games = querySnapshot.documents.map { queryDocumentSnapshot -> Game in
             let data = queryDocumentSnapshot.data()
@@ -181,7 +177,7 @@ class GameService {
     
     func addGames(games: [Game]) {
         let db = Firestore.firestore()
-        let ref = db.collection("nflGames")
+        let ref = db.collection("mlbGames")
         
         let sortedGames = games.sorted { $0.date < $1.date }
         
@@ -241,6 +237,15 @@ class GameService {
     
     private func loadnflData() async throws -> Data {
         guard let url = Bundle.main.url(forResource: "nflData", withExtension: "json") else {
+            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Unable to locate nflData.json"])
+        }
+        
+        let (data, _) = try await URLSession.shared.data(from: url)
+        return data
+    }
+    
+    private func loadmlbData() async throws -> Data {
+        guard let url = Bundle.main.url(forResource: "mlbData", withExtension: "json") else {
             throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Unable to locate nflData.json"])
         }
         

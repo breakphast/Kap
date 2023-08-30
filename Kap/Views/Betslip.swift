@@ -10,7 +10,7 @@ import Observation
 
 struct Betslip: View {
     let results: [Image] = [Image(systemName: "checkmark"), Image(systemName: "x.circle")]
-    @EnvironmentObject var homeViewModel: AppDataViewModel
+    @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
     
     @Environment(\.dismiss) var dismiss
@@ -68,7 +68,7 @@ struct Betslip: View {
                     }
                 }
         )
-        .onChange(of: shouldDismiss, { oldValue, newValue in
+        .onChange(of: shouldDismiss, perform: { newValue in
             withAnimation {
                 dismiss()
             }
@@ -97,7 +97,7 @@ struct Betslip: View {
 }
 
 struct BetView: View {
-    @EnvironmentObject var homeViewModel: AppDataViewModel
+    @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
     @State var isValid = false
     @State var isPlaced = false
@@ -131,10 +131,10 @@ struct BetView: View {
         .padding(.horizontal, 20)
         .shadow(radius: 10)
         .onAppear {
-            isValid = bets.filter({ $0.betOption.dayType == bet.betOption.dayType }).count < bet.betOption.maxBets ?? 0 && bets.filter({ $0.betOption.game.id == bet.game.id }).count < 1
+            isValid = bets.filter({ $0.betOption.game.id == bet.game.id }).count < 1 && bets.count < 8
         }
-        .onChange(of: bets.count) { oldValue, newValue in
-            isValid = bets.filter({ $0.betOption.dayType == bet.betOption.dayType }).count < bet.betOption.maxBets ?? 0 && bets.filter({ $0.betOption.game.id == bet.game.id }).count < 1
+        .onChange(of: bets.count) { newValue in
+            isValid = bets.filter({ $0.betOption.game.id == bet.game.id }).count < 1 && bets.count < 8
         }
     }
     
@@ -173,7 +173,7 @@ struct BetView: View {
                     .lineLimit(nil)
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer()
-                Text("(\(bet.betOption.dayType?.rawValue ?? "") \(bets.filter({ $0.betOption.dayType == bet.betOption.dayType && bet.week == homeViewModel.currentWeek }).count)/\(bet.betOption.maxBets ?? 0))")
+                Text("(\(bets.filter({ $0.playerID == authViewModel.currentUser?.id ?? "" }).count)/8)")
                     .font(.caption.bold())
                     .foregroundStyle(.secondary)
             }
@@ -260,7 +260,7 @@ struct BetView: View {
 }
 
 struct ParlayView: View {
-    @EnvironmentObject var homeViewModel: AppDataViewModel
+    @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
     @State var isValid = false
     @Binding var parlays: [Parlay]
@@ -329,7 +329,7 @@ struct ParlayView: View {
         .onAppear {
             isValid = parlays.count == 0 && parlay.totalOdds <= 800
         }
-        .onChange(of: parlays.count) { _, _ in
+        .onChange(of: parlays.count) { _ in
             isValid = parlays.count == 0 && parlay.totalOdds <= 800
         }
     }

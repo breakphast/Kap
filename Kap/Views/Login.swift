@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct Login: View {
-    @EnvironmentObject var homeViewModel: AppDataViewModel
+    @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
 
     @State private var email = "remy@loch.io"

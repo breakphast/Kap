@@ -10,7 +10,7 @@ import Firebase
 
 @main
 struct KapApp: App {
-    @StateObject private var homeViewModel = AppDataViewModel(activeUserID: "")
+    @StateObject private var homeViewModel = HomeViewModel(activeUserID: "")
     @StateObject private var authViewModel = AuthViewModel()
 
     init() {

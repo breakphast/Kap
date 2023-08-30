@@ -33,11 +33,14 @@
 		3EE35E592A60D7B30026F952 /* Bet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EE35E582A60D7B30026F952 /* Bet.swift */; };
 		3EE35E5B2A60D7F00026F952 /* Parlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EE35E5A2A60D7F00026F952 /* Parlay.swift */; };
 		3EE35E5D2A60D7FB0026F952 /* Game.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EE35E5C2A60D7FB0026F952 /* Game.swift */; };
-		3EE35E602A60DBE80026F952 /* AppDataViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EE35E5F2A60DBE80026F952 /* AppDataViewModel.swift */; };
+		3EE35E602A60DBE80026F952 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EE35E5F2A60DBE80026F952 /* HomeViewModel.swift */; };
 		3EE35E632A60E2CE0026F952 /* nflData.json in Resources */ = {isa = PBXBuildFile; fileRef = 3EE35E622A60E2CE0026F952 /* nflData.json */; };
 		3EE35E662A60E3940026F952 /* GameService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EE35E652A60E3940026F952 /* GameService.swift */; };
 		3EE35E6A2A61C8C00026F952 /* Leaderboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EE35E692A61C8C00026F952 /* Leaderboard.swift */; };
 		3EE35E6C2A6318E80026F952 /* nflScores.json in Resources */ = {isa = PBXBuildFile; fileRef = 3EE35E6B2A6318E80026F952 /* nflScores.json */; };
+		3EF278762A9D2E5100DFC32C /* mlbData.json in Resources */ = {isa = PBXBuildFile; fileRef = 3EF278752A9D2E5100DFC32C /* mlbData.json */; };
+		3EF278782A9D2E6100DFC32C /* mlbScores.json in Resources */ = {isa = PBXBuildFile; fileRef = 3EF278772A9D2E6100DFC32C /* mlbScores.json */; };
+		3EF2787A2A9FEE4600DFC32C /* CustomTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EF278792A9FEE4600DFC32C /* CustomTimer.swift */; };
 		3EF3991B2A71CF5100E03B76 /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EF3991A2A71CF5100E03B76 /* Player.swift */; };
 		3EFA18712A7094F2002D6E94 /* UserViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EFA18702A7094F2002D6E94 /* UserViewModel.swift */; };
 		3EFA18732A709843002D6E94 /* BetViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EFA18722A709843002D6E94 /* BetViewModel.swift */; };
@@ -71,11 +74,14 @@
 		3EE35E582A60D7B30026F952 /* Bet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bet.swift; sourceTree = "<group>"; };
 		3EE35E5A2A60D7F00026F952 /* Parlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Parlay.swift; sourceTree = "<group>"; };
 		3EE35E5C2A60D7FB0026F952 /* Game.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Game.swift; sourceTree = "<group>"; };
-		3EE35E5F2A60DBE80026F952 /* AppDataViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDataViewModel.swift; sourceTree = "<group>"; };
+		3EE35E5F2A60DBE80026F952 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
 		3EE35E622A60E2CE0026F952 /* nflData.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = nflData.json; sourceTree = "<group>"; };
 		3EE35E652A60E3940026F952 /* GameService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameService.swift; sourceTree = "<group>"; };
 		3EE35E692A61C8C00026F952 /* Leaderboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Leaderboard.swift; sourceTree = "<group>"; };
 		3EE35E6B2A6318E80026F952 /* nflScores.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = nflScores.json; sourceTree = "<group>"; };
+		3EF278752A9D2E5100DFC32C /* mlbData.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = mlbData.json; sourceTree = "<group>"; };
+		3EF278772A9D2E6100DFC32C /* mlbScores.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = mlbScores.json; sourceTree = "<group>"; };
+		3EF278792A9FEE4600DFC32C /* CustomTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTimer.swift; sourceTree = "<group>"; };
 		3EF3991A2A71CF5100E03B76 /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
 		3EFA18702A7094F2002D6E94 /* UserViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserViewModel.swift; sourceTree = "<group>"; };
 		3EFA18722A709843002D6E94 /* BetViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BetViewModel.swift; sourceTree = "<group>"; };
@@ -150,7 +156,7 @@
 		3EA6504E2A5F77C3007CA5ED /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
-				3EE35E5F2A60DBE80026F952 /* AppDataViewModel.swift */,
+				3EE35E5F2A60DBE80026F952 /* HomeViewModel.swift */,
 				3EDBFCD12A8E901B00EB8628 /* AuthViewModel.swift */,
 				3EFA18702A7094F2002D6E94 /* UserViewModel.swift */,
 				3EFA18782A70C192002D6E94 /* LeagueViewModel.swift */,
@@ -172,6 +178,7 @@
 				3EE35E542A60D77A0026F952 /* User.swift */,
 				3EF3991A2A71CF5100E03B76 /* Player.swift */,
 				3EFA18762A709A99002D6E94 /* ParlayViewModel.swift */,
+				3EF278792A9FEE4600DFC32C /* CustomTimer.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -205,8 +212,10 @@
 		3EE35E6D2A6329460026F952 /* JSON */ = {
 			isa = PBXGroup;
 			children = (
+				3EF278752A9D2E5100DFC32C /* mlbData.json */,
 				3EE35E622A60E2CE0026F952 /* nflData.json */,
 				3EE35E6B2A6318E80026F952 /* nflScores.json */,
+				3EF278772A9D2E6100DFC32C /* mlbScores.json */,
 			);
 			path = JSON;
 			sourceTree = "<group>";
@@ -279,9 +288,11 @@
 			files = (
 				3EE35E6C2A6318E80026F952 /* nflScores.json in Resources */,
 				3EA650482A5F7568007CA5ED /* Preview Assets.xcassets in Resources */,
+				3EF278782A9D2E6100DFC32C /* mlbScores.json in Resources */,
 				3EB529D22A6C139300548643 /* GoogleService-Info.plist in Resources */,
 				3EA650452A5F7568007CA5ED /* Assets.xcassets in Resources */,
 				3EE35E632A60E2CE0026F952 /* nflData.json in Resources */,
+				3EF278762A9D2E5100DFC32C /* mlbData.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -314,8 +325,9 @@
 				3EE35E5B2A60D7F00026F952 /* Parlay.swift in Sources */,
 				3EDBFCD22A8E901B00EB8628 /* AuthViewModel.swift in Sources */,
 				3EE35E662A60E3940026F952 /* GameService.swift in Sources */,
-				3EE35E602A60DBE80026F952 /* AppDataViewModel.swift in Sources */,
+				3EE35E602A60DBE80026F952 /* HomeViewModel.swift in Sources */,
 				3EDBFCD42A8E907500EB8628 /* UserService.swift in Sources */,
+				3EF2787A2A9FEE4600DFC32C /* CustomTimer.swift in Sources */,
 				3EDBFCD62A8EA18000EB8628 /* Login.swift in Sources */,
 				3EE35E592A60D7B30026F952 /* Bet.swift in Sources */,
 				3ED8EC3B2A65F47400E05FF2 /* Betslip.swift in Sources */,
@@ -463,13 +475,13 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = devsmond.Kap;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.devsmond.loch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -494,13 +506,13 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = devsmond.Kap;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.devsmond.loch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;

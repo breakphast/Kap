@@ -11,7 +11,7 @@ struct CustomButton: View {
     var bet: Bet
     var buttonText: String
 //    @Environment(\.viewModel) private var viewModel
-    @EnvironmentObject var homeViewModel: AppDataViewModel
+    @EnvironmentObject var homeViewModel: HomeViewModel
     @Environment(\.dismiss) var dismiss
     var action: () -> Void
     

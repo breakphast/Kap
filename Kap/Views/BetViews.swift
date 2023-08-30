@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct PlacedBetView: View {
-    @EnvironmentObject var homeViewModel: AppDataViewModel
+    @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
     @State var deleteActive = false
     @Namespace var trash
@@ -46,7 +46,7 @@ struct PlacedBetView: View {
                                 .lineLimit(nil)
                                 .fixedSize(horizontal: false, vertical: true)
                             Spacer()
-                            Text("(\(bet.betOption.dayType?.rawValue ?? "") \(bets.filter({ $0.betOption.dayType == bet.betOption.dayType && bet.week == homeViewModel.currentWeek }).count)/\(bet.betOption.maxBets ?? 0))")
+                            Text("(\(bets.filter({ $0.playerID == authViewModel.currentUser?.id ?? "" }).count)/8)")
                                 .font(.caption.bold())
                                 .foregroundStyle(.secondary)
                         }
@@ -150,7 +150,7 @@ struct PlacedBetView: View {
 }
 
 struct PlacedParlayView: View {
-    @EnvironmentObject var homeViewModel: AppDataViewModel
+    @EnvironmentObject var homeViewModel: HomeViewModel
     @State var deleteActive = false
     @Namespace var trash
     let parlay: Parlay
