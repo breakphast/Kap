@@ -108,7 +108,7 @@ class PlayerViewModel {
         }
     }
     
-    func getPlayerTotalPoints(playerID: String, bets: [Bet], parlay: Parlay) -> Int {
+    func getPlayerTotalPoints(playerID: String, bets: [Bet], parlay: Parlay) -> Double {
         var points = bets.map { $0.points ?? 0}.reduce(0, +)
         points += parlay.totalPoints
         return points

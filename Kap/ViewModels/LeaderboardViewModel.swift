@@ -25,14 +25,14 @@ class LeaderboardViewModel {
         return rankedUsers
     }
     
-    func getWeeklyPoints(userID: String, bets: [Bet], parlays: [Parlay], week: Int, leagueID: String) async -> Int {
+    func getWeeklyPoints(userID: String, bets: [Bet], parlays: [Parlay], week: Int, leagueID: String) async -> Double {
         let bets = bets.filter({ $0.playerID == userID && $0.week == week && $0.result != .pending})
         let parlays = parlays.filter({ $0.playerID == userID && $0.week == week && $0.result != .pending})
         let points = bets.map { $0.points ?? 0 }.reduce(0, +) + (parlays.first?.totalPoints ?? 0)
         return points
     }
     
-    func getWeeklyPointsDifference(userID: String, bets: [Bet], parlays: [Parlay], currentWeek: Int, leagueID: String) async -> Int {
+    func getWeeklyPointsDifference(userID: String, bets: [Bet], parlays: [Parlay], currentWeek: Int, leagueID: String) async -> Double {
         let currentWeekPoints = await getWeeklyPoints(userID: userID, bets: bets, parlays: parlays, week: currentWeek, leagueID: leagueID)
         let previousWeekPoints = await getWeeklyPoints(userID: userID, bets: bets, parlays: parlays, week: currentWeek - 1, leagueID: leagueID)
         return currentWeekPoints - previousWeekPoints

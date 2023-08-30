@@ -50,7 +50,7 @@ class GameService {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
 
-        let scores = try await loadnflScoresData()
+        let scores = try await fetchNFLScoresData()
 
         do {
             let scoresData = try decoder.decode([ScoreElement].self, from: scores)
@@ -88,7 +88,7 @@ class GameService {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         
-        let odds = try await loadnflData()
+        let odds = try await fetchNFLOddsData()
         let gamesData = try decoder.decode([GameElement].self, from: odds)
         
         //        let scores = try await loadnflScoresData()
@@ -299,6 +299,21 @@ class GameService {
     
     private func fetchMLBScoresData() async throws -> Data {
         let urlString = "https://api.the-odds-api.com/v4/sports/baseball_mlb/scores/?apiKey=ab5225bbaeaf25a64a6bba6340bdf2e2"
+        
+        guard let url = URL(string: urlString) else {
+            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
+        }
+        
+        let (data, response) = try await URLSession.shared.data(from: url)
+        
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to fetch data from server"])
+        }
+        return data
+    }
+    
+    private func fetchNFLScoresData() async throws -> Data {
+        let urlString = "https://api.the-odds-api.com/v4/sports/americanfootball_nfl/scores/?daysFrom=1&apiKey=ab5225bbaeaf25a64a6bba6340bdf2e2"
         
         guard let url = URL(string: urlString) else {
             throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])

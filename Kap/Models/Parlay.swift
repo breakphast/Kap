@@ -12,7 +12,7 @@ class Parlay {
     let bets: [Bet]
     var totalOdds: Int
     var result: BetResult
-    var totalPoints: Int
+    var totalPoints: Double
     var betString: String?
     var playerID: String
     var week: Int
@@ -48,13 +48,13 @@ func calculateParlayOdds(bets: [Bet]) -> Int {
     return parlayOdds
 }
 
-func calculateParlayPoints(odds: Int, basePoints: Double = 10.0, result: BetResult) -> Int {
-    var points: Int = 0
+func calculateParlayPoints(odds: Int, basePoints: Double = 10.0, result: BetResult) -> Double {
+    var points: Double = 0
     if result == .win {
         if odds > 0 { // Positive American odds
-            points = Int((Double(odds) / 100.0) * basePoints)
+            points = Double((Double(odds) / 100.0) * basePoints)
         } else { // Negative American odds
-            points = Int((100.0 / Double(abs(odds))) * basePoints)
+            points = Double((100.0 / Double(abs(odds))) * basePoints)
         }
     }
     return points

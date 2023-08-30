@@ -17,7 +17,7 @@ struct MyBets: View {
     
     @State private var bets: [Bet] = []
     @State private var parlays: [Parlay] = []
-    @State private var weeklyPoints: Int?
+    @State private var weeklyPoints: Double?
     
     @State private var selectedOption = "Week 1"
     @State private var week = 1

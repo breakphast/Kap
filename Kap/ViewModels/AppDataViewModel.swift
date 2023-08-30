@@ -25,7 +25,7 @@ class AppDataViewModel: ObservableObject {
     
     @Published var activePlayer: Player?
     @Published var activeUserID: String
-    @Published var currentWeek = 2
+    @Published var currentWeek = 1
     @Published var activeLeague: League?
     
     @Published var changed: Bool = false

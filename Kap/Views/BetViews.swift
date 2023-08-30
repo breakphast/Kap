@@ -67,7 +67,7 @@ struct PlacedBetView: View {
                         HStack(spacing: 4) {
                             Text("Points:")
                                 .font(.headline.bold())
-                            Text("\(bet.result != .pending ? bet.points! < 0 ? "-" : "+" : "")\(abs(bet.points!))")
+                            Text("\(bet.result != .pending ? bet.points! < 0 ? "-" : "+" : "")\(abs(bet.points!).oneDecimalString)")
                                 .font(.title2.bold())
                                 .foregroundStyle(pointsColor(for: bet.result ?? .pending))
                         }
@@ -192,7 +192,7 @@ struct PlacedParlayView: View {
                         }
                         
                         VStack(alignment: .leading) {
-                            Text("Points: \(abs(parlay.totalPoints))")
+                            Text("Points: \(abs(parlay.totalPoints).oneDecimalString)")
                             RoundedRectangle(cornerRadius: 1)
                                 .frame(width: 100, height: 2)
                                 .foregroundStyle(.secondary)

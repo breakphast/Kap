@@ -15,7 +15,7 @@ struct Leaderboard: View {
     @State private var users: [User] = []
     @State private var selectedOption = "Week 1"
     @State private var week = 1
-    @State private var pointsDifferences: [String: Int] = [:]
+    @State private var pointsDifferences: [String: Double] = [:]
     @State private var leaderboards: [[User]] = [[]]
     @State private var bigMovers: [(User, up: Bool)]?
     @State private var points: Int = 0
@@ -167,7 +167,7 @@ struct Leaderboard: View {
                     .fontWeight(.bold)
                 
                 HStack(spacing: 4) {
-                    Text("Points: \((user.totalPoints ?? 0))")
+                    Text("Points: \((user.totalPoints ?? 0).oneDecimalString)")
                         .font(.caption.bold())
                         .foregroundStyle(.secondary)
                     
@@ -203,12 +203,12 @@ struct Leaderboard: View {
         return bigMovers?.first(where: { $0.0.id == user.id })?.up
     }
     
-    private func pointsDifference(for user: User) -> Int {
+    private func pointsDifference(for user: User) -> Double {
         return pointsDifferences[user.id ?? ""] ?? 0
     }
     
     private func updatePointsDifferences() async {
-        var newPointsDifferences: [String: Int] = [:]
+        var newPointsDifferences: [String: Double] = [:]
         for user in users {
             let diff = await LeaderboardViewModel().getWeeklyPointsDifference(userID: user.id ?? "", bets: homeViewModel.bets, parlays: homeViewModel.parlays, currentWeek: week, leagueID: homeViewModel.activeLeague!.id!)
             newPointsDifferences[user.id ?? ""] = diff

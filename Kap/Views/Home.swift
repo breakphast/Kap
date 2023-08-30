@@ -51,8 +51,8 @@ struct Home: View {
                     homeViewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
                     homeViewModel.activeLeague = homeViewModel.leagues.first
                     
-                    homeViewModel.games = try await GameService().fetchGamesFromFirestore()
-//                    GameService().updateDayType(for: &homeViewModel.games)
+                    homeViewModel.games = try await GameService().fetchGamesFromFirestore().chunked(into: 16)[0]
+                    GameService().updateDayType(for: &homeViewModel.games)
 //                    var alteredGames = homeViewModel.games
 //                    for game in alteredGames {
 //                        try await GameService().updateGameScore(game: game)
@@ -67,8 +67,8 @@ struct Home: View {
                     
                     // uncomment to add games
                     
-    //                let games = try await GameService().getGames()
-    //                GameService().addGames(games: games)
+//                    let games = try await GameService().getGames()
+//                    GameService().addGames(games: games)
                     
                     for bet in homeViewModel.bets {
                         let result = bet.game.betResult(for: bet.betOption)

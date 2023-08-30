@@ -61,7 +61,7 @@ class Bet {
     let type: BetType
     let result: BetResult?
     let odds: Int
-    var points: Int?
+    var points: Double?
     let stake = 100.0
     let betString: String
     let selectedTeam: String?
@@ -98,7 +98,7 @@ class Bet {
         self.points = calculatePoints(bet: self)
     }
     
-    func calculatePoints(bet: Bet, basePoints: Int = 10) -> Int {
+    func calculatePoints(bet: Bet, basePoints: Double = 10) -> Double {
         var points: Double
         
         if bet.odds > 0 { // Positive American odds
@@ -114,7 +114,7 @@ class Bet {
             points = points / 2
         }
         
-        return Int(round(points))
+        return points
     }
     
     func checkBetResult(bet: Bet) -> BetResult {
@@ -216,4 +216,10 @@ enum DayType: String {
     case snf = "SNF"
     case mnf = "MNF"
     case parlay = "PARLAY BONUS"
+}
+
+extension Double {
+    var oneDecimalString: String {
+        return String(format: "%.1f", self)
+    }
 }

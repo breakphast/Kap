@@ -141,7 +141,7 @@ struct BetView: View {
     var pointsAndButtons: some View {
         VStack(alignment: .leading, spacing: 20) {
             VStack(alignment: .leading) {
-                Text("Points: \(bet.points ?? 0)")
+                Text("Points: \(String(format: "%.1f", bet.points ?? 0))")
                     .bold()
                 RoundedRectangle(cornerRadius: 1)
                     .frame(width: 100, height: 2)
@@ -262,7 +262,7 @@ struct BetView: View {
 struct ParlayView: View {
     @EnvironmentObject var homeViewModel: AppDataViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
-    @State var isValid = true
+    @State var isValid = false
     @Binding var parlays: [Parlay]
     let parlay: Parlay
     
@@ -302,7 +302,7 @@ struct ParlayView: View {
                         
                         HStack {
                             VStack(alignment: .leading) {
-                                Text("Points: \(parlay.totalPoints)")
+                                Text("Points: \(String(format: "%.1f", parlay.totalPoints))")
                                     .bold()
                                 RoundedRectangle(cornerRadius: 1)
                                     .frame(width: 100, height: 2)
@@ -327,10 +327,10 @@ struct ParlayView: View {
         .padding(.horizontal, 20)
         .shadow(radius: 10)
         .onAppear {
-            isValid = parlays.count == 0
+            isValid = parlays.count == 0 && parlay.totalOdds <= 800
         }
         .onChange(of: parlays.count) { _, _ in
-            isValid = parlays.count == 0
+            isValid = parlays.count == 0 && parlay.totalOdds <= 800
         }
     }
     
