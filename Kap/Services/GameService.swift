@@ -256,6 +256,61 @@ class GameService {
         let (data, _) = try await URLSession.shared.data(from: url)
         return data
     }
+    
+    private func loadmlbScoresData() async throws -> Data {
+        guard let url = Bundle.main.url(forResource: "mlbScores", withExtension: "json") else {
+            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Unable to locate nflScores.json"])
+        }
+        
+        let (data, _) = try await URLSession.shared.data(from: url)
+        return data
+    }
+    
+    func fetchNFLOddsData() async throws -> Data {
+        let urlString = "https://api.the-odds-api.com/v4/sports/americanfootball_nfl/odds/?apiKey=ab5225bbaeaf25a64a6bba6340bdf2e2&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=fanduel"
+        
+        guard let url = URL(string: urlString) else {
+            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
+        }
+        
+        let (data, response) = try await URLSession.shared.data(from: url)
+        
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to fetch data from server"])
+        }
+        print("Done")
+        return data
+    }
+    
+    func fetchMLBOddsData() async throws -> Data {
+        let urlString = "https://api.the-odds-api.com/v4/sports/baseball_mlb/odds/?apiKey=ab5225bbaeaf25a64a6bba6340bdf2e2&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=fanduel"
+        
+        guard let url = URL(string: urlString) else {
+            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
+        }
+        
+        let (data, response) = try await URLSession.shared.data(from: url)
+        
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to fetch data from server"])
+        }
+        return data
+    }
+    
+    private func fetchMLBScoresData() async throws -> Data {
+        let urlString = "https://api.the-odds-api.com/v4/sports/baseball_mlb/scores/?apiKey=ab5225bbaeaf25a64a6bba6340bdf2e2"
+        
+        guard let url = URL(string: urlString) else {
+            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
+        }
+        
+        let (data, response) = try await URLSession.shared.data(from: url)
+        
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to fetch data from server"])
+        }
+        return data
+    }
 }
 
 extension Array {

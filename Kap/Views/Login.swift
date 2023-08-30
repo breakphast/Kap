@@ -11,8 +11,8 @@ struct Login: View {
     @EnvironmentObject var homeViewModel: AppDataViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
 
-    @State private var email = "harch@loch.io"
-    @State private var password = "harchy"
+    @State private var email = "remy@loch.io"
+    @State private var password = "remyrat"
     @State private var username = ""
     @State private var fullName = ""
     

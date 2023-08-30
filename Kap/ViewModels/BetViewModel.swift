@@ -76,7 +76,7 @@ class BetViewModel {
     }
 
     func makeBet(for game: Game, betOption: BetOption, playerID: String, week: Int) -> Bet {
-        let bet = Bet(id: betOption.id, betOption: betOption, game: game, type: betOption.betType, result: [.pending, .loss, .win].randomElement(), odds: betOption.odds, selectedTeam: betOption.selectedTeam, playerID: playerID, week: week)
+        let bet = Bet(id: betOption.id, betOption: betOption, game: game, type: betOption.betType, result: .pending, odds: betOption.odds, selectedTeam: betOption.selectedTeam, playerID: playerID, week: week)
         
         return bet
     }
@@ -84,7 +84,21 @@ class BetViewModel {
     func updateBet(bet: Bet) {
         let newbet = db.collection("bets").document(bet.id.uuidString)
         newbet.updateData([
-            "betString": bet.betString
+            "betString": bet.betString,
+            "result": bet.game.betResult(for: bet.betOption).rawValue
+        ]) { err in
+            if let err = err {
+                print("Error updating document: \(err)")
+            } else {
+                print("Document successfully updated")
+            }
+        }
+    }
+    
+    func updateBetResult(bet: Bet) {
+        let newbet = db.collection("bets").document(bet.id.uuidString)
+        newbet.updateData([
+            "result": bet.game.betResult(for: bet.betOption).rawValue
         ]) { err in
             if let err = err {
                 print("Error updating document: \(err)")

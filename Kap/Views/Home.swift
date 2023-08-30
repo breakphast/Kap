@@ -42,7 +42,7 @@ struct Home: View {
                 }
             }
             .tint(.oW)
-//            .preferredColorScheme(.dark)
+            .preferredColorScheme(.dark)
             .task {
                 do {
                     homeViewModel.users = try await UserViewModel().fetchAllUsers()
@@ -51,19 +51,31 @@ struct Home: View {
                     homeViewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
                     homeViewModel.activeLeague = homeViewModel.leagues.first
                     
-                    homeViewModel.games = try await GameService().fetchGamesFromFirestore().chunked(into: 16)[0]
-                    GameService().updateDayType(for: &homeViewModel.games)
-    //                try await GameService().updateGameScore(game: homeViewModel.games[0])
+                    homeViewModel.games = try await GameService().fetchGamesFromFirestore()
+//                    GameService().updateDayType(for: &homeViewModel.games)
+//                    var alteredGames = homeViewModel.games
+//                    for game in alteredGames {
+//                        try await GameService().updateGameScore(game: game)
+//                    }
+//                    homeViewModel.games = alteredGames
+//                    try await GameService().updateGameScore(game: homeViewModel.games[0])
                     
                     homeViewModel.bets = try await BetViewModel().fetchBets(games: homeViewModel.games)
                     homeViewModel.parlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.games)
                     
                     homeViewModel.leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, weeks: [homeViewModel.currentWeek - 1, homeViewModel.currentWeek])
                     
+                    // uncomment to add games
+                    
     //                let games = try await GameService().getGames()
     //                GameService().addGames(games: games)
                     
-                    
+                    for bet in homeViewModel.bets {
+                        let result = bet.game.betResult(for: bet.betOption)
+                        if result != .pending {
+                            BetViewModel().updateBetResult(bet: bet)
+                        }
+                    }
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                         withAnimation(.smooth) {
                             self.showingSplashScreen = false

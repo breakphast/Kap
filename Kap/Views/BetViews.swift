@@ -9,6 +9,7 @@ import SwiftUI
 
 struct PlacedBetView: View {
     @EnvironmentObject var homeViewModel: AppDataViewModel
+    @EnvironmentObject var authViewModel: AuthViewModel
     @State var deleteActive = false
     @Namespace var trash
     let bet: Bet
