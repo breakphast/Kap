@@ -11,7 +11,7 @@ struct CustomButton: View {
     var bet: Bet
     var buttonText: String
 //    @Environment(\.viewModel) private var viewModel
-    @EnvironmentObject var homeViewModel: AppDataViewModel
+    @EnvironmentObject var homeViewModel: HomeViewModel
     @Environment(\.dismiss) var dismiss
     var action: () -> Void
     
@@ -22,11 +22,11 @@ struct CustomButton: View {
             }
         }) {
             ZStack {
-                homeViewModel.selectedBets.contains(where: { $0.id == bet.id }) ? Color.lion : Color.oW
+                homeViewModel.selectedBets.contains(where: { $0.id == bet.id }) ? Color("lion") : Color("oW")
                 Text(buttonText)
                     .font(.caption2.bold())
                     .fontDesign(.rounded)
-                    .foregroundStyle(homeViewModel.selectedBets.contains(where: { $0.id == bet.id }) ? .oW : .onyx)
+                    .foregroundStyle(homeViewModel.selectedBets.contains(where: { $0.id == bet.id }) ? Color("oW") : Color("onyx"))
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
             }

@@ -7,7 +7,6 @@
 
 import Foundation
 import SwiftUI
-import Observation
 
 class BetOption {
     var id: UUID

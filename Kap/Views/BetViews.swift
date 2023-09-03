@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct PlacedBetView: View {
-    @EnvironmentObject var homeViewModel: AppDataViewModel
+    @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
     @State var deleteActive = false
     @Namespace var trash
@@ -18,9 +18,9 @@ struct PlacedBetView: View {
     func pointsColor(for result: BetResult) -> Color {
         switch result {
         case .win:
-            return .bean
+            return Color("bean")
         case .loss:
-            return .redd
+            return Color("redd")
         case .push, .pending:
             return .primary
         }
@@ -46,7 +46,7 @@ struct PlacedBetView: View {
                                 .lineLimit(nil)
                                 .fixedSize(horizontal: false, vertical: true)
                             Spacer()
-                            Text("(\(bet.betOption.dayType?.rawValue ?? "") \(bets.filter({ $0.betOption.dayType == bet.betOption.dayType && bet.week == homeViewModel.currentWeek }).count)/\(bet.betOption.maxBets ?? 0))")
+                            Text("(\(bets.filter({ $0.playerID == authViewModel.currentUser?.id ?? "" }).count)/8)")
                                 .font(.caption.bold())
                                 .foregroundStyle(.secondary)
                         }
@@ -75,7 +75,7 @@ struct PlacedBetView: View {
                         if bet.result != .pending {
                             Image(systemName: bet.result == .win ? "checkmark.circle" : "xmark.circle")
                                 .font(.title.bold())
-                                .foregroundColor(bet.result == .win ? .bean : bet.result == .loss ? .redd : .secondary)
+                                .foregroundColor(bet.result == .win ? Color("bean") : bet.result == .loss ? Color("redd") : .secondary)
                         }
                     }
                 }
@@ -89,7 +89,7 @@ struct PlacedBetView: View {
             if deleteActive {
                 HStack(spacing: 14) {
                     Image(systemName: "xmark")
-                        .foregroundColor(.redd)
+                        .foregroundColor(Color("redd"))
                         .font(.title.bold())
                         .fontDesign(.rounded)
                         .padding(.bottom, 12)
@@ -100,7 +100,7 @@ struct PlacedBetView: View {
                         }
                     
                     Image(systemName: "checkmark")
-                        .foregroundColor(.bean)
+                        .foregroundColor(Color("bean"))
                         .font(.title.bold())
                         .fontDesign(.rounded)
                         .padding(.bottom, 12)
@@ -150,7 +150,7 @@ struct PlacedBetView: View {
 }
 
 struct PlacedParlayView: View {
-    @EnvironmentObject var homeViewModel: AppDataViewModel
+    @EnvironmentObject var homeViewModel: HomeViewModel
     @State var deleteActive = false
     @Namespace var trash
     let parlay: Parlay
@@ -211,7 +211,7 @@ struct PlacedParlayView: View {
             VStack {
                 Image(systemName: parlay.result == .win ? "checkmark.circle" : parlay.result == .loss ? "xmark.circle" : "hourglass.circle")
                     .font(.largeTitle.bold())
-                    .foregroundColor(parlay.result == .win ? .bean : parlay.result == .loss ? .redd : .secondary)
+                    .foregroundColor(parlay.result == .win ? Color("bean") : parlay.result == .loss ? Color("redd") : .secondary)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
             .padding(24)
@@ -234,7 +234,7 @@ struct PlacedParlayView: View {
                         }
                     
                     Image(systemName: "checkmark")
-                        .foregroundColor(.bean)
+                        .foregroundColor(Color("bean"))
                         .font(.title2.bold())
                         .fontDesign(.rounded)
                         .padding(.bottom, 12)

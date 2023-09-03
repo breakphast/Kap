@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct Profile: View {
-    @EnvironmentObject var homeViewModel: AppDataViewModel
+    @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
     @State var user: User?
     @Binding var loggedIn: Bool

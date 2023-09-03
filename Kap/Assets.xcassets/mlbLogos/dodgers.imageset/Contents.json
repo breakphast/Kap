@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "dodgers.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

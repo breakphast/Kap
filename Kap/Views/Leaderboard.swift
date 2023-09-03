@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct Leaderboard: View {
-    @EnvironmentObject var homeViewModel: AppDataViewModel
+    @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
     let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 3)
     
@@ -45,7 +45,7 @@ struct Leaderboard: View {
             bigMovers = LeaderboardViewModel().bigMover(from: homeViewModel.leaderboards[0], to: homeViewModel.leaderboards[1])
             
         }
-        .onChange(of: self.homeViewModel.selectedBets.count) { _, _ in
+        .onChange(of: self.homeViewModel.selectedBets.count, perform: { newValue in
             Task {
                 users = await LeaderboardViewModel().getLeaderboardData(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, week: week)
                 await updatePointsDifferences()
@@ -57,7 +57,7 @@ struct Leaderboard: View {
                 
                 bigMovers = LeaderboardViewModel().bigMover(from: homeViewModel.leaderboards[0], to: homeViewModel.leaderboards[1])
             }
-        }
+        })
     }
     
     var scrollViewContent: some View {
@@ -93,7 +93,7 @@ struct Leaderboard: View {
                     .padding()
                     .overlay(
                         RoundedRectangle(cornerRadius: 20)
-                            .stroke(week != 1 ? Color("leader") : Color.onyxLightish, lineWidth: 3)
+                            .stroke(week != 1 ? Color("leader") : Color("onyxLightish"), lineWidth: 3)
                     )
             } else {
                 userDetailStrokeRoundedRectangle(for: user)
@@ -112,7 +112,7 @@ struct Leaderboard: View {
         if week != 1 {
             if let bigMove = bigMoverDirection(for: user) {
                 if homeViewModel.bets.filter({ $0.playerID == user.id }).count != 0 {
-                    return bigMove ? Color.bean : Color.red
+                    return bigMove ? Color("bean") : Color.red
                 }
             }
         }
@@ -175,7 +175,7 @@ struct Leaderboard: View {
                         let userPointsDifference = pointsDifference(for: user)
                         Text("\(userPointsDifference > 0 ? "+" : "")\(userPointsDifference)")
                             .font(.caption2)
-                            .foregroundStyle(userPointsDifference < 0 ? .red : .bean)
+                            .foregroundStyle(userPointsDifference < 0 ? .red : Color("bean"))
                     }
                 }
             }
@@ -189,7 +189,7 @@ struct Leaderboard: View {
                          "chevron.down.circle" : "minus")
                 )
                 .font(.title2.bold())
-                .foregroundStyle(LeaderboardViewModel().rankDifference(for: user, from: homeViewModel.leaderboards[0], to: homeViewModel.leaderboards[1]) > 0 ? Color.bean : (LeaderboardViewModel().rankDifference(for: user, from: homeViewModel.leaderboards[0], to: homeViewModel.leaderboards[1]) < 0 ? Color.red : Color.oW)
+                .foregroundStyle(LeaderboardViewModel().rankDifference(for: user, from: homeViewModel.leaderboards[0], to: homeViewModel.leaderboards[1]) > 0 ? Color("bean") : (LeaderboardViewModel().rankDifference(for: user, from: homeViewModel.leaderboards[0], to: homeViewModel.leaderboards[1]) < 0 ? Color.red : Color("oW"))
                 )
             }
         }
@@ -215,8 +215,4 @@ struct Leaderboard: View {
         }
         pointsDifferences = newPointsDifferences
     }
-}
-
-#Preview {
-    Leaderboard()
 }

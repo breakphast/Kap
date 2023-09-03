@@ -195,10 +195,12 @@ enum Title: String, Codable {
 
 enum SportKey: String, Codable {
     case americanfootball_nfl = "americanfootball_nfl"
+    case baseball_mlb = "baseball_mlb"
 }
 
 enum SportTitle: String, Codable {
     case NFL = "NFL"
+    case MLB = "MLB"
 }
 
 extension Game {

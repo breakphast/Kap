@@ -6,12 +6,11 @@
 //
 
 import SwiftUI
-import Observation
 
 struct MyBets: View {
     let results: [Image] = [Image(systemName: "checkmark"), Image(systemName: "x.circle")]
     
-    @EnvironmentObject var homeViewModel: AppDataViewModel
+    @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
     @Environment(\.dismiss) private var dismiss
     
@@ -27,7 +26,7 @@ struct MyBets: View {
     var body: some View {
         VStack(spacing: 40) {
             ZStack(alignment: .topLeading) {
-                Color.onyx.ignoresSafeArea()
+                Color("onyx").ignoresSafeArea()
                 VStack(alignment: .leading) {
                     Picker("", selection: $selectedSegment) {
                         Text("Active").tag(0)
@@ -46,13 +45,25 @@ struct MyBets: View {
             }
         }
         .fontDesign(.rounded)
-        .onChange(of: bets.count, { _, _ in
+        .onChange(of: bets.count, perform: { _ in
             fetchData()
+            for bet in homeViewModel.bets {
+                let result = bet.game.betResult(for: bet.betOption)
+                if result != .pending {
+                    BetViewModel().updateBetResult(bet: bet)
+                }
+            }
         })
         .task { 
             week = homeViewModel.currentWeek
             selectedOption = "Week \(week)"
             fetchData()
+            for bet in homeViewModel.bets {
+                let result = bet.game.betResult(for: bet.betOption)
+                if result != .pending {
+                    BetViewModel().updateBetResult(bet: bet)
+                }
+            }
         }
     }
     
@@ -63,22 +74,21 @@ struct MyBets: View {
                     .font(.largeTitle.bold())
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             } else {
-                Text("POINTS: \(weeklyPoints ?? 0)")
+                Text("POINTS: \((weeklyPoints ?? 0).oneDecimalString)")
                     .font(.system(.body, design: .rounded, weight: .bold))
                     .padding(.top, 4)
                 
                 ScrollView(showsIndicators: false) {
                     betSection(for: .tnf, settled: true)
                         .padding(.top)
-                    betSection(for: .sunday, settled: true)
-                    betSection(for: .snf, settled: true)
-                    betSection(for: .mnf, settled: true)
+//                    betSection(for: .sunday, settled: true)
+//                    betSection(for: .snf, settled: true)
+//                    betSection(for: .mnf, settled: true)
                     
-                    if !parlays.filter({ $0.result != .pending }).isEmpty {
-                        parlaySection(settled: true)
-                    }
+//                    if !parlays.filter({ $0.result != .pending }).isEmpty {
+//                        parlaySection(settled: true)
+//                    }
                 }
-                .padding(.top)
             }
         }
         .padding(.top, 50)
@@ -92,18 +102,13 @@ struct MyBets: View {
                     .font(.largeTitle.bold())
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             } else {
+                Text("")
+                    .padding(.top, 4)
+                
                 ScrollView(showsIndicators: false) {
                     betSection(for: .tnf, settled: false)
                         .padding(.top)
-                    betSection(for: .sunday, settled: false)
-                    betSection(for: .snf, settled: false)
-                    betSection(for: .mnf, settled: false)
-                    
-                    if !parlays.filter({ $0.result == .pending }).isEmpty {
-                        parlaySection(settled: false)
-                    }
                 }
-                .padding(.top)
             }
         }
         .padding(.top, 60)
@@ -154,10 +159,11 @@ struct MyBets: View {
             .font(.system(size: 14, weight: .bold, design: .rounded))
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
-            .background(RoundedRectangle(cornerRadius: 10).fill(.onyxLightish))
+            .background(RoundedRectangle(cornerRadius: 10).fill(Color("onyxLightish")))
         }
         .zIndex(1000)
-        .padding(.top, 10)
+        .padding(.top, 4)
+        .padding(.bottom)
 //        .padding(.leading, 24)
     }
     
@@ -170,10 +176,10 @@ struct MyBets: View {
                 HStack(spacing: 8) {
                     Text("PARLAY")
                         .font(.caption.bold())
-                        .foregroundColor(.oW)
+                        .foregroundColor(Color("oW"))
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
-                        .background(.lion)
+                        .background(Color("lion"))
                         .cornerRadius(4)
                     
                     Image(systemName: "gift.fill")
@@ -200,21 +206,20 @@ struct MyBets: View {
     
     func betSection(for dayType: DayType, settled: Bool) -> some View {
         let filteredBets = bets.filter { bet in
-            (settled ? bet.result != .pending : bet.result == .pending) && bet.betOption.dayType == dayType
+            (settled ? bet.result != .pending : bet.result == .pending)
         }
         
         if !filteredBets.isEmpty {
             return AnyView(
                 VStack(alignment: .leading, spacing: 16) {
-                    Text(dayType.rawValue)
+                    Text("MLB")
                         .font(.caption.bold())
-                        .foregroundColor(.oW)
+                        .foregroundColor(Color("oW"))
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
-                        .background(.lion)
+                        .background(Color("lion"))
                         .cornerRadius(4)
                         .padding(.leading, 24)
-                        .padding(.vertical, 8)
                     
                     ForEach(filteredBets, id: \.id) { bet in
                         PlacedBetView(bet: bet, bets: $bets)
@@ -262,6 +267,3 @@ struct MyBets: View {
     }
 }
 
-#Preview {
-    MyBets()
-}

@@ -9,7 +9,7 @@ import SwiftUI
 
 struct Board: View {
     let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 3)
-    @EnvironmentObject var homeViewModel: AppDataViewModel
+    @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
     @Environment(\.dismiss) var dismiss
     
@@ -22,7 +22,7 @@ struct Board: View {
                     GameListingView()
                         .navigationBarBackButtonHidden()
                         .toolbar {
-                            ToolbarItem(placement: .topBarLeading) {
+                            ToolbarItem(placement: .navigationBarLeading) {
                                 Text("Loch Sports")
                                     .font(.system(size: 14, weight: .bold, design: .rounded))
                             }
@@ -51,12 +51,12 @@ struct Board: View {
                     Spacer()
                     NavigationLink(destination: Betslip()) {
                         ZStack {
-                            Color.lion
+                            Color("lion")
                             
                             Text("Betslip")
                             .font(.title.bold())
                             .fontDesign(.rounded)
-                            .foregroundStyle(.oW)
+                            .foregroundStyle(Color("oW"))
                         }
                         .frame(height: 60)
                         .clipShape(TopRoundedRectangle(radius: 12))
@@ -85,12 +85,8 @@ struct Board: View {
     }
 }
 
-#Preview {
-    Board()
-}
-
 struct GameListingView: View {
-    @EnvironmentObject var homeViewModel: AppDataViewModel
+    @EnvironmentObject var homeViewModel: HomeViewModel
     
     private var thursdayNightGame: [Game] {
         Array(homeViewModel.games.prefix(1))
@@ -120,7 +116,7 @@ struct GameListingView: View {
 }
 
 struct SectionView: View {
-    @EnvironmentObject var homeViewModel: AppDataViewModel
+    @EnvironmentObject var homeViewModel: HomeViewModel
     var title: String
     var games: [Game]
     var first: Bool?
@@ -129,14 +125,16 @@ struct SectionView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text(dayType.rawValue)
-                    .font(.caption.bold())
-                    .foregroundColor(.oW)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(.lion)
-                    .cornerRadius(4)
-                    .padding(.bottom)
+                if first == true {
+                    Text("MLB")
+                        .font(.caption.bold())
+                        .foregroundColor(Color("oW"))
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(Color("lion"))
+                        .cornerRadius(4)
+                        .padding(.bottom)
+                }
                 
                 Spacer()
 
@@ -168,7 +166,7 @@ struct SectionView: View {
 struct GameRow: View {
     var game: Game
     let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 3)
-    @EnvironmentObject var homeViewModel: AppDataViewModel
+    @EnvironmentObject var homeViewModel: HomeViewModel
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -178,19 +176,19 @@ struct GameRow: View {
             HStack(alignment: .center) {
                 VStack(alignment: .leading, spacing: 6) {
                     HStack {
-                        Image("\(nflLogos[game.awayTeam] ?? "")")
+                        Image("\(mlbLogos[game.awayTeam] ?? "")")
                             .resizable()
                             .scaledToFit()
                             .frame(width: 40)
-                        Text(nflTeams[game.awayTeam] ?? "")
+                        Text(mlbTeams[game.awayTeam] ?? "")
                     }
                     Text("@")
                     HStack {
-                        Image("\(nflLogos[game.homeTeam] ?? "")")
+                        Image("\(mlbLogos[game.homeTeam] ?? "")")
                             .resizable()
                             .scaledToFit()
                             .frame(width: 40)
-                        Text(nflTeams[game.homeTeam] ?? "")
+                        Text(mlbTeams[game.homeTeam] ?? "")
                     }
                 }
                 .font(.subheadline.bold())
@@ -218,7 +216,7 @@ struct GameRow: View {
                 .frame(maxWidth: UIScreen.main.bounds.width / 1.75)
             }
         }
-        .padding(.bottom, 20)
+//        .padding(.bottom, 20)
     }
 }
 

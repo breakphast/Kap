@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct Login: View {
-    @EnvironmentObject var homeViewModel: AppDataViewModel
+    @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
 
     @State private var email = "remy@loch.io"
@@ -22,7 +22,7 @@ struct Login: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            Color.onyx.ignoresSafeArea()
+            Color("onyx").ignoresSafeArea()
             
             HStack(spacing: 8) {
                 Button("Login") {
@@ -31,7 +31,7 @@ struct Login: View {
                     }
                 }
                 .buttonStyle(.bordered)
-                .foregroundStyle(!login ? .oW : .onyxLightish1)
+                .foregroundStyle(!login ? Color("oW") : Color("onyxLightish1"))
                 .bold()
                 
                 Button("Register") {
@@ -40,7 +40,7 @@ struct Login: View {
                     }
                 }
                 .buttonStyle(.bordered)
-                .foregroundStyle(login ? .oW : .onyxLightish1)
+                .foregroundStyle(login ? Color("oW") : Color("onyxLightish1"))
                 .bold()
             }
             
@@ -57,28 +57,28 @@ struct Login: View {
             if loginFailed {
                 Text("Login failed. Please try again.")
                     .font(.system(.subheadline, weight: .semibold))
-                    .foregroundStyle(.oW)
+                    .foregroundStyle(Color("oW"))
             }
             ZStack {
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .foregroundStyle(.lion)
+                    .foregroundStyle(Color("lion"))
                     .frame(height: 50)
                     .shadow(color: .black.opacity(0.3), radius: 8, x: 2, y: 2)
                 
                 TextField("Email", text: $email)
                     .font(.title.bold().width(.condensed))
-                    .foregroundStyle(.oW)
+                    .foregroundStyle(Color("oW"))
                     .padding()
             }
             ZStack {
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .foregroundStyle(.lion)
+                    .foregroundStyle(Color("lion"))
                     .frame(height: 50)
                     .shadow(color: .black.opacity(0.3), radius: 8, x: 2, y: 2)
                 
                 SecureField("Password", text: $password)
                     .font(.title.bold().width(.condensed))
-                    .foregroundStyle(.oW)
+                    .foregroundStyle(Color("oW"))
                     .padding()
             }
             
@@ -96,10 +96,10 @@ struct Login: View {
             } label: {
                 Text("Login")
                     .font(.title.bold())
-                    .foregroundStyle(.oW)
+                    .foregroundStyle(Color("oW"))
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
-                    .background(.lion)
+                    .background(Color("lion"))
                     .cornerRadius(8)
             }
             .autocorrectionDisabled()
@@ -112,46 +112,46 @@ struct Login: View {
         VStack {
             ZStack {
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .foregroundStyle(.lion)
+                    .foregroundStyle(Color("lion"))
                     .frame(height: 50)
                     .shadow(color: .black.opacity(0.3), radius: 8, x: 2, y: 2)
                 
                 TextField("Email", text: $email)
                     .font(.title.bold().width(.condensed))
-                    .foregroundStyle(.oW)
+                    .foregroundStyle(Color("oW"))
                     .padding()
             }
             ZStack {
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .foregroundStyle(.lion)
+                    .foregroundStyle(Color("lion"))
                     .frame(height: 50)
                     .shadow(color: .black.opacity(0.3), radius: 8, x: 2, y: 2)
                 
                 SecureField("Password", text: $password)
                     .font(.title.bold().width(.condensed))
-                    .foregroundStyle(.oW)
+                    .foregroundStyle(Color("oW"))
                     .padding()
             }
             ZStack {
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .foregroundStyle(.lion)
+                    .foregroundStyle(Color("lion"))
                     .frame(height: 50)
                     .shadow(color: .black.opacity(0.3), radius: 8, x: 2, y: 2)
                 
                 TextField("Username", text: $username)
                     .font(.title.bold().width(.condensed))
-                    .foregroundStyle(.oW)
+                    .foregroundStyle(Color("oW"))
                     .padding()
             }
             ZStack {
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .foregroundStyle(.lion)
+                    .foregroundStyle(Color("lion"))
                     .frame(height: 50)
                     .shadow(color: .black.opacity(0.3), radius: 8, x: 2, y: 2)
                 
                 TextField("Full name", text: $fullName)
                     .font(.title.bold().width(.condensed))
-                    .foregroundStyle(.oW)
+                    .foregroundStyle(Color("oW"))
                     .padding()
             }
             
@@ -164,10 +164,10 @@ struct Login: View {
 //                loggedIn.toggle()
             }
             .buttonStyle(.borderedProminent)
-            .foregroundStyle(.lion)
+            .foregroundStyle(Color("lion"))
             .bold()
             .frame(width: 200)
-            .tint(.oW)
+            .tint(Color("oW"))
         }
         .frame(maxHeight: .infinity, alignment: .center)
         .padding(.horizontal)
