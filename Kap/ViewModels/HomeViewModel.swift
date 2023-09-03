@@ -6,8 +6,6 @@
 //
 
 import SwiftUI
-import Observation
-import SwiftData
 import Firebase
 import FirebaseFirestore
 

@@ -22,7 +22,7 @@ struct Board: View {
                     GameListingView()
                         .navigationBarBackButtonHidden()
                         .toolbar {
-                            ToolbarItem(placement: .topBarLeading) {
+                            ToolbarItem(placement: .navigationBarLeading) {
                                 Text("Loch Sports")
                                     .font(.system(size: 14, weight: .bold, design: .rounded))
                             }
@@ -51,12 +51,12 @@ struct Board: View {
                     Spacer()
                     NavigationLink(destination: Betslip()) {
                         ZStack {
-                            Color.lion
+                            Color("lion")
                             
                             Text("Betslip")
                             .font(.title.bold())
                             .fontDesign(.rounded)
-                            .foregroundStyle(.oW)
+                            .foregroundStyle(Color("oW"))
                         }
                         .frame(height: 60)
                         .clipShape(TopRoundedRectangle(radius: 12))
@@ -83,10 +83,6 @@ struct Board: View {
 
         }
     }
-}
-
-#Preview {
-    Board()
 }
 
 struct GameListingView: View {
@@ -132,10 +128,10 @@ struct SectionView: View {
                 if first == true {
                     Text("MLB")
                         .font(.caption.bold())
-                        .foregroundColor(.oW)
+                        .foregroundColor(Color("oW"))
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
-                        .background(.lion)
+                        .background(Color("lion"))
                         .cornerRadius(4)
                         .padding(.bottom)
                 }

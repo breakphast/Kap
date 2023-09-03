@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import Observation
 
 struct MyBets: View {
     let results: [Image] = [Image(systemName: "checkmark"), Image(systemName: "x.circle")]
@@ -27,7 +26,7 @@ struct MyBets: View {
     var body: some View {
         VStack(spacing: 40) {
             ZStack(alignment: .topLeading) {
-                Color.onyx.ignoresSafeArea()
+                Color("onyx").ignoresSafeArea()
                 VStack(alignment: .leading) {
                     Picker("", selection: $selectedSegment) {
                         Text("Active").tag(0)
@@ -160,7 +159,7 @@ struct MyBets: View {
             .font(.system(size: 14, weight: .bold, design: .rounded))
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
-            .background(RoundedRectangle(cornerRadius: 10).fill(.onyxLightish))
+            .background(RoundedRectangle(cornerRadius: 10).fill(Color("onyxLightish")))
         }
         .zIndex(1000)
         .padding(.top, 4)
@@ -177,10 +176,10 @@ struct MyBets: View {
                 HStack(spacing: 8) {
                     Text("PARLAY")
                         .font(.caption.bold())
-                        .foregroundColor(.oW)
+                        .foregroundColor(Color("oW"))
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
-                        .background(.lion)
+                        .background(Color("lion"))
                         .cornerRadius(4)
                     
                     Image(systemName: "gift.fill")
@@ -215,10 +214,10 @@ struct MyBets: View {
                 VStack(alignment: .leading, spacing: 16) {
                     Text("MLB")
                         .font(.caption.bold())
-                        .foregroundColor(.oW)
+                        .foregroundColor(Color("oW"))
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
-                        .background(.lion)
+                        .background(Color("lion"))
                         .cornerRadius(4)
                         .padding(.leading, 24)
                     
@@ -268,6 +267,3 @@ struct MyBets: View {
     }
 }
 
-#Preview {
-    MyBets()
-}

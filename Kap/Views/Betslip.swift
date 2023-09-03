@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import Observation
 
 struct Betslip: View {
     let results: [Image] = [Image(systemName: "checkmark"), Image(systemName: "x.circle")]
@@ -23,7 +22,7 @@ struct Betslip: View {
     
     var body: some View {
         ZStack {
-            Color.onyx.ignoresSafeArea()
+            Color("onyx").ignoresSafeArea()
             
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 20) {
@@ -38,7 +37,7 @@ struct Betslip: View {
                 .padding(.top, 20)
                 .navigationBarBackButtonHidden()
                 .toolbar {
-                    ToolbarItem(placement: .topBarLeading) {
+                    ToolbarItem(placement: .navigationBarLeading) {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 18, weight: .bold, design: .rounded))
                             .onTapGesture {
@@ -207,14 +206,14 @@ struct BetView: View {
                 }
             } label: {
                 ZStack {
-                    Color.lion
+                    Color("lion")
                     Text("Place Bet")
                         .font(.system(.caption, design: .rounded, weight: .bold))
-                        .foregroundStyle(isValid ? .oW : .gray)
+                        .foregroundStyle(isValid ? Color("oW") : .gray)
                         .lineLimit(2)
                 }
                 .overlay {
-                    Color.onyxLightish.opacity(isValid ? 0.0 : 0.7).ignoresSafeArea()
+                    Color("onyxLightish").opacity(isValid ? 0.0 : 0.7).ignoresSafeArea()
                 }
                 .frame(width: 100, height: 50)
                 .cornerRadius(15)
@@ -232,11 +231,11 @@ struct BetView: View {
                 }
             } label: {
                 ZStack {
-                    Color.oW.opacity(0.8)
+                    Color("oW").opacity(0.8)
                     Text("Cancel Bet")
                         .font(.caption.bold())
                         .fontDesign(.rounded)
-                        .foregroundStyle(.redd.opacity(0.8))
+                        .foregroundStyle(Color("redd").opacity(0.8))
                         .lineLimit(2)
                 }
                 .frame(width: 100, height: 50)
@@ -344,14 +343,14 @@ struct ParlayView: View {
             homeViewModel.activeParlays = []
         } label: {
             ZStack {
-                Color.onyxLightish
+                Color("onyxLightish")
                 Text("Place Parlay")
                     .font(.system(.caption, design: .rounded, weight: .bold))
-                    .foregroundStyle(isValid ? .lion : .white)
+                    .foregroundStyle(isValid ? Color("lion") : .white)
                     .lineLimit(2)
             }
             .overlay {
-                Color.onyxLightish.opacity(isValid ? 0.0 : 0.7).ignoresSafeArea()
+                Color("onyxLightish").opacity(isValid ? 0.0 : 0.7).ignoresSafeArea()
             }
             .frame(width: 100, height: 40)
             .cornerRadius(15)
@@ -360,9 +359,4 @@ struct ParlayView: View {
         .zIndex(100)
         .disabled(!isValid)
     }
-}
-
-
-#Preview {
-    Betslip()
 }

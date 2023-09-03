@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import Observation
 import Firebase
 import FirebaseFirestoreSwift
 
@@ -41,7 +40,7 @@ struct Home: View {
                     Label("Profile", systemImage: "person.fill")
                 }
             }
-            .tint(.oW)
+            .tint(Color("oW"))
             .preferredColorScheme(.dark)
             .task {
                 do {
@@ -78,7 +77,7 @@ struct Home: View {
                         }
                     }
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        withAnimation(.smooth) {
+                        withAnimation(.linear) {
                             self.showingSplashScreen = false
                         }
                     }
@@ -90,10 +89,10 @@ struct Home: View {
             .overlay(
                 Group {
                     if showingSplashScreen {
-                        Color.lion
+                        Color("lion")
                             .ignoresSafeArea()
                             .overlay(
-                                Image(.loch)
+                                Image("loch")
                                     .resizable()
                                     .frame(width: 200, height: 200)
                                     .scaledToFit()
@@ -105,8 +104,4 @@ struct Home: View {
             )
         }
     }
-}
-
-#Preview {
-    Home()
 }
