@@ -8,7 +8,7 @@
 import Foundation
 
 class Parlay {
-    let id: UUID
+    let id: String
     let bets: [Bet]
     var totalOdds: Int
     var result: BetResult
@@ -17,12 +17,12 @@ class Parlay {
     var playerID: String
     var week: Int
     
-    init(id: UUID, bets: [Bet], totalOdds: Int, result: BetResult, playerID: String, week: Int) {
+    init(id: String, bets: [Bet], totalOdds: Int, result: BetResult, playerID: String, week: Int) {
         self.id = id
         self.bets = bets
         self.totalOdds = totalOdds
         self.result = result
-        self.totalPoints = calculateParlayPoints(odds: totalOdds, result: .win)
+        self.totalPoints = calculateParlayPoints(odds: totalOdds, result: result == .pending ? .win : result)
         self.playerID = playerID
         self.week = week
     }
@@ -50,12 +50,11 @@ func calculateParlayOdds(bets: [Bet]) -> Int {
 
 func calculateParlayPoints(odds: Int, basePoints: Double = 10.0, result: BetResult) -> Double {
     var points: Double = 0
-    if result == .win {
-        if odds > 0 { // Positive American odds
-            points = Double((Double(odds) / 100.0) * basePoints)
-        } else { // Negative American odds
-            points = Double((100.0 / Double(abs(odds))) * basePoints)
-        }
+    if odds > 0 {
+        points = Double((Double(odds) / 100.0) * basePoints)
+    } else {
+        points = Double((100.0 / Double(abs(odds))) * basePoints)
     }
-    return points
+    
+    return result == .loss ? -10 : points
 }

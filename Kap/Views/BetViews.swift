@@ -35,6 +35,13 @@ struct PlacedBetView: View {
                         HStack {
                             Text(bet.type == .over || bet.type == .under ? "\(bet.game.awayTeam) @ \(bet.game.homeTeam)" : bet.selectedTeam ?? "")
                                 .font(bet.type == .over || bet.type == .under ? .caption2.bold() : .subheadline.bold())
+//                            if homeViewModel.findLiveGame(gameID: bet.game.id) {
+//                                Text("LIVE \(homeViewModel.games.first(where: { $0.id == bet.game.id})?.awayScore ?? "") - \(homeViewModel.games.first(where: { $0.id == bet.game.id})?.homeScore ?? "")")
+//                                    .font(.caption.bold())
+//                                    .foregroundStyle(Color("bean"))
+//                                    .padding(.leading, 4)
+//                                    .padding(.top, 2)
+//                            }
                             Spacer()
                             Text("\(bet.odds > 0 ? "+": "")\(bet.odds)")
                                 .font(.subheadline.bold())
@@ -108,8 +115,8 @@ struct PlacedBetView: View {
                             withAnimation {
                                 deleteActive.toggle()
                                 Task {
-                                    let _ = try await BetViewModel().deleteBet(betID: bet.id.uuidString)
-                                    bets.removeAll(where: { $0.id.uuidString == bet.id.uuidString })
+                                    let _ = try await BetViewModel().deleteBet(betID: bet.id)
+                                    bets.removeAll(where: { $0.id == bet.id })
                                 }
                             }
                         }
@@ -158,6 +165,17 @@ struct PlacedParlayView: View {
     @State private var formattedBets = [String]()
     @State private var legs: Int = 0
     
+    func pointsColor(for result: BetResult) -> Color {
+        switch result {
+        case .win:
+            return Color("bean")
+        case .loss:
+            return Color("redd")
+        case .push, .pending:
+            return .primary
+        }
+    }
+    
     var body: some View {
         ZStack(alignment: .topLeading) {
             Color("onyxLightish")
@@ -192,10 +210,16 @@ struct PlacedParlayView: View {
                         }
                         
                         VStack(alignment: .leading) {
-                            Text("Points: \(abs(parlay.totalPoints).oneDecimalString)")
-                            RoundedRectangle(cornerRadius: 1)
-                                .frame(width: 100, height: 2)
-                                .foregroundStyle(.secondary)
+                            HStack(spacing: 4) {
+                                Text("Points:")
+                                    .font(.headline.bold())
+                                Text("\(parlay.result == .loss ? "-" : "+")\(abs(parlay.totalPoints).oneDecimalString)")
+                                    .font(.title2.bold())
+                                    .foregroundStyle(pointsColor(for: parlay.result))
+                            }
+//                            RoundedRectangle(cornerRadius: 1)
+//                                .frame(width: 100, height: 2)
+//                                .foregroundStyle(.secondary)
                         }
                         .bold()
                     }
@@ -228,7 +252,7 @@ struct PlacedParlayView: View {
                             withAnimation {
                                 deleteActive.toggle()
                                 Task {
-                                    let _ = try await ParlayViewModel().deleteParlay(parlayID: parlay.id.uuidString)
+                                    let _ = try await ParlayViewModel().deleteParlay(parlayID: parlay.id)
                                 }
                             }
                         }
@@ -247,25 +271,24 @@ struct PlacedParlayView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                 .padding(.bottom, 12)
                 .matchedGeometryEffect(id: "trash", in: trash)
-            } else {
+            } else if parlay.result == .pending {
                 Image(systemName: "trash")
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                     .font(.title2.bold())
                     .fontDesign(.rounded)
-                    .padding(.bottom, 12)
                     .onTapGesture {
                         withAnimation {
                             deleteActive.toggle()
                         }
                     }
                     .matchedGeometryEffect(id: "trash", in: trash)
+                    .padding(.bottom, 12)
             }
         }
         .frame(height: 160)
         .cornerRadius(20)
         .padding(.horizontal, 20)
-//        .shadow(radius: 10)
         .task {
             formattedBets = parlay.betString?.split(separator: ",").map { String($0.trimmingCharacters(in: .whitespaces))
             } ?? []

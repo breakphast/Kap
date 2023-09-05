@@ -51,17 +51,29 @@ struct MyBets: View {
                 let result = bet.game.betResult(for: bet.betOption)
                 if result != .pending {
                     BetViewModel().updateBetResult(bet: bet)
+                    
                 }
             }
+            fetchData()
         })
-        .task { 
+        .task {
             week = homeViewModel.currentWeek
             selectedOption = "Week \(week)"
             fetchData()
             for bet in homeViewModel.bets {
-                let result = bet.game.betResult(for: bet.betOption)
-                if result != .pending {
-                    BetViewModel().updateBetResult(bet: bet)
+                if let matchedGame = homeViewModel.games.first(where: { $0.id == bet.game.id }) {
+                    let result = bet.game.betResult(for: bet.betOption)
+                    if result != .pending {
+                        if bet.result == .pending {
+                            BetViewModel().updateBetResult(bet: bet)
+                        }
+                    }
+                }
+            }
+            fetchData()
+            for parlay in parlays {
+                if parlay.result == .pending {
+                    BetViewModel().updateParlay(parlay: parlay)
                 }
             }
         }
@@ -69,25 +81,21 @@ struct MyBets: View {
     
     var settledBetsTab: some View {
         VStack(spacing: 8) {
-            if isEmptyBets(for: .win) && isEmptyBets(for: .loss) && isEmptyBets(for: .push) {
+            if isEmptyBets(for: .win) && isEmptyBets(for: .loss) && isEmptyBets(for: .push) && parlays.filter({ $0.result != .pending }).isEmpty {
                 Text("No settled bets")
                     .font(.largeTitle.bold())
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             } else {
                 Text("POINTS: \((weeklyPoints ?? 0).oneDecimalString)")
                     .font(.system(.body, design: .rounded, weight: .bold))
-                    .padding(.top, 4)
+//                    .padding(.top, 4)
                 
                 ScrollView(showsIndicators: false) {
                     betSection(for: .tnf, settled: true)
                         .padding(.top)
-//                    betSection(for: .sunday, settled: true)
-//                    betSection(for: .snf, settled: true)
-//                    betSection(for: .mnf, settled: true)
-                    
-//                    if !parlays.filter({ $0.result != .pending }).isEmpty {
-//                        parlaySection(settled: true)
-//                    }
+                    if !parlays.filter({ $0.result != .pending }).isEmpty {
+                        parlaySection(settled: true)
+                    }
                 }
             }
         }
@@ -96,7 +104,7 @@ struct MyBets: View {
     
     var activeBetsTab: some View {
         VStack(spacing: 8) {
-            if isEmptyBets(for: .pending) {
+            if isEmptyBets(for: .pending) && parlays.filter({ $0.result == .pending }).isEmpty {
                 Text("No active bets")
                     .foregroundColor(.white)
                     .font(.largeTitle.bold())
@@ -107,7 +115,9 @@ struct MyBets: View {
                 
                 ScrollView(showsIndicators: false) {
                     betSection(for: .tnf, settled: false)
-                        .padding(.top)
+                    if !parlays.filter({ $0.result == .pending }).isEmpty {
+                        parlaySection(settled: false)
+                    }
                 }
             }
         }
@@ -126,7 +136,7 @@ struct MyBets: View {
                         bets = bets.filter({ $0.week == 1 })
                         
                         let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.games)
-                        parlays = fetchedParlays.filter({ $0.playerID == authViewModel.currentUser?.id })
+                        parlays = fetchedParlays.filter({ $0.id == $0.playerID + String(1) })
                         parlays = parlays.filter({ $0.week == 1 })
                         
                         weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: authViewModel.currentUser?.id ?? "", bets: bets, parlays: homeViewModel.parlays, week: 1, leagueID: homeViewModel.activeLeague?.id ?? "")
@@ -212,7 +222,7 @@ struct MyBets: View {
         if !filteredBets.isEmpty {
             return AnyView(
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("MLB")
+                    Text("NFL")
                         .font(.caption.bold())
                         .foregroundColor(Color("oW"))
                         .padding(.horizontal, 16)
@@ -243,7 +253,6 @@ struct MyBets: View {
                 
                 let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.games)
                 parlays = fetchedParlays.filter({ $0.playerID == authViewModel.currentUser?.id && $0.week == (value != nil ? homeViewModel.currentWeek : 1) })
-                
                 weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: authViewModel.currentUser?.id ?? "", bets: bets, parlays: homeViewModel.parlays, week: week, leagueID: homeViewModel.activeLeague?.id ?? "")
             } catch {
                 print("Error fetching bets: \(error)")

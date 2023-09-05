@@ -50,7 +50,7 @@ class GameService {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
 
-        let scores = try await fetchMLBScoresData()
+        let scores = try await loadnflScoresData()
 
         do {
             let scoresData = try decoder.decode([ScoreElement].self, from: scores)
@@ -59,19 +59,23 @@ class GameService {
             if let scoreElement = scoresData.first(where: { $0.documentId == game.documentId }) {
                 game.homeScore = scoreElement.scores?.first(where: { $0.name == game.homeTeam })?.score
                 game.awayScore = scoreElement.scores?.first(where: { $0.name == game.awayTeam })?.score
+                game.completed = scoreElement.completed
                 
-                let querySnapshot = try await db.collection("mlbGames").whereField("id", isEqualTo: game.id).getDocuments()
+                let querySnapshot = try await db.collection("nflGames").whereField("id", isEqualTo: game.id).getDocuments()
 
                 if let newGameDocument = querySnapshot.documents.first {
                     try await newGameDocument.reference.updateData([
                         "homeScore": game.homeScore as Any,
-                        "awayScore": game.awayScore as Any
+                        "awayScore": game.awayScore as Any,
+                        "completed": game.completed as Bool
                     ])
                 } else {
                     print("No matching game found in Firestore")
                 }
 
             }
+            
+            
         } catch {
             print("Error decoding scores data:", error)
         }
@@ -84,7 +88,7 @@ class GameService {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         
-        let odds = try await fetchMLBOddsData()
+        let odds = try await loadnflData()
         let gamesData = try decoder.decode([GameElement].self, from: odds)
         
         //        let scores = try await loadnflScoresData()
@@ -113,7 +117,7 @@ class GameService {
     
     func fetchGamesFromFirestore() async throws -> [Game] {
         let db = Firestore.firestore()
-        let querySnapshot = try await db.collection("mlbGames").getDocuments()
+        let querySnapshot = try await db.collection("nflGames").getDocuments()
 
         var games = querySnapshot.documents.map { queryDocumentSnapshot -> Game in
             let data = queryDocumentSnapshot.data()
@@ -177,7 +181,7 @@ class GameService {
     
     func addGames(games: [Game]) {
         let db = Firestore.firestore()
-        let ref = db.collection("mlbGames")
+        let ref = db.collection("nflGames")
         
         let sortedGames = games.sorted { $0.date < $1.date }
         
@@ -193,7 +197,19 @@ class GameService {
         }
     }
     
-    
+    func addGameToArchive(game: Game) {
+        let db = Firestore.firestore()
+        let ref = db.collection("archivedGames")
+        
+        let gameId = game.documentId
+        ref.document(gameId).setData(game.dictionary) { error in
+            if let error = error {
+                print("Error adding game: \(error.localizedDescription)")
+            } else {
+                print("Game with ID \(gameId) successfully added!")
+            }
+        }
+    }
     
     func updateDayType(for games: inout [Game]) {
         for game in games.prefix(1) {
@@ -272,7 +288,7 @@ class GameService {
     }
     
     func fetchNFLOddsData() async throws -> Data {
-        let urlString = "https://api.the-odds-api.com/v4/sports/americanfootball_nfl/odds/?apiKey=ab5225bbaeaf25a64a6bba6340bdf2e2&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=fanduel"
+        let urlString = "https://api.the-odds-api.com/v4/sports/americanfootball_nfl/odds/?apiKey=4f7d6df42629985a5abaf8ed40920b26&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=fanduel"
         
         guard let url = URL(string: urlString) else {
             throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
@@ -283,12 +299,11 @@ class GameService {
         guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
             throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to fetch data from server"])
         }
-        print("Done")
         return data
     }
     
     func fetchMLBOddsData() async throws -> Data {
-        let urlString = "https://api.the-odds-api.com/v4/sports/baseball_mlb/odds/?apiKey=ab5225bbaeaf25a64a6bba6340bdf2e2&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=fanduel"
+        let urlString = "https://api.the-odds-api.com/v4/sports/baseball_mlb/odds/?apiKey=4f7d6df42629985a5abaf8ed40920b26&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=fanduel"
         
         guard let url = URL(string: urlString) else {
             throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
@@ -303,7 +318,7 @@ class GameService {
     }
     
     private func fetchMLBScoresData() async throws -> Data {
-        let urlString = "https://api.the-odds-api.com/v4/sports/baseball_mlb/scores/?apiKey=ab5225bbaeaf25a64a6bba6340bdf2e2"
+        let urlString = "https://api.the-odds-api.com/v4/sports/baseball_mlb/scores/?daysFrom=1&apiKey=4f7d6df42629985a5abaf8ed40920b26"
         
         guard let url = URL(string: urlString) else {
             throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
@@ -318,7 +333,7 @@ class GameService {
     }
     
     private func fetchNFLScoresData() async throws -> Data {
-        let urlString = "https://api.the-odds-api.com/v4/sports/americanfootball_nfl/scores/?daysFrom=1&apiKey=ab5225bbaeaf25a64a6bba6340bdf2e2"
+        let urlString = "https://api.the-odds-api.com/v4/sports/americanfootball_nfl/scores/?daysFrom=1&apiKey=4f7d6df42629985a5abaf8ed40920b26"
         
         guard let url = URL(string: urlString) else {
             throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
@@ -330,6 +345,47 @@ class GameService {
             throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to fetch data from server"])
         }
         return data
+    }
+    
+    func deleteCollection(collectionName: String, batchSize: Int = 100, completion: @escaping (Error?) -> Void) {
+        // Get a reference to the collection
+        let collectionRef = Firestore.firestore().collection(collectionName)
+        
+        // Create a query against the collection, limited to the first batch
+        let query = collectionRef.limit(to: batchSize)
+        
+        deleteQueryBatch(query: query, batchSize: batchSize, completion: completion)
+    }
+
+    private func deleteQueryBatch(query: Query, batchSize: Int, completion: @escaping (Error?) -> Void) {
+        query.getDocuments { (querySnapshot, error) in
+            guard let documents = querySnapshot?.documents else {
+                completion(error)
+                return
+            }
+            
+            guard documents.count > 0 else {
+                completion(nil)
+                return
+            }
+            
+            // Delete documents in a batch
+            let batch = query.firestore.batch()
+            documents.forEach { batch.deleteDocument($0.reference) }
+            
+            batch.commit { [self] batchError in
+                if let batchError = batchError {
+                    completion(batchError)
+                } else {
+                    // Continue deleting if there are more documents
+                    if documents.count == batchSize {
+                        self.deleteQueryBatch(query: query, batchSize: batchSize, completion: completion)
+                    } else {
+                        completion(nil)
+                    }
+                }
+            }
+        }
     }
 }
 

@@ -47,7 +47,7 @@ class BetViewModel {
             let week = data["week"] as? Int ?? 0
             let (foundGame, foundBetOption) = self.findBetOption(games: games, gameID: game, betOptionID: betOption)
             
-            let bet = Bet(id: UUID(uuidString: id)!, betOption: foundBetOption!, game: foundGame!, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week)
+            let bet = Bet(id: id, betOption: foundBetOption!, game: foundGame!, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week)
             
             return bet
         }
@@ -58,7 +58,7 @@ class BetViewModel {
         let db = Firestore.firestore()
         
         let newBet: [String: Any] = [
-            "id": bet.id.uuidString,
+            "id": bet.id,
             "betOption": bet.betOption.id.uuidString,
             "game": bet.game.id,
             "type": bet.type.rawValue,
@@ -72,17 +72,17 @@ class BetViewModel {
             "week": bet.week
         ]
         
-        let _ = try await db.collection("bets").document(bet.id.uuidString).setData(newBet)
+        let _ = try await db.collection("bets").document(bet.id).setData(newBet)
     }
 
     func makeBet(for game: Game, betOption: BetOption, playerID: String, week: Int) -> Bet {
-        let bet = Bet(id: betOption.id, betOption: betOption, game: game, type: betOption.betType, result: .pending, odds: betOption.odds, selectedTeam: betOption.selectedTeam, playerID: playerID, week: week)
+        let bet = Bet(id: betOption.id.uuidString + playerID, betOption: betOption, game: game, type: betOption.betType, result: .pending, odds: betOption.odds, selectedTeam: betOption.selectedTeam, playerID: playerID, week: week)
         
         return bet
     }
     
     func updateBet(bet: Bet) {
-        let newbet = db.collection("bets").document(bet.id.uuidString)
+        let newbet = db.collection("bets").document(bet.id) 
         newbet.updateData([
             "betString": bet.betString,
             "result": bet.game.betResult(for: bet.betOption).rawValue
@@ -95,17 +95,57 @@ class BetViewModel {
         }
     }
     
+    func updateParlay(parlay: Parlay) {
+        let newParlay = db.collection("parlays").document(parlay.id)
+        let parlayBets = parlay.bets
+        if !parlayBets.filter({ $0.game.betResult(for: $0.betOption) == .loss }).isEmpty {
+            newParlay.updateData([
+                "result": BetResult.loss.rawValue
+            ]) { err in
+                if let err = err {
+                    print("Error updating document: \(err)")
+                } else {
+                    print("Document successfully updated. L")
+                }
+            }
+        } else if parlayBets.filter({$0.result == .win}).count == parlayBets.count {
+            newParlay.updateData([
+                "result": BetResult.win.rawValue
+            ]) { err in
+                if let err = err {
+                    print("Error updating document: \(err)")
+                } else {
+                    print("Document successfully updated. DUB.")
+                }
+            }
+        }
+        
+        if parlay.result == .loss {
+            newParlay.updateData([
+                "totalPoints":  -10
+            ]) { err in
+                if let err = err {
+                    print("Error updating document: \(err)")
+                } else {
+                    print("Document successfully updated. L POINTS")
+                }
+            }
+        }
+    }
+    
     func updateBetResult(bet: Bet) {
-        let newbet = db.collection("bets").document(bet.id.uuidString)
+        let newbet = db.collection("bets").document(bet.id)
         newbet.updateData([
             "result": bet.game.betResult(for: bet.betOption).rawValue
         ]) { err in
             if let err = err {
                 print("Error updating document: \(err)")
             } else {
-                print("Document successfully updated")
+                print("Document successfully updatedddd")
+                
             }
-        }
+        } 
+        print(bet.game.betResult(for: bet.betOption).rawValue)
     }
     
     func deleteBet(betID: String) async throws {
@@ -148,7 +188,7 @@ class BetViewModel {
                 team = game.homeTeam
             }
             
-            let bet = Bet(id: options[i].id, betOption: options[i], game: game, type: type, result: .pending, odds: options[i].odds, selectedTeam: team, playerID: "", week: 0)
+            let bet = Bet(id: options[i].id.uuidString, betOption: options[i], game: game, type: type, result: .pending, odds: options[i].odds, selectedTeam: team, playerID: "", week: 0)
             bets.append(bet)
         }
         let betss = [3, 4, 2, 0, 1, 5].compactMap { index in

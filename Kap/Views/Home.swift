@@ -14,6 +14,7 @@ struct Home: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @State private var showingSplashScreen = true
     @State private var loggedIn = false
+    @State private var date: Date = Date()
     
     var body: some View {
         if authViewModel.currentUser == nil || loggedIn == false {
@@ -44,25 +45,51 @@ struct Home: View {
             .preferredColorScheme(.dark)
             .task {
                 do {
+                    let activeDate = homeViewModel.formatter.string(from: Date())
+                    homeViewModel.currentDate = activeDate
+//                    if let fetchedDate = try await homeViewModel.fetchDate(), homeViewModel.currentDate != fetchedDate {
+//                        print("->", activeDate)
+//                        homeViewModel.updateDate(date: activeDate)
+//
+////                        GameService().deleteCollection(collectionName: "mlbGames") { error in
+////                            if let error = error {
+////                                print("Error deleting collection: \(error)")
+////                            } else {
+////                                print("Successfully deleted collection.")
+////                            }
+////                        }
+//                        let games = try await GameService().getGames()
+//                        GameService().addGames(games: games)
+//                    }
+                    
                     homeViewModel.setCurrentWeek()
-                    print(homeViewModel.currentWeek)
                     homeViewModel.users = try await UserViewModel().fetchAllUsers()
 //                    homeViewModel.activeUser = homeViewModel.users.first(where: { $0.username == "Brokeee" })
                     
                     homeViewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
                     homeViewModel.activeLeague = homeViewModel.leagues.first
                     
-                    homeViewModel.games = try await GameService().fetchGamesFromFirestore()
-//                    GameService().updateDayType(for: &homeViewModel.games)
+                    homeViewModel.games = try await GameService().fetchGamesFromFirestore().chunked(into: 16)[0]
+                    GameService().updateDayType(for: &homeViewModel.games)
                     let alteredGames = homeViewModel.games
                     for game in alteredGames {
                         try await GameService().updateGameScore(game: game)
+//                        if game.completed {
+//                            GameService().addGameToArchive(game: game)
+//                            try await homeViewModel.deleteGame(game: game)
+//                            print(game.documentId)
+//                        }
                     }
                     homeViewModel.games = alteredGames
                     
                     homeViewModel.bets = try await BetViewModel().fetchBets(games: homeViewModel.games)
                     homeViewModel.parlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.games)
-                    
+                    for parlay in homeViewModel.parlays {
+                        if parlay.result == .pending  {
+                            BetViewModel().updateParlay(parlay: parlay)
+                        }
+                    }
+                    homeViewModel.parlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.games)
                     homeViewModel.leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, weeks: [homeViewModel.currentWeek - 1, homeViewModel.currentWeek])
                     
                     // uncomment to add games
@@ -72,7 +99,7 @@ struct Home: View {
                     
                     for bet in homeViewModel.bets {
                         let result = bet.game.betResult(for: bet.betOption)
-                        if result != .pending {
+                        if result == .pending {
                             BetViewModel().updateBetResult(bet: bet)
                         }
                     }

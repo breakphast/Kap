@@ -18,7 +18,7 @@
 		3EA650412A5F7565007CA5ED /* KapApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EA650402A5F7565007CA5ED /* KapApp.swift */; };
 		3EA650452A5F7568007CA5ED /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3EA650442A5F7568007CA5ED /* Assets.xcassets */; };
 		3EA650482A5F7568007CA5ED /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3EA650472A5F7568007CA5ED /* Preview Assets.xcassets */; };
-		3EB529D22A6C139300548643 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3EB529D12A6C139300548643 /* GoogleService-Info.plist */; };
+		3EAA28A42AA4FA81003AB5EC /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3EAA28A32AA4FA81003AB5EC /* GoogleService-Info.plist */; };
 		3ED8EC3B2A65F47400E05FF2 /* Betslip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ED8EC3A2A65F47400E05FF2 /* Betslip.swift */; };
 		3EDBFCD22A8E901B00EB8628 /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EDBFCD12A8E901B00EB8628 /* AuthViewModel.swift */; };
 		3EDBFCD42A8E907500EB8628 /* UserService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EDBFCD32A8E907500EB8628 /* UserService.swift */; };
@@ -58,7 +58,7 @@
 		3EA650402A5F7565007CA5ED /* KapApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KapApp.swift; sourceTree = "<group>"; };
 		3EA650442A5F7568007CA5ED /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3EA650472A5F7568007CA5ED /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		3EB529D12A6C139300548643 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		3EAA28A32AA4FA81003AB5EC /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		3ED8EC3A2A65F47400E05FF2 /* Betslip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Betslip.swift; sourceTree = "<group>"; };
 		3EDBFCD12A8E901B00EB8628 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
 		3EDBFCD32A8E907500EB8628 /* UserService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserService.swift; sourceTree = "<group>"; };
@@ -135,9 +135,9 @@
 				3EE35E642A60E34D0026F952 /* Services */,
 				3EE35E6D2A6329460026F952 /* JSON */,
 				3E195C742A74682200FB0CAD /* Helpers */,
+				3EAA28A32AA4FA81003AB5EC /* GoogleService-Info.plist */,
 				3EA650402A5F7565007CA5ED /* KapApp.swift */,
 				3EA650442A5F7568007CA5ED /* Assets.xcassets */,
-				3EB529D12A6C139300548643 /* GoogleService-Info.plist */,
 				3EA650462A5F7568007CA5ED /* Preview Content */,
 			);
 			path = Kap;
@@ -284,9 +284,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				3EE35E6C2A6318E80026F952 /* nflScores.json in Resources */,
+				3EAA28A42AA4FA81003AB5EC /* GoogleService-Info.plist in Resources */,
 				3EA650482A5F7568007CA5ED /* Preview Assets.xcassets in Resources */,
 				3EF278782A9D2E6100DFC32C /* mlbScores.json in Resources */,
-				3EB529D22A6C139300548643 /* GoogleService-Info.plist in Resources */,
 				3EA650452A5F7568007CA5ED /* Assets.xcassets in Resources */,
 				3EE35E632A60E2CE0026F952 /* nflData.json in Resources */,
 				3EF278762A9D2E5100DFC32C /* mlbData.json in Resources */,

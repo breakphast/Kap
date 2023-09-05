@@ -20,6 +20,26 @@ struct Leaderboard: View {
     @State private var bigMovers: [(User, up: Bool)]?
     @State private var points: Int = 0
     
+    @State private var bets: [Bet] = []
+    @State private var parlays: [Parlay] = []
+    @State private var weeklyPoints: Double?
+    
+    private func fetchData(_ value: Int? = nil) {
+        Task {
+            do {
+                let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.games)
+                bets = fetchedBets.filter({ $0.playerID == authViewModel.currentUser?.id && $0.week == week })
+                
+                let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.games)
+                parlays = fetchedParlays.filter({ $0.playerID == authViewModel.currentUser?.id && $0.week == (value != nil ? homeViewModel.currentWeek : 1) })
+                
+                weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: authViewModel.currentUser?.id ?? "", bets: bets, parlays: homeViewModel.parlays, week: week, leagueID: homeViewModel.activeLeague?.id ?? "")
+            } catch {
+                print("Error fetching bets: \(error)")
+            }
+        }
+    }
+    
     var body: some View {
         ZStack(alignment: .top) {
             Color("onyx").ignoresSafeArea()
@@ -35,14 +55,24 @@ struct Leaderboard: View {
         }
         .fontDesign(.rounded)
         .task {
-            week = homeViewModel.currentWeek
-            selectedOption = "Week \(week)"
-            users = await LeaderboardViewModel().getLeaderboardData(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, week: week)
-            await updatePointsDifferences()
-                        
-            leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, weeks: [1, 2])
-            
-            bigMovers = LeaderboardViewModel().bigMover(from: homeViewModel.leaderboards[0], to: homeViewModel.leaderboards[1])
+            do {
+                week = homeViewModel.currentWeek
+                selectedOption = "Week \(week)"
+                
+//                homeViewModel.setCurrentWeek()
+//                homeViewModel.users = try await UserViewModel().fetchAllUsers()
+//
+                try await getUpdatedInfo()
+                
+                users = await LeaderboardViewModel().getLeaderboardData(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, week: week)
+                await updatePointsDifferences()
+                            
+                leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, weeks: [1, 2])
+                
+                bigMovers = LeaderboardViewModel().bigMover(from: homeViewModel.leaderboards[0], to: homeViewModel.leaderboards[1])
+            } catch {
+                
+            }
             
         }
         .onChange(of: self.homeViewModel.selectedBets.count, perform: { newValue in
@@ -53,6 +83,14 @@ struct Leaderboard: View {
                 homeViewModel.bets = try await BetViewModel().fetchBets(games: homeViewModel.games)
                 homeViewModel.parlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.games)
                 
+                leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: homeViewModel.activeLeague!.id!, users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, weeks: [homeViewModel.currentWeek - 1, homeViewModel.currentWeek])
+                
+                bigMovers = LeaderboardViewModel().bigMover(from: homeViewModel.leaderboards[0], to: homeViewModel.leaderboards[1])
+            }
+        })
+        .onChange(of: self.homeViewModel.bets.filter { $0.result == .pending }.count, perform: { newValue in
+            Task {
+                try await getUpdatedInfo()
                 leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: homeViewModel.activeLeague!.id!, users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, weeks: [homeViewModel.currentWeek - 1, homeViewModel.currentWeek])
                 
                 bigMovers = LeaderboardViewModel().bigMover(from: homeViewModel.leaderboards[0], to: homeViewModel.leaderboards[1])
@@ -106,6 +144,28 @@ struct Leaderboard: View {
     func userDetailStrokeRoundedRectangle(for user: User) -> some View {
         RoundedRectangle(cornerRadius: 20)
             .stroke(determineColor(for: user), lineWidth: 3)
+    }
+    
+    func getUpdatedInfo() async throws {
+        homeViewModel.games = try await GameService().fetchGamesFromFirestore().chunked(into: 16)[0]
+        GameService().updateDayType(for: &homeViewModel.games)
+        let alteredGames = homeViewModel.games
+        for game in alteredGames {
+            try await GameService().updateGameScore(game: game)
+        }
+        homeViewModel.games = alteredGames
+
+        homeViewModel.bets = try await BetViewModel().fetchBets(games: homeViewModel.games)
+        homeViewModel.parlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.games)
+
+        homeViewModel.leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, weeks: [homeViewModel.currentWeek - 1, homeViewModel.currentWeek])
+
+        for bet in homeViewModel.bets {
+            let result = bet.game.betResult(for: bet.betOption)
+            if result == .pending {
+                BetViewModel().updateBetResult(bet: bet)
+            }
+        }
     }
 
     func determineColor(for user: User) -> Color {

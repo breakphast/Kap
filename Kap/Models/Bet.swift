@@ -54,7 +54,7 @@ class BetOption {
 }
 
 class Bet {
-    let id: UUID
+    let id: String
     let betOption: BetOption
     let game: Game
     let type: BetType
@@ -67,7 +67,7 @@ class Bet {
     let playerID: String
     var week: Int
     
-    init(id: UUID, betOption: BetOption, game: Game, type: BetType, result: BetResult?, odds: Int, selectedTeam: String?, playerID: String, week: Int) {
+    init(id: String, betOption: BetOption, game: Game, type: BetType, result: BetResult?, odds: Int, selectedTeam: String?, playerID: String, week: Int) {
         self.id = id
         self.betOption = betOption
         self.game = game
@@ -109,8 +109,7 @@ class Bet {
         }
         
         if bet.result == .loss {
-            points *= -1
-            points = points / 2
+            points = -basePoints
         }
         
         return points

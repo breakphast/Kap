@@ -83,8 +83,8 @@ struct Login: View {
             }
             
             Button {
-                authViewModel.login(withEmail: email.lowercased(), password: password.lowercased()) { userID in
-                    if let validUserID = userID {
+                authViewModel.login(withEmail: email.lowercased(), password: password) { userID in
+                    if userID != nil {
 //                        self.homeViewModel.activeUserID = validUserID
                         loggedIn.toggle()
                         loginFailed = false
@@ -95,14 +95,15 @@ struct Login: View {
                 }
             } label: {
                 Text("Login")
-                    .font(.title.bold())
-                    .foregroundStyle(Color("oW"))
-                    .padding(.horizontal, 16)
+                    .bold()
+                    .foregroundStyle(Color("lion"))
+                    .padding(.horizontal, 20)
                     .padding(.vertical, 8)
-                    .background(Color("lion"))
+                    .background(Color("oW"))
                     .cornerRadius(8)
             }
             .autocorrectionDisabled()
+            .autocapitalization(.none)
             .textInputAutocapitalization(.never)
         }
         .frame(maxHeight: .infinity, alignment: .center)

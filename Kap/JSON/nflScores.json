@@ -4,7 +4,7 @@
       "sport_key": "americanfootball_nfl",
       "sport_title": "NFL",
       "commence_time": "2023-09-08T00:21:00Z",
-      "completed": false,
+      "completed": true,
       "home_team": "Kansas City Chiefs",
       "away_team": "Detroit Lions",
       "scores": [
@@ -24,10 +24,19 @@
         "sport_key": "americanfootball_nfl",
         "sport_title": "NFL",
         "commence_time": "2023-09-10T17:00:00Z",
-        "completed": false,
+        "completed": true,
         "home_team": "Washington Commanders",
         "away_team": "Arizona Cardinals",
-        "scores": null,
+        "scores": [
+          {
+            "name": "Washington Commanders",
+            "score": "31"
+          },
+          {
+            "name": "Arizona Cardinals",
+            "score": "12"
+          }
+        ],
         "last_update": null
     },
     {

@@ -106,10 +106,7 @@ struct GameListingView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            SectionView(title: "Thursday Night Football", games: thursdayNightGame, first: true, dayType: .tnf)
-            SectionView(title: "Sunday Afternoon", games: sundayGames, dayType: .sunday)
-            SectionView(title: "Sunday Night Football", games: sundayNightGame, dayType: .snf)
-            SectionView(title: "Monday Night Football", games: mondayNightGame, dayType: .mnf)
+            SectionView(title: "Thursday Night Football", games: homeViewModel.games, first: true, dayType: .tnf)
         }
         .padding()
     }
@@ -126,7 +123,7 @@ struct SectionView: View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
                 if first == true {
-                    Text("MLB")
+                    Text("NFL")
                         .font(.caption.bold())
                         .foregroundColor(Color("oW"))
                         .padding(.horizontal, 16)
@@ -155,7 +152,9 @@ struct SectionView: View {
             }
             
             ForEach(games, id: \.id) { game in
-                GameRow(game: game)
+                if Date() < game.date {
+                    GameRow(game: game)
+                }
             }
         }
     }
@@ -176,22 +175,22 @@ struct GameRow: View {
             HStack(alignment: .center) {
                 VStack(alignment: .leading, spacing: 6) {
                     HStack {
-                        Image("\(mlbLogos[game.awayTeam] ?? "")")
+                        Image("\(nflLogos[game.awayTeam] ?? "")")
                             .resizable()
                             .scaledToFit()
-                            .frame(width: 40)
-                        Text(mlbTeams[game.awayTeam] ?? "")
+                            .frame(width: 30)
+                        Text(nflTeams[game.awayTeam] ?? "")
                     }
                     Text("@")
                     HStack {
-                        Image("\(mlbLogos[game.homeTeam] ?? "")")
+                        Image("\(nflLogos[game.homeTeam] ?? "")")
                             .resizable()
                             .scaledToFit()
-                            .frame(width: 40)
-                        Text(mlbTeams[game.homeTeam] ?? "")
+                            .frame(width: 30)
+                        Text(nflTeams[game.homeTeam] ?? "")
                     }
                 }
-                .font(.subheadline.bold())
+                .font(.caption.bold())
                 .frame(maxWidth: UIScreen.main.bounds.width / 3, alignment: .leading)
                 .lineLimit(2)
                 

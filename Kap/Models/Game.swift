@@ -85,7 +85,7 @@ class Game {
         self.awaySpread = awaySpreadTemp
         self.over = overTemp
         self.under = underTemp
-        self.completed = gameElement.completed ?? false
+        self.completed = false
         if let scores = gameElement.scores {
             for score in scores {
                 if score.name == self.homeTeam {
@@ -205,7 +205,7 @@ enum SportTitle: String, Codable {
 
 extension Game {
     func betResult(for option: BetOption) -> BetResult {
-        guard completed, let homeScore = Int(self.homeScore ?? ""), let awayScore = Int(self.awayScore ?? "") else {
+        guard completed, let homeScore = self.homeScore, let awayScore = self.awayScore else {
             return .pending
         }
         
@@ -220,7 +220,7 @@ extension Game {
         case .spread:
             let spread = option.spread
             if option.selectedTeam == homeTeam {
-                let resultScore = homeScore - awayScore
+                let resultScore = Int(homeScore)! - Int(awayScore)!
                 if Double(resultScore) > spread ?? 0 {
                     return .win
                 } else if Double(resultScore) < spread ?? 0 {
@@ -229,7 +229,7 @@ extension Game {
                     return .push
                 }
             } else {
-                let resultScore = awayScore - homeScore
+                let resultScore = Int(awayScore)! - Int(homeScore)!
                 if Double(resultScore) > spread ?? 0 {
                     return .win
                 } else if Double(resultScore) < spread ?? 0 {
@@ -240,10 +240,10 @@ extension Game {
             }
             
         case .over:
-            return Double(homeScore + awayScore) > option.over ? .win : .loss
+            return Double(homeScore + awayScore)! > option.over ? .win : .loss
             
         case .under:
-            return Double(homeScore + awayScore) < option.under ? .win : .loss
+            return Double(homeScore + awayScore)! < option.under ? .win : .loss
         }
     }
 }

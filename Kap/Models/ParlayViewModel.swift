@@ -38,17 +38,17 @@ class ParlayViewModel {
                     let selectedTeam = betData["selectedTeam"] as? String,
                     let playerID = betData["playerID"] as? String,
                     let week = betData["week"] as? Int
-                else { continue }
-                
+                else {
+                    continue
+                }
                 let (foundGame, foundBetOption) = BetViewModel().findBetOption(games: games, gameID: gameID, betOptionID: betOptionID)
                 if let foundGame = foundGame, let foundBetOption = foundBetOption {
-                    let bet = Bet(id: UUID(uuidString: id)!, betOption: foundBetOption, game: foundGame, type: type, result: result, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week)
+                    let bet = Bet(id: foundBetOption.id.uuidString + playerID, betOption: foundBetOption, game: foundGame, type: type, result: result, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week)
                     bets.append(bet)
                 }
             }
-            let parlay = Parlay(id: UUID(uuidString: id)!, bets: bets, totalOdds: totalOdds, result: result, playerID: playerID, week: week)
+            let parlay = Parlay(id: id, bets: bets, totalOdds: totalOdds, result: result, playerID: playerID, week: week)
             parlay.totalOdds = totalOdds
-            
             parlay.betString = betString
 
             return parlay
@@ -59,7 +59,7 @@ class ParlayViewModel {
     
     func addParlay(parlay: Parlay) async throws {
         var newParlay: [String: Any] = [
-            "id": UUID().uuidString,
+            "id": parlay.id,
             "bets": parlay.bets.map { bet in
                 [
                     "betOption": bet.betOption.id.uuidString,
@@ -67,8 +67,10 @@ class ParlayViewModel {
                     "type": bet.type.rawValue,
                     "odds": bet.odds,
                     "result": bet.result?.rawValue ?? "",
-                    "selectedTeam": bet.selectedTeam ?? ""
-                ]
+                    "selectedTeam": bet.selectedTeam ?? "",
+                    "week": parlay.week,
+                    "playerID": parlay.playerID
+                ] as [String : Any]
             },
             "result": parlay.result.rawValue,
             "totalOdds": parlay.totalOdds,
@@ -92,7 +94,8 @@ class ParlayViewModel {
         
         newParlay["betString"] = betString
 
-        let _ = try await db.collection("parlays").addDocument(data: newParlay)
+//        let _ = try await db.collection("parlays").addDocument(data: newParlay)
+        let _ = try await db.collection("parlays").document(parlay.id).setData(newParlay)
     }
     
     func deleteParlay(parlayID: String) async throws {
@@ -105,11 +108,11 @@ class ParlayViewModel {
                     print("Deleted bet \(parlayID)")
                 }
             }
-        }
+        } 
     }
     
     func makeParlay(for bets: [Bet], playerID: String, week: Int) -> Parlay {
-        let parlay = Parlay(id: UUID(), bets: bets, totalOdds: calculateParlayOdds(bets: bets), result: .pending, playerID: playerID, week: week)
+        let parlay = Parlay(id: playerID + String(week), bets: bets, totalOdds: calculateParlayOdds(bets: bets), result: .pending, playerID: playerID, week: week)
         return parlay
     }
 }
