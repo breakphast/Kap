@@ -47,30 +47,16 @@ struct Home: View {
                 do {
                     let activeDate = homeViewModel.formatter.string(from: Date())
                     homeViewModel.currentDate = activeDate
-//                    if let fetchedDate = try await homeViewModel.fetchDate(), homeViewModel.currentDate != fetchedDate {
-//                        print("->", activeDate)
-//                        homeViewModel.updateDate(date: activeDate)
-//
-////                        GameService().deleteCollection(collectionName: "mlbGames") { error in
-////                            if let error = error {
-////                                print("Error deleting collection: \(error)")
-////                            } else {
-////                                print("Successfully deleted collection.")
-////                            }
-////                        }
-//                        let games = try await GameService().getGames()
-//                        GameService().addGames(games: games)
-//                    }
                     
                     homeViewModel.setCurrentWeek()
                     homeViewModel.users = try await UserViewModel().fetchAllUsers()
-//                    homeViewModel.activeUser = homeViewModel.users.first(where: { $0.username == "Brokeee" })
                     
                     homeViewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
                     homeViewModel.activeLeague = homeViewModel.leagues.first
                     
                     homeViewModel.games = try await GameService().fetchGamesFromFirestore().chunked(into: 16)[0]
                     GameService().updateDayType(for: &homeViewModel.games)
+//                    GameService().addGames(games: homeViewModel.games)
                     let alteredGames = homeViewModel.games
                     for game in alteredGames {
                         try await GameService().updateGameScore(game: game)
@@ -95,7 +81,6 @@ struct Home: View {
                     // uncomment to add games
                     
 //                    let games = try await GameService().getGames()
-//                    GameService().addGames(games: games)
                     
                     for bet in homeViewModel.bets {
                         let result = bet.game.betResult(for: bet.betOption)

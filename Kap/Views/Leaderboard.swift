@@ -46,7 +46,6 @@ struct Leaderboard: View {
             VStack(alignment: .center, spacing: 8) {
                 Text("Leaderboard")
                     .font(.system(size: 32, weight: .bold, design: .rounded))
-                
                 menu
             }
             
@@ -58,14 +57,14 @@ struct Leaderboard: View {
             do {
                 week = homeViewModel.currentWeek
                 selectedOption = "Week \(week)"
-                
-//                homeViewModel.setCurrentWeek()
-//                homeViewModel.users = try await UserViewModel().fetchAllUsers()
-//
+
                 try await getUpdatedInfo()
                 
                 users = await LeaderboardViewModel().getLeaderboardData(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, week: week)
                 await updatePointsDifferences()
+                
+                homeViewModel.bets = try await BetViewModel().fetchBets(games: homeViewModel.games)
+                homeViewModel.parlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.games)
                             
                 leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, weeks: [1, 2])
                 

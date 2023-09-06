@@ -35,13 +35,6 @@ struct PlacedBetView: View {
                         HStack {
                             Text(bet.type == .over || bet.type == .under ? "\(bet.game.awayTeam) @ \(bet.game.homeTeam)" : bet.selectedTeam ?? "")
                                 .font(bet.type == .over || bet.type == .under ? .caption2.bold() : .subheadline.bold())
-//                            if homeViewModel.findLiveGame(gameID: bet.game.id) {
-//                                Text("LIVE \(homeViewModel.games.first(where: { $0.id == bet.game.id})?.awayScore ?? "") - \(homeViewModel.games.first(where: { $0.id == bet.game.id})?.homeScore ?? "")")
-//                                    .font(.caption.bold())
-//                                    .foregroundStyle(Color("bean"))
-//                                    .padding(.leading, 4)
-//                                    .padding(.top, 2)
-//                            }
                             Spacer()
                             Text("\(bet.odds > 0 ? "+": "")\(bet.odds)")
                                 .font(.subheadline.bold())
@@ -53,7 +46,7 @@ struct PlacedBetView: View {
                                 .lineLimit(nil)
                                 .fixedSize(horizontal: false, vertical: true)
                             Spacer()
-                            Text("(\(bets.filter({ $0.playerID == authViewModel.currentUser?.id ?? "" }).count)/8)")
+                            Text("(\(bet.betOption.dayType?.rawValue ?? "") \(bets.filter({ $0.betOption.dayType == bet.betOption.dayType && bet.week == homeViewModel.currentWeek }).count)/\(bet.betOption.maxBets ?? 0))")
                                 .font(.caption.bold())
                                 .foregroundStyle(.secondary)
                         }
