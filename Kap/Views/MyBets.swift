@@ -231,7 +231,7 @@ struct MyBets: View {
                         .cornerRadius(4)
                         .padding(.leading, 24)
                     
-                    ForEach(filteredBets, id: \.id) { bet in
+                    ForEach(filteredBets.sorted(by: { $0.game.date < $1.game.date }), id: \.id) { bet in
                         PlacedBetView(bet: bet, bets: $bets)
                     }
                 }
@@ -248,7 +248,9 @@ struct MyBets: View {
     private func fetchData(_ value: Int? = nil) {
         Task {
             do {
-                let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.games)
+                var fetchedGames = try await GameService().fetchGamesFromFirestore().chunked(into: 16)[0]
+                GameService().updateDayType(for: &fetchedGames)
+                let fetchedBets = try await BetViewModel().fetchBets(games: fetchedGames)
                 bets = fetchedBets.filter({ $0.playerID == authViewModel.currentUser?.id && $0.week == week })
                 
                 let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.games)

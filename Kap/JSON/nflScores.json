@@ -1,23 +1,14 @@
 [
     {
-      "id": "42db668449664943833b5c04a583328a",
-      "sport_key": "americanfootball_nfl",
-      "sport_title": "NFL",
-      "commence_time": "2023-09-08T00:21:00Z",
-      "completed": true,
-      "home_team": "Kansas City Chiefs",
-      "away_team": "Detroit Lions",
-      "scores": [
-        {
-          "name": "Kansas City Chiefs",
-          "score": "18"
-        },
-        {
-          "name": "Detroit Lions",
-          "score": "32"
-        }
-      ],
-      "last_update": null
+        "id": "42db668449664943833b5c04a583328a",
+        "sport_key": "americanfootball_nfl",
+        "sport_title": "NFL",
+        "commence_time": "2023-09-08T00:21:00Z",
+        "completed": true,
+        "home_team": "Kansas City Chiefs",
+        "away_team": "Detroit Lions",
+        "scores": null,,
+        "last_update": null
     },
     {
         "id": "175d9f07fc52d99b21bc772b1499c3d8",
@@ -27,16 +18,7 @@
         "completed": true,
         "home_team": "Washington Commanders",
         "away_team": "Arizona Cardinals",
-        "scores": [
-          {
-            "name": "Washington Commanders",
-            "score": "31"
-          },
-          {
-            "name": "Arizona Cardinals",
-            "score": "12"
-          }
-        ],
+        "scores": null,,
         "last_update": null
     },
     {

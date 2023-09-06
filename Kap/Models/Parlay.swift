@@ -9,7 +9,7 @@ import Foundation
 
 class Parlay {
     let id: String
-    let bets: [Bet]
+    var bets: [Bet]
     var totalOdds: Int
     var result: BetResult
     var totalPoints: Double

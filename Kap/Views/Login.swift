@@ -11,13 +11,14 @@ struct Login: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
 
-    @State private var email = "remy@loch.io"
-    @State private var password = "remyrat"
+    @State private var email = ""
+    @State private var password = ""
     @State private var username = ""
     @State private var fullName = ""
     
     @State private var login = true
     @State private var loginFailed = false
+    @State private var loggingIn = false
     @Binding var loggedIn: Bool
     
     var body: some View {
@@ -83,6 +84,7 @@ struct Login: View {
             }
             
             Button {
+                loggingIn.toggle()
                 authViewModel.login(withEmail: email.lowercased(), password: password) { userID in
                     if userID != nil {
 //                        self.homeViewModel.activeUserID = validUserID
@@ -96,10 +98,10 @@ struct Login: View {
             } label: {
                 Text("Login")
                     .bold()
-                    .foregroundStyle(Color("lion"))
+                    .foregroundStyle(loggingIn ? Color("oW") : Color("lion"))
                     .padding(.horizontal, 20)
                     .padding(.vertical, 8)
-                    .background(Color("oW"))
+                    .background(loggingIn ? Color("lion") : Color("oW"))
                     .cornerRadius(8)
             }
             .autocorrectionDisabled()

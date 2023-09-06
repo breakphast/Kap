@@ -8,74 +8,95 @@
 import SwiftUI
 
 struct Betslip: View {
-    let results: [Image] = [Image(systemName: "checkmark"), Image(systemName: "x.circle")]
-    @EnvironmentObject var homeViewModel: HomeViewModel
-    @EnvironmentObject var authViewModel: AuthViewModel
-    
-    @Environment(\.dismiss) var dismiss
-    
     private let dismissThreshold: CGFloat = 100.0
+    
     @State private var offset: CGFloat = 0.0
     @State private var shouldDismiss = false
     @State private var bets: [Bet] = []
     @State private var parlays: [Parlay] = []
+    @State private var parlay: Parlay?
+    
+    @EnvironmentObject var homeViewModel: HomeViewModel
+    @EnvironmentObject var authViewModel: AuthViewModel
+    @Environment(\.dismiss) var dismiss
     
     var body: some View {
         ZStack {
             Color("onyx").ignoresSafeArea()
             
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 20) {
-                    ForEach(homeViewModel.selectedBets, id: \.id) { bet in
-                        BetView(bets: $bets, bet: bet)
-                    }
-                    
-                    ForEach(homeViewModel.activeParlays, id: \.id) { parlay in
-                        ParlayView(parlays: $parlays, parlay: parlay)
-                    }
-                }
-                .padding(.top, 20)
-                .navigationBarBackButtonHidden()
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 18, weight: .bold, design: .rounded))
-                            .onTapGesture {
-                                dismiss()
-                            }
-                    }
-                }
+                contentStack
             }
         }
         .task {
             await fetchData()
+            if let lay = homeViewModel.activeParlays.first {
+                parlay = lay
+            }
         }
-        .gesture(
-            DragGesture()
-                .onChanged { value in
-                    // Only swipe from the leading edge
-                    if value.startLocation.x < 50 {
-                        self.offset = value.translation.width
-                    }
-                }
-                .onEnded { value in
-                    // Check if swipe distance is more than the threshold
-                    if value.translation.width > dismissThreshold {
-                        shouldDismiss = true
-                    } else {
-                        offset = 0
-                    }
-                }
-        )
+        .gesture(swipeGesture)
         .onChange(of: shouldDismiss, perform: { newValue in
+            withAnimation { dismiss() }
+        })
+        .onChange(of: homeViewModel.selectedBets.count, perform: { newValue in
             withAnimation {
-                dismiss()
+                guard newValue >= 2 else { return }
+                updateParlay()
             }
         })
         .toolbar {
             ToolbarItem(placement: .principal) {
                 Text("Betslip")
                     .font(.system(size: 32, weight: .bold, design: .rounded))
+            }
+        }
+    }
+    
+    private func updateParlay() {
+        self.parlay?.bets = homeViewModel.selectedBets
+        if calculateParlayOdds(bets: homeViewModel.selectedBets) < 400 {
+            parlay = nil
+            homeViewModel.activeParlays = []
+        }
+    }
+    
+    private var swipeGesture: some Gesture {
+        DragGesture()
+            .onChanged { value in
+                // Only swipe from the leading edge
+                if value.startLocation.x < 50 {
+                    self.offset = value.translation.width
+                }
+            }
+            .onEnded { value in
+                // Check if swipe distance is more than the threshold
+                if value.translation.width > dismissThreshold {
+                    shouldDismiss = true
+                } else {
+                    offset = 0
+                }
+            }
+    }
+    
+    var contentStack: some View {
+        VStack(spacing: 20) {
+            ForEach(homeViewModel.selectedBets, id: \.id) { bet in
+                BetView(bets: $bets, bet: bet)
+            }
+            
+            if parlay != nil {
+                ParlayView(parlays: $parlays, parlay: parlay!)
+            }
+        }
+        .padding(.top, 20)
+        .navigationBarBackButtonHidden()
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .onTapGesture {
+                        dismiss()
+                    }
             }
         }
     }
@@ -130,10 +151,10 @@ struct BetView: View {
         .padding(.horizontal, 20)
         .shadow(radius: 10)
         .onAppear {
-            isValid = bets.filter({ $0.betOption.game.id == bet.game.id }).count < 1 && bets.count < 8
+            isValid = bets.filter({ $0.betOption.game.id == bet.game.id }).count < 1 && bets.count < 10
         }
         .onChange(of: bets.count) { newValue in
-            isValid = bets.filter({ $0.betOption.game.id == bet.game.id }).count < 1 && bets.count < 8
+            isValid = bets.filter({ $0.betOption.game.id == bet.game.id }).count < 1 && bets.count < 10
         }
     }
     
@@ -172,7 +193,7 @@ struct BetView: View {
                     .lineLimit(nil)
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer()
-                Text("(\(bets.filter({ $0.playerID == authViewModel.currentUser?.id ?? "" }).count)/8)")
+                Text("(\(bet.betOption.dayType?.rawValue ?? "") \(bets.filter({ $0.betOption.dayType == bet.betOption.dayType && bet.week == homeViewModel.currentWeek }).count)/\(bet.betOption.maxBets ?? 0))")
                     .font(.caption.bold())
                     .foregroundStyle(.secondary)
             }
