@@ -133,10 +133,12 @@ class BetViewModel {
         }
     }
     
-    func updateBetResult(bet: Bet) {
+    func updateBetResult(bet: Bet, result: BetResult) {
+        guard bet.result == .pending else { return }
+        
         let newbet = db.collection("bets").document(bet.id)
         newbet.updateData([
-            "result": bet.game.betResult(for: bet.betOption).rawValue
+            "result": result.rawValue
         ]) { err in
             if let err = err {
                 print("Error updating document: \(err)")

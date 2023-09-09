@@ -58,7 +58,7 @@ struct Leaderboard: View {
                 week = homeViewModel.currentWeek
                 selectedOption = "Week \(week)"
 
-                try await getUpdatedInfo()
+//                try await getUpdatedInfo()
                 
                 users = await LeaderboardViewModel().getLeaderboardData(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, week: week)
                 await updatePointsDifferences()
@@ -87,14 +87,14 @@ struct Leaderboard: View {
                 bigMovers = LeaderboardViewModel().bigMover(from: homeViewModel.leaderboards[0], to: homeViewModel.leaderboards[1])
             }
         })
-        .onChange(of: self.homeViewModel.bets.filter { $0.result == .pending }.count, perform: { newValue in
-            Task {
-                try await getUpdatedInfo()
-                leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: homeViewModel.activeLeague!.id!, users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, weeks: [homeViewModel.currentWeek - 1, homeViewModel.currentWeek])
-                
-                bigMovers = LeaderboardViewModel().bigMover(from: homeViewModel.leaderboards[0], to: homeViewModel.leaderboards[1])
-            }
-        })
+//        .onChange(of: self.homeViewModel.bets.filter { $0.result == .pending }.count, perform: { newValue in
+//            Task {
+////                try await getUpdatedInfo()
+//                leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: homeViewModel.activeLeague!.id!, users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, weeks: [homeViewModel.currentWeek - 1, homeViewModel.currentWeek])
+//
+//                bigMovers = LeaderboardViewModel().bigMover(from: homeViewModel.leaderboards[0], to: homeViewModel.leaderboards[1])
+//            }
+//        })
     }
     
     var scrollViewContent: some View {
@@ -162,7 +162,7 @@ struct Leaderboard: View {
         for bet in homeViewModel.bets {
             let result = bet.game.betResult(for: bet.betOption)
             if result == .pending {
-                BetViewModel().updateBetResult(bet: bet)
+                BetViewModel().updateBetResult(bet: bet, result: result)
             }
         }
     }

@@ -57,16 +57,16 @@ struct Home: View {
                     homeViewModel.games = try await GameService().fetchGamesFromFirestore().chunked(into: 16)[0]
                     GameService().updateDayType(for: &homeViewModel.games)
 //                    GameService().addGames(games: homeViewModel.games)
-                    let alteredGames = homeViewModel.games
-                    for game in alteredGames {
-                        try await GameService().updateGameScore(game: game)
-//                        if game.completed {
-//                            GameService().addGameToArchive(game: game)
-//                            try await homeViewModel.deleteGame(game: game)
-//                            print(game.documentId)
-//                        }
-                    }
-                    homeViewModel.games = alteredGames
+//                    let alteredGames = homeViewModel.games
+//                    for game in alteredGames {
+//                        try await GameService().updateGameScore(game: game)
+////                        if game.completed {
+////                            GameService().addGameToArchive(game: game)
+////                            try await homeViewModel.deleteGame(game: game)
+////                            print(game.documentId)
+////                        }
+//                    }
+//                    homeViewModel.games = alteredGames
                     
                     homeViewModel.bets = try await BetViewModel().fetchBets(games: homeViewModel.games)
                     homeViewModel.parlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.games)
@@ -82,12 +82,14 @@ struct Home: View {
                     
 //                    let games = try await GameService().getGames()
                     
-                    for bet in homeViewModel.bets {
-                        let result = bet.game.betResult(for: bet.betOption)
-                        if result == .pending {
-                            BetViewModel().updateBetResult(bet: bet)
-                        }
-                    }
+//                    for bet in homeViewModel.bets {
+//                        guard bet.result == .pending else { return }
+//                        
+//                        let result = bet.game.betResult(for: bet.betOption)
+//                        if result != .pending {
+//                            BetViewModel().updateBetResult(bet: bet, result: result)
+//                        }
+//                    }
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                         withAnimation(.linear) {
                             self.showingSplashScreen = false

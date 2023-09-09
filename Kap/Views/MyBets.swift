@@ -50,7 +50,7 @@ struct MyBets: View {
             for bet in homeViewModel.bets {
                 let result = bet.game.betResult(for: bet.betOption)
                 if result != .pending {
-                    BetViewModel().updateBetResult(bet: bet)
+                    BetViewModel().updateBetResult(bet: bet, result: result)
                     
                 }
             }
@@ -61,11 +61,13 @@ struct MyBets: View {
             selectedOption = "Week \(week)"
             fetchData()
             for bet in homeViewModel.bets {
+                guard bet.result == .pending else { return }
+                
                 if let matchedGame = homeViewModel.games.first(where: { $0.id == bet.game.id }) {
                     let result = bet.game.betResult(for: bet.betOption)
                     if result != .pending {
                         if bet.result == .pending {
-                            BetViewModel().updateBetResult(bet: bet)
+                            BetViewModel().updateBetResult(bet: bet, result: result)
                         }
                     }
                 }

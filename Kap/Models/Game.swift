@@ -218,32 +218,31 @@ extension Game {
             }
             
         case .spread:
-            let spread = option.spread
+            guard let spread = option.spread else { return .pending }
+
+            guard let homeIntScore = Int(homeScore), let awayIntScore = Int(awayScore) else { return .pending }
+            
+            let resultScore: Int
             if option.selectedTeam == homeTeam {
-                let resultScore = Int(homeScore)! - Int(awayScore)!
-                if Double(resultScore) > spread ?? 0 {
-                    return .win
-                } else if Double(resultScore) < spread ?? 0 {
-                    return .loss
-                } else {
-                    return .push
-                }
+                resultScore = homeIntScore - awayIntScore
             } else {
-                let resultScore = Int(awayScore)! - Int(homeScore)!
-                if Double(resultScore) > spread ?? 0 {
-                    return .win
-                } else if Double(resultScore) < spread ?? 0 {
-                    return .loss
-                } else {
-                    return .push
-                }
+                resultScore = awayIntScore - homeIntScore
             }
+
+            if Double(resultScore) < spread {
+                return .win
+            } else if Double(resultScore) > spread {
+                return .loss
+            } else {
+                return .push
+            }
+
             
         case .over:
-            return Double(homeScore + awayScore)! > option.over ? .win : .loss
+            return Double(homeScore + awayScore)! < option.over ? .win : .loss
             
         case .under:
-            return Double(homeScore + awayScore)! < option.under ? .win : .loss
+            return Double(homeScore + awayScore)! > option.under ? .win : .loss
         }
     }
 }
