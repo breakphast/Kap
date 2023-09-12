@@ -13,6 +13,7 @@ class HomeViewModel: ObservableObject {
     @Published var users: [User] = []
     @Published var leagues: [League] = []
     @Published var games: [Game] = []
+    @Published var allGames: [Game] = []
     @Published var bets: [Bet] = []
     @Published var generatedBets: [Bet] = []
     @Published var parlays: [Parlay] = []

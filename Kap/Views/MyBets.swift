@@ -47,31 +47,31 @@ struct MyBets: View {
         .fontDesign(.rounded)
         .onChange(of: bets.count, perform: { _ in
             fetchData()
-            for bet in homeViewModel.bets {
-                let result = bet.game.betResult(for: bet.betOption)
-                if result != .pending {
-                    BetViewModel().updateBetResult(bet: bet, result: result)
-                    
-                }
-            }
+//            for bet in homeViewModel.bets {
+//                let result = bet.game.betResult(for: bet.betOption)
+//                if result != .pending {
+//                    BetViewModel().updateBetResult(bet: bet, result: result)
+//                    
+//                }
+//            }
             fetchData()
         })
         .task {
             week = homeViewModel.currentWeek
             selectedOption = "Week \(week)"
             fetchData()
-            for bet in homeViewModel.bets {
-                guard bet.result == .pending else { return }
-                
-                if let matchedGame = homeViewModel.games.first(where: { $0.id == bet.game.id }) {
-                    let result = bet.game.betResult(for: bet.betOption)
-                    if result != .pending {
-                        if bet.result == .pending {
-                            BetViewModel().updateBetResult(bet: bet, result: result)
-                        }
-                    }
-                }
-            }
+//            for bet in homeViewModel.bets {
+//                guard bet.result == .pending else { return }
+//
+//                if let matchedGame = homeViewModel.games.first(where: { $0.id == bet.game.id }) {
+//                    let result = bet.game.betResult(for: bet.betOption)
+//                    if result != .pending {
+//                        if bet.result == .pending {
+//                            BetViewModel().updateBetResult(bet: bet, result: result)
+//                        }
+//                    }
+//                }
+//            }
             fetchData()
             for parlay in parlays {
                 if parlay.result == .pending {
@@ -133,11 +133,11 @@ struct MyBets: View {
                     selectedOption = "Week 1"
                     week = 1
                     Task {
-                        let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.games)
+                        let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
                         bets = fetchedBets.filter({ $0.playerID == authViewModel.currentUser?.id })
                         bets = bets.filter({ $0.week == 1 })
                         
-                        let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.games)
+                        let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
                         parlays = fetchedParlays.filter({ $0.id == $0.playerID + String(1) })
                         parlays = parlays.filter({ $0.week == 1 })
                         
@@ -150,7 +150,7 @@ struct MyBets: View {
                     selectedOption = "Week 2"
                     week = 2
                     Task {
-                        let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.games)
+                        let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
                         bets = fetchedBets.filter({ $0.playerID == authViewModel.currentUser?.id })
                         bets = bets.filter({ $0.week == 2 })
                         

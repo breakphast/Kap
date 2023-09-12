@@ -27,7 +27,7 @@ struct Leaderboard: View {
     private func fetchData(_ value: Int? = nil) {
         Task {
             do {
-                let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.games)
+                let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
                 bets = fetchedBets.filter({ $0.playerID == authViewModel.currentUser?.id && $0.week == week })
                 
                 let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.games)
@@ -63,8 +63,8 @@ struct Leaderboard: View {
                 users = await LeaderboardViewModel().getLeaderboardData(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, week: week)
                 await updatePointsDifferences()
                 
-                homeViewModel.bets = try await BetViewModel().fetchBets(games: homeViewModel.games)
-                homeViewModel.parlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.games)
+                homeViewModel.bets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
+                homeViewModel.parlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
                             
                 leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, weeks: [1, 2])
                 
@@ -148,14 +148,14 @@ struct Leaderboard: View {
     func getUpdatedInfo() async throws {
         homeViewModel.games = try await GameService().fetchGamesFromFirestore().chunked(into: 16)[0]
         GameService().updateDayType(for: &homeViewModel.games)
-        let alteredGames = homeViewModel.games
-        for game in alteredGames {
-            try await GameService().updateGameScore(game: game)
-        }
-        homeViewModel.games = alteredGames
+//        let alteredGames = homeViewModel.games
+//        for game in alteredGames {
+//            try await GameService().updateGameScore(game: game)
+//        }
+//        homeViewModel.games = alteredGames
 
-        homeViewModel.bets = try await BetViewModel().fetchBets(games: homeViewModel.games)
-        homeViewModel.parlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.games)
+        homeViewModel.bets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
+        homeViewModel.parlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
 
         homeViewModel.leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, weeks: [homeViewModel.currentWeek - 1, homeViewModel.currentWeek])
 
@@ -211,6 +211,7 @@ struct Leaderboard: View {
             .padding(.vertical, 8)
             .background(RoundedRectangle(cornerRadius: 10).fill(Color.gray.opacity(0.2)))
         }
+        .disabled(true)
     }
     
     func userDetailHStack(for user: User, index: Int) -> some View {

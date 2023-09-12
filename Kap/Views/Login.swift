@@ -10,9 +10,12 @@ import SwiftUI
 struct Login: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
+    @AppStorage("email") private var emailAddy = ""
+    @AppStorage("password") private var pass = ""
 
-    @State private var email = ""
-    @State private var password = ""
+
+    @State private var email = UserDefaults.standard.string(forKey: "email")
+    @State private var password = UserDefaults.standard.string(forKey: "password")
     @State private var username = ""
     @State private var fullName = ""
     
@@ -66,7 +69,7 @@ struct Login: View {
                     .frame(height: 50)
                     .shadow(color: .black.opacity(0.3), radius: 8, x: 2, y: 2)
                 
-                TextField("Email", text: $email)
+                TextField("Email", text: $emailAddy)
                     .font(.title.bold().width(.condensed))
                     .foregroundStyle(Color("oW"))
                     .padding()
@@ -77,7 +80,7 @@ struct Login: View {
                     .frame(height: 50)
                     .shadow(color: .black.opacity(0.3), radius: 8, x: 2, y: 2)
                 
-                SecureField("Password", text: $password)
+                SecureField("Password", text: $pass)
                     .font(.title.bold().width(.condensed))
                     .foregroundStyle(Color("oW"))
                     .padding()
@@ -85,7 +88,7 @@ struct Login: View {
             
             Button {
                 loggingIn.toggle()
-                authViewModel.login(withEmail: email.lowercased(), password: password) { userID in
+                authViewModel.login(withEmail: emailAddy.lowercased(), password: pass) { userID in
                     if userID != nil {
 //                        self.homeViewModel.activeUserID = validUserID
                         loggedIn.toggle()
@@ -119,7 +122,7 @@ struct Login: View {
                     .frame(height: 50)
                     .shadow(color: .black.opacity(0.3), radius: 8, x: 2, y: 2)
                 
-                TextField("Email", text: $email)
+                TextField("Email", text: $emailAddy)
                     .font(.title.bold().width(.condensed))
                     .foregroundStyle(Color("oW"))
                     .padding()
@@ -130,7 +133,7 @@ struct Login: View {
                     .frame(height: 50)
                     .shadow(color: .black.opacity(0.3), radius: 8, x: 2, y: 2)
                 
-                SecureField("Password", text: $password)
+                SecureField("Password", text: $pass)
                     .font(.title.bold().width(.condensed))
                     .foregroundStyle(Color("oW"))
                     .padding()
@@ -159,7 +162,7 @@ struct Login: View {
             }
             
             Button("Register") {
-                AuthViewModel().register(withEmail: email, password: password, username: username, fullName: fullName)
+                AuthViewModel().register(withEmail: emailAddy, password: pass, username: username, fullName: fullName)
                 login = true
 //                AuthViewModel().login(withEmail: email, password: password) { userID in
 //                    homeViewModel.activeUserID = userID ?? ""

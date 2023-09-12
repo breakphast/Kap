@@ -103,11 +103,11 @@ struct Betslip: View {
     
     private func fetchData() async {
         do {
-            let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.games)
+            let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
             bets = fetchedBets.filter({ $0.playerID == authViewModel.currentUser?.id })
             bets = bets.filter({ $0.week == homeViewModel.currentWeek })
             
-            let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.games)
+            let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
             parlays = fetchedParlays.filter({ $0.playerID == authViewModel.currentUser?.id })
             parlays = parlays.filter({ $0.week == homeViewModel.currentWeek })
         } catch {

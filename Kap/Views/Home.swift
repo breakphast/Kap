@@ -43,6 +43,7 @@ struct Home: View {
             }
             .tint(Color("oW"))
             .preferredColorScheme(.dark)
+            .background(.ultraThinMaterial)
             .task {
                 do {
                     let activeDate = homeViewModel.formatter.string(from: Date())
@@ -54,8 +55,12 @@ struct Home: View {
                     homeViewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
                     homeViewModel.activeLeague = homeViewModel.leagues.first
                     
-                    homeViewModel.games = try await GameService().fetchGamesFromFirestore().chunked(into: 16)[0]
+                    homeViewModel.allGames = try await GameService().fetchGamesFromFirestore().chunked(into: 16)[0]
+                    GameService().updateDayType(for: &homeViewModel.allGames)
+                    
+                    homeViewModel.games = try await GameService().fetchGamesFromFirestore().chunked(into: 16)[1]
                     GameService().updateDayType(for: &homeViewModel.games)
+                    
 //                    GameService().addGames(games: homeViewModel.games)
 //                    let alteredGames = homeViewModel.games
 //                    for game in alteredGames {
@@ -68,23 +73,21 @@ struct Home: View {
 //                    }
 //                    homeViewModel.games = alteredGames
                     
-                    homeViewModel.bets = try await BetViewModel().fetchBets(games: homeViewModel.games)
-                    homeViewModel.parlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.games)
+                    homeViewModel.bets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
+                    homeViewModel.parlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
                     for parlay in homeViewModel.parlays {
                         if parlay.result == .pending  {
                             BetViewModel().updateParlay(parlay: parlay)
                         }
                     }
-                    homeViewModel.parlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.games)
+                    homeViewModel.parlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
                     homeViewModel.leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, weeks: [homeViewModel.currentWeek - 1, homeViewModel.currentWeek])
-                    
-                    // uncomment to add games
                     
 //                    let games = try await GameService().getGames()
                     
 //                    for bet in homeViewModel.bets {
-//                        guard bet.result == .pending else { return }
-//                        
+////                        guard bet.result == .pending else { return }
+//
 //                        let result = bet.game.betResult(for: bet.betOption)
 //                        if result != .pending {
 //                            BetViewModel().updateBetResult(bet: bet, result: result)

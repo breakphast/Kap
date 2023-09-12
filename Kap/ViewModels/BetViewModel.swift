@@ -147,7 +147,6 @@ class BetViewModel {
                 
             }
         } 
-        print(bet.game.betResult(for: bet.betOption).rawValue)
     }
     
     func deleteBet(betID: String) async throws {

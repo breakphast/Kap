@@ -288,7 +288,7 @@ class GameService {
     }
     
     func fetchNFLOddsData() async throws -> Data {
-        let urlString = "https://api.the-odds-api.com/v4/sports/americanfootball_nfl/odds/?apiKey=bd9ebc86e4cbe723a8d50d39ab04cc13&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=fanduel"
+        let urlString = "https://api.the-odds-api.com/v4/sports/americanfootball_nfl/odds/?apiKey=e2f24898dae0ba3963da18e6e03456a7&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=fanduel"
         
         guard let url = URL(string: urlString) else {
             throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
@@ -303,7 +303,7 @@ class GameService {
     }
     
     func fetchMLBOddsData() async throws -> Data {
-        let urlString = "https://api.the-odds-api.com/v4/sports/baseball_mlb/odds/?apiKey=bd9ebc86e4cbe723a8d50d39ab04cc13&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=fanduel"
+        let urlString = "https://api.the-odds-api.com/v4/sports/baseball_mlb/odds/?apiKey=e2f24898dae0ba3963da18e6e03456a7&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=fanduel"
         
         guard let url = URL(string: urlString) else {
             throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
@@ -318,7 +318,7 @@ class GameService {
     }
     
     private func fetchMLBScoresData() async throws -> Data {
-        let urlString = "https://api.the-odds-api.com/v4/sports/baseball_mlb/scores/?daysFrom=1&apiKey=bd9ebc86e4cbe723a8d50d39ab04cc13"
+        let urlString = "https://api.the-odds-api.com/v4/sports/baseball_mlb/scores/?daysFrom=1&apiKey=e2f24898dae0ba3963da18e6e03456a7"
         
         guard let url = URL(string: urlString) else {
             throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
@@ -333,7 +333,7 @@ class GameService {
     }
     
     private func fetchNFLScoresData() async throws -> Data {
-        let urlString = "https://api.the-odds-api.com/v4/sports/americanfootball_nfl/scores/?daysFrom=1&apiKey=bd9ebc86e4cbe723a8d50d39ab04cc13"
+        let urlString = "https://api.the-odds-api.com/v4/sports/americanfootball_nfl/scores/?daysFrom=1&apiKey=e2f24898dae0ba3963da18e6e03456a7"
         
         guard let url = URL(string: urlString) else {
             throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])

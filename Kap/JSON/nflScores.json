@@ -15,19 +15,10 @@
         "sport_key": "americanfootball_nfl",
         "sport_title": "NFL",
         "commence_time": "2023-09-10T17:00:00Z",
-        "completed": true,
+        "completed": false,
         "home_team": "Washington Commanders",
         "away_team": "Arizona Cardinals",
-        "scores": [
-            {
-                "name": "Washington Commanders",
-                "score": "31"
-            },
-            {
-                "name": "Arizona Cardinals",
-                "score": "12"
-            }
-        ],
+        "scores": null,
         "last_update": null
     },
     {
@@ -35,19 +26,10 @@
         "sport_key": "americanfootball_nfl",
         "sport_title": "NFL",
         "commence_time": "2023-09-10T17:00:00Z",
-        "completed": true,
+        "completed": false,
         "home_team": "Atlanta Falcons",
         "away_team": "Carolina Panthers",
-        "scores": [
-            {
-                "name": "Atlanta Falcons",
-                "score": "32"
-            },
-            {
-                "name": "Carolina Panthers",
-                "score": "3"
-            }
-        ],
+        "scores": null,
         "last_update": null
     },
     {
@@ -55,19 +37,10 @@
         "sport_key": "americanfootball_nfl",
         "sport_title": "NFL",
         "commence_time": "2023-09-10T17:00:00Z",
-        "completed": true,
+        "completed": false,
         "home_team": "Baltimore Ravens",
         "away_team": "Houston Texans",
-        "scores": [
-            {
-                "name": "Baltimore Ravens",
-                "score": "12"
-            },
-            {
-                "name": "Houston Texans",
-                "score": "24"
-            }
-        ],
+        "scores": null,
         "last_update": null
     },
     {

@@ -87,13 +87,15 @@ class Game {
         self.under = underTemp
         self.completed = false
         if let scores = gameElement.scores {
-            for score in scores {
-                if score.name == self.homeTeam {
-                    self.homeScore = score.score
-                } else if score.name == self.awayTeam {
-                    self.awayScore = score.score
-                }
-            }
+            self.homeScore = scores[0].score
+            self.awayScore = scores[1].score
+//            for score in scores {
+//                if score.name == self.homeTeam {
+//                    self.homeScore = score.score
+//                } else if score.name == self.awayTeam {
+//                    self.awayScore = score.score
+//                }
+//            }
         }
         self.homeSpreadPriceTemp = homeSpreadPriceTemp
         self.awaySpreadPriceTemp = awaySpreadPriceTemp
@@ -208,13 +210,14 @@ extension Game {
         guard completed, let homeScore = self.homeScore, let awayScore = self.awayScore else {
             return .pending
         }
-        
         switch option.betType {
         case .moneyline:
+            guard let homeIntScore = Int(homeScore), let awayIntScore = Int(awayScore) else { return .pending }
+            
             if option.selectedTeam == homeTeam {
-                return homeScore > awayScore ? .win : .loss
+                return homeIntScore > awayIntScore ? .win : .loss
             } else {
-                return awayScore > homeScore ? .win : .loss
+                return awayIntScore > homeIntScore ? .win : .loss
             }
             
         case .spread:
@@ -223,7 +226,7 @@ extension Game {
             guard let homeIntScore = Int(homeScore), let awayIntScore = Int(awayScore) else { return .pending }
             
             let resultScore: Int
-            if option.selectedTeam == homeTeam {
+            if option.selectedTeam == awayTeam {
                 resultScore = homeIntScore - awayIntScore
             } else {
                 resultScore = awayIntScore - homeIntScore
@@ -239,10 +242,14 @@ extension Game {
 
             
         case .over:
-            return Double(homeScore + awayScore)! < option.over ? .win : .loss
+            guard let homeIntScore = Int(homeScore), let awayIntScore = Int(awayScore) else { return .pending }
+            
+            return Double(homeIntScore + awayIntScore) > option.over ? .win : .loss
             
         case .under:
-            return Double(homeScore + awayScore)! > option.under ? .win : .loss
+            guard let homeIntScore = Int(homeScore), let awayIntScore = Int(awayScore) else { return .pending }
+            
+            return Double(homeIntScore + awayIntScore) < option.under ? .win : .loss
         }
     }
 }
