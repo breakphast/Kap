@@ -14,20 +14,30 @@ struct Profile: View {
     @Binding var loggedIn: Bool
     
     var body: some View {
-        VStack {
-            Text(user?.username ?? "")
-                .task {
-                    UserService().fetchUser(withUid: authViewModel.currentUser?.id ?? "", completion: { user in
-                        self.user = user
-                    })
-                }
+        ZStack {
+            Color("onyx").ignoresSafeArea()
             
-            Button("Sign Out") {
-                authViewModel.signOut()
-                homeViewModel.activeUserID = ""
-                loggedIn = false
+            VStack(spacing: 40) {
+                Text(user?.username ?? "")
+                    .bold()
+                    .task {
+                        UserService().fetchUser(withUid: authViewModel.currentUser?.id ?? "", completion: { user in
+                            self.user = user
+                        })
+                    }
+                
+                Button("Sign Out") {
+                    authViewModel.signOut()
+                    homeViewModel.activeUserID = ""
+                    loggedIn = false
+                }
+                .font(.title2)
+                .bold()
+                .foregroundStyle(Color("onyx"))
+                .buttonStyle(.borderedProminent)
             }
         }
+        .preferredColorScheme(.dark)
     }
 }
 

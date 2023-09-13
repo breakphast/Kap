@@ -121,6 +121,7 @@ struct BetView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @State var isValid = false
     @State var isPlaced = false
+    @State private var maxBets: Int = 0
     @Environment(\.dismiss) var dismiss
     @Binding var bets: [Bet]
     let bet: Bet
@@ -150,8 +151,14 @@ struct BetView: View {
         .cornerRadius(20)
         .padding(.horizontal, 20)
         .shadow(radius: 10)
-        .onAppear {
+        .task {
             isValid = bets.filter({ $0.betOption.game.id == bet.game.id }).count < 1 && bets.count < 10
+            switch DayType(rawValue: bet.game.dayType ?? "") {
+            case .tnf, .mnf, .snf:
+                self.maxBets = 1
+            default:
+                self.maxBets = 7
+            }
         }
         .onChange(of: bets.count) { newValue in
             isValid = bets.filter({ $0.betOption.game.id == bet.game.id }).count < 1 && bets.count < 10
@@ -193,7 +200,7 @@ struct BetView: View {
                     .lineLimit(nil)
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer()
-                Text("(\(bet.betOption.dayType?.rawValue ?? "") \(bets.filter({ $0.betOption.dayType == bet.betOption.dayType && bet.week == homeViewModel.currentWeek }).count)/\(bet.betOption.maxBets ?? 0))")
+                Text("(\(bet.betOption.game.dayType ?? "") \(bets.filter({ $0.betOption.game.dayType ?? "" == bet.betOption.game.dayType ?? "" && bet.week == homeViewModel.currentWeek }).count)/\(maxBets))")
                     .font(.caption.bold())
                     .foregroundStyle(.secondary)
             }
@@ -210,7 +217,7 @@ struct BetView: View {
                     if !bets.contains(where: { $0.game.id == placedBet.game.id }) {
                         try await BetViewModel().addBet(bet: placedBet, playerID: authViewModel.currentUser?.id ?? "")
                         
-                        let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.games)
+                        let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
                         let newBets = fetchedBets.filter({ $0.playerID == authViewModel.currentUser?.id})
                         bets = newBets.filter({ $0.week == homeViewModel.currentWeek })
                         

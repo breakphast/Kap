@@ -1,5 +1,5 @@
 //
-//  HomeViewModel.swift
+//  swift
 //  Kap
 //
 //  Created by Desmond Fitch on 7/13/23.
@@ -24,7 +24,7 @@ class HomeViewModel: ObservableObject {
     
     @Published var activePlayer: Player?
     @Published var activeUserID: String
-    @Published var currentWeek = 1
+    @Published var currentWeek = 2
     @Published var activeLeague: League?
     @Published var currentDate: String = ""
     
@@ -101,17 +101,6 @@ class HomeViewModel: ObservableObject {
             }
         }
     }
-
-//    func findLiveGame(gameID: String) -> Bool {
-//        print(gameID)
-//        let game = games.first(where: { $0.id == gameID })
-//        var booleo = false
-//        if game != nil {
-//            print("got it")
-//            booleo = true
-//        }
-//        return booleo
-//    }
     
     func updateDate(date: String) {
         let db = Firestore.firestore()
@@ -124,6 +113,59 @@ class HomeViewModel: ObservableObject {
             } else {
                 print("Document successfully updated")
             }
+        }
+    }
+    
+    func fetchEssentials() async {
+        do {
+            let fetchedUsers = try await UserViewModel().fetchAllUsers()
+            let fetchedLeagues = try await LeagueViewModel().fetchAllLeagues()
+            let fetchedAllGames = try await GameService().fetchGamesFromFirestore()
+            let fetchedGames = try await GameService().fetchGamesFromFirestore().chunked(into: 16)[Int(currentWeek) - 1]
+            let fetchedBets = try await BetViewModel().fetchBets(games: fetchedAllGames)
+            let fetchedParlays = try await ParlayViewModel().fetchParlays(games: fetchedAllGames)
+            
+            DispatchQueue.main.async {
+                self.users = fetchedUsers
+                self.leagues = fetchedLeagues
+                self.activeLeague = fetchedLeagues.first
+                self.allGames = fetchedAllGames
+                self.games = fetchedGames
+                self.bets = fetchedBets
+                self.parlays = fetchedParlays
+            }
+        } catch {
+            print("Failed")
+        }
+    }
+
+    
+    func updateAndFetch() async {
+        do {
+            let alteredGames = games
+            for game in alteredGames {
+                try await GameService().updateGameScore(game: game)
+            }
+            games = alteredGames
+            
+            bets = try await BetViewModel().fetchBets(games: allGames)
+            parlays = try await ParlayViewModel().fetchParlays(games: allGames)
+            for parlay in parlays {
+                if parlay.result == .pending  {
+                    BetViewModel().updateParlay(parlay: parlay)
+                }
+            }
+            parlays = try await ParlayViewModel().fetchParlays(games: allGames)
+            for bet in bets {
+                guard bet.result == .pending else { return }
+
+                let result = bet.game.betResult(for: bet.betOption)
+                if result != .pending {
+                    BetViewModel().updateBetResult(bet: bet, result: result)
+                }
+            }
+        } catch {
+            print("Failed")
         }
     }
 }

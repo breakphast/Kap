@@ -72,7 +72,7 @@ struct MyBets: View {
 //                    }
 //                }
 //            }
-            fetchData()
+//            fetchData()
             for parlay in parlays {
                 if parlay.result == .pending {
                     BetViewModel().updateParlay(parlay: parlay)
@@ -154,7 +154,7 @@ struct MyBets: View {
                         bets = fetchedBets.filter({ $0.playerID == authViewModel.currentUser?.id })
                         bets = bets.filter({ $0.week == 2 })
                         
-                        let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.games)
+                        let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
                         parlays = fetchedParlays.filter({ $0.playerID == authViewModel.currentUser?.id })
                         parlays = parlays.filter({ $0.week == 2 })
                         
@@ -163,7 +163,7 @@ struct MyBets: View {
                 }
             })
         } label: {
-            HStack(spacing: 4) {
+            HStack(spacing: 6) {
                 Text(selectedOption.isEmpty ? (homeViewModel.activeLeague?.name ?? "") : selectedOption)
                 Image(systemName: "chevron.down")
                     .font(.caption2.bold())
@@ -250,13 +250,13 @@ struct MyBets: View {
     private func fetchData(_ value: Int? = nil) {
         Task {
             do {
-                var fetchedGames = try await GameService().fetchGamesFromFirestore().chunked(into: 16)[0]
-                GameService().updateDayType(for: &fetchedGames)
-                let fetchedBets = try await BetViewModel().fetchBets(games: fetchedGames)
+//                var fetchedGames = try await GameService().fetchGamesFromFirestore().chunked(into: 16)[0]
+//                GameService().updateDayType(for: &fetchedGames)
+                let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
                 bets = fetchedBets.filter({ $0.playerID == authViewModel.currentUser?.id && $0.week == week })
                 
-                let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.games)
-                parlays = fetchedParlays.filter({ $0.playerID == authViewModel.currentUser?.id && $0.week == (value != nil ? homeViewModel.currentWeek : 1) })
+                let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
+                parlays = fetchedParlays.filter({ $0.playerID == authViewModel.currentUser?.id && $0.week == week })
                 weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: authViewModel.currentUser?.id ?? "", bets: bets, parlays: homeViewModel.parlays, week: week, leagueID: homeViewModel.activeLeague?.id ?? "")
             } catch {
                 print("Error fetching bets: \(error)")

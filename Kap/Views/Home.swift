@@ -16,6 +16,10 @@ struct Home: View {
     @State private var loggedIn = false
     @State private var date: Date = Date()
     
+    init() {
+        UITabBar.appearance().barTintColor = UIColor(named: "onyx")
+    }
+    
     var body: some View {
         if authViewModel.currentUser == nil || loggedIn == false {
             Login(loggedIn: $loggedIn)
@@ -43,63 +47,22 @@ struct Home: View {
             }
             .tint(Color("oW"))
             .preferredColorScheme(.dark)
-            .background(.ultraThinMaterial)
             .task {
                 do {
                     let activeDate = homeViewModel.formatter.string(from: Date())
                     homeViewModel.currentDate = activeDate
                     
-                    homeViewModel.setCurrentWeek()
-                    homeViewModel.users = try await UserViewModel().fetchAllUsers()
+                    await homeViewModel.fetchEssentials()
                     
-                    homeViewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
-                    homeViewModel.activeLeague = homeViewModel.leagues.first
+//                    await homeViewModel.updateAndFetch()
                     
-                    homeViewModel.allGames = try await GameService().fetchGamesFromFirestore().chunked(into: 16)[0]
-                    GameService().updateDayType(for: &homeViewModel.allGames)
-                    
-                    homeViewModel.games = try await GameService().fetchGamesFromFirestore().chunked(into: 16)[1]
-                    GameService().updateDayType(for: &homeViewModel.games)
-                    
-//                    GameService().addGames(games: homeViewModel.games)
-//                    let alteredGames = homeViewModel.games
-//                    for game in alteredGames {
-//                        try await GameService().updateGameScore(game: game)
-////                        if game.completed {
-////                            GameService().addGameToArchive(game: game)
-////                            try await homeViewModel.deleteGame(game: game)
-////                            print(game.documentId)
-////                        }
-//                    }
-//                    homeViewModel.games = alteredGames
-                    
-                    homeViewModel.bets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
-                    homeViewModel.parlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
-                    for parlay in homeViewModel.parlays {
-                        if parlay.result == .pending  {
-                            BetViewModel().updateParlay(parlay: parlay)
-                        }
-                    }
-                    homeViewModel.parlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
                     homeViewModel.leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, weeks: [homeViewModel.currentWeek - 1, homeViewModel.currentWeek])
                     
-//                    let games = try await GameService().getGames()
-                    
-//                    for bet in homeViewModel.bets {
-////                        guard bet.result == .pending else { return }
-//
-//                        let result = bet.game.betResult(for: bet.betOption)
-//                        if result != .pending {
-//                            BetViewModel().updateBetResult(bet: bet, result: result)
-//                        }
-//                    }
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                         withAnimation(.linear) {
                             self.showingSplashScreen = false
                         }
                     }
-                } catch {
-                    
                 }
                 
             }

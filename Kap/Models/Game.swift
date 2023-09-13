@@ -26,6 +26,7 @@ class Game {
     var awaySpreadPriceTemp: Double
     var overPriceTemp: Double
     var underPriceTemp: Double
+    var dayType: String?
     
     init(gameElement: GameElement) {
         var homeSpreadTemp: Double = 0.0

@@ -11,6 +11,7 @@ struct PlacedBetView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
     @State var deleteActive = false
+    @State private var maxBets = 0
     @Namespace var trash
     let bet: Bet
     @Binding var bets: [Bet]
@@ -46,7 +47,7 @@ struct PlacedBetView: View {
                                 .lineLimit(nil)
                                 .fixedSize(horizontal: false, vertical: true)
                             Spacer()
-                            Text("(\(bet.betOption.dayType?.rawValue ?? "") \(bets.filter({ $0.betOption.dayType == bet.betOption.dayType && bet.week == homeViewModel.currentWeek }).count)/\(bet.betOption.maxBets ?? 0))")
+                            Text("(\(bet.betOption.game.dayType ?? "") \(bets.filter({ $0.betOption.game.dayType ?? "" == bet.betOption.game.dayType && bet.week == homeViewModel.currentWeek }).count)/\(maxBets))")
                                 .font(.caption.bold())
                                 .foregroundStyle(.secondary)
                         }
@@ -136,7 +137,14 @@ struct PlacedBetView: View {
         .frame(height: 150)
         .cornerRadius(20)
         .padding(.horizontal, 20)
-//        .shadow(radius: 10)
+        .task {
+            switch DayType(rawValue: bet.game.dayType ?? "") {
+            case .tnf, .mnf, .snf:
+                self.maxBets = 1
+            default:
+                self.maxBets = 7
+            }
+        }
     }
     
     var betText: String {
@@ -212,9 +220,6 @@ struct PlacedParlayView: View {
                                     .font(.title3.bold())
                                     .foregroundStyle(pointsColor(for: parlay.result))
                             }
-//                            RoundedRectangle(cornerRadius: 1)
-//                                .frame(width: 100, height: 2)
-//                                .foregroundStyle(.secondary)
                         }
                         .bold()
                     }

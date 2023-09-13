@@ -35,7 +35,7 @@ struct Login: View {
                     }
                 }
                 .buttonStyle(.bordered)
-                .foregroundStyle(!login ? Color("oW") : Color("onyxLightish1"))
+                .foregroundStyle(!login ? Color("oW") : Color("onyx"))
                 .bold()
                 
                 Button("Register") {
@@ -44,7 +44,7 @@ struct Login: View {
                     }
                 }
                 .buttonStyle(.bordered)
-                .foregroundStyle(login ? Color("oW") : Color("onyxLightish1"))
+                .foregroundStyle(login ? Color("oW") : Color("onyx"))
                 .bold()
             }
             
@@ -100,7 +100,7 @@ struct Login: View {
                 }
             } label: {
                 Text("Login")
-                    .bold()
+                    .font(.title2.bold())
                     .foregroundStyle(loggingIn ? Color("oW") : Color("lion"))
                     .padding(.horizontal, 20)
                     .padding(.vertical, 8)

@@ -140,6 +140,7 @@ class GameService {
             let awaySpreadPriceTemp = data["awaySpreadPriceTemp"] as? Double ?? 0.0
             let overPriceTemp = data["overPriceTemp"] as? Double ?? 0.0
             let underPriceTemp = data["underPriceTemp"] as? Double ?? 0.0
+            let dayType = data["dayType"] as? String ?? ""
             
             let gameElement = GameElement(id: id, sportKey: .americanfootball_nfl, sportTitle: .NFL, commenceTime: date ?? Date(), completed: completed, homeTeam: homeTeam, awayTeam: awayTeam, bookmakers: nil, scores: [Score(name: homeTeam, score: homeScore ?? ""), Score(name: awayTeam, score: awayScore ?? "")])
             
@@ -155,6 +156,7 @@ class GameService {
             game.overPriceTemp = overPriceTemp
             game.underPriceTemp = underPriceTemp
             game.completed = completed
+            game.dayType = dayType
 
             if let betOptionsDictionaries = data["betOptions"] as? [[String: Any]] {
                 game.betOptions = betOptionsDictionaries.compactMap {
