@@ -80,9 +80,6 @@ class GameService {
             print("Error decoding scores data:", error)
         }
     }
-
-
-
     
     func getGames() async throws -> [Game] {
         let decoder = JSONDecoder()
@@ -91,18 +88,7 @@ class GameService {
         let odds = try await fetchNFLOddsData()
         let gamesData = try decoder.decode([GameElement].self, from: odds)
         
-        //        let scores = try await loadnflScoresData()
-        //        let scoresData = try decoder.decode([ScoreElement].self, from: scores)
-        
         games = gamesData.compactMap { Game(gameElement: $0) }
-        
-        //        for score in scoresData {
-        //            if let gameIndex = games.firstIndex(where: { $0.id == score.id }) {
-        //                print("Got em", score.scores)
-        //                games[gameIndex].awayScore = score.scores[0].score
-        //                games[gameIndex].homeScore = score.scores[1].score
-        //            }
-        //        }
         return games
     }
     
@@ -198,60 +184,6 @@ class GameService {
             }
         }
     }
-    
-    func addGameToArchive(game: Game) {
-        let db = Firestore.firestore()
-        let ref = db.collection("archivedGames")
-        
-        let gameId = game.documentId
-        ref.document(gameId).setData(game.dictionary) { error in
-            if let error = error {
-                print("Error adding game: \(error.localizedDescription)")
-            } else {
-                print("Game with ID \(gameId) successfully added!")
-            }
-        }
-    }
-    
-    func updateDayType(for games: inout [Game]) {
-        for game in games.prefix(1) {
-            game.betOptions = game.betOptions.map { bet in
-                let mutableBet = bet
-                mutableBet.dayType = .tnf
-                mutableBet.maxBets = 1
-                return mutableBet
-            }
-        }
-        
-        let sundayAfternoonGamesCount = games.count - 3
-        for game in games.dropFirst().prefix(sundayAfternoonGamesCount) {
-            game.betOptions = game.betOptions.map { bet in
-                let mutableBet = bet
-                mutableBet.dayType = .sunday
-                mutableBet.maxBets = 7
-                return mutableBet
-            }
-        }
-        
-        for game in games.dropFirst(sundayAfternoonGamesCount + 1).prefix(1) {
-            game.betOptions = game.betOptions.map { bet in
-                let mutableBet = bet
-                mutableBet.dayType = .snf
-                mutableBet.maxBets = 1
-                return mutableBet
-            }
-        }
-        
-        for game in games.suffix(1) {
-            game.betOptions = game.betOptions.map { bet in
-                let mutableBet = bet
-                mutableBet.dayType = .mnf
-                mutableBet.maxBets = 1
-                return mutableBet
-            }
-        }
-    }
-    
     
     private func loadnflData() async throws -> Data {
         guard let url = Bundle.main.url(forResource: "nflData", withExtension: "json") else {

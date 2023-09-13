@@ -18,7 +18,7 @@ struct MyBets: View {
     @State private var parlays: [Parlay] = []
     @State private var weeklyPoints: Double?
     
-    @State private var selectedOption = "Week 1"
+    @State private var selectedOption = "Week 2"
     @State private var week = 1
     
     @State private var selectedSegment = 0
@@ -47,32 +47,11 @@ struct MyBets: View {
         .fontDesign(.rounded)
         .onChange(of: bets.count, perform: { _ in
             fetchData()
-//            for bet in homeViewModel.bets {
-//                let result = bet.game.betResult(for: bet.betOption)
-//                if result != .pending {
-//                    BetViewModel().updateBetResult(bet: bet, result: result)
-//                    
-//                }
-//            }
-            fetchData()
         })
         .task {
             week = homeViewModel.currentWeek
-            selectedOption = "Week \(week)"
+//            selectedOption = "Week 2"
             fetchData()
-//            for bet in homeViewModel.bets {
-//                guard bet.result == .pending else { return }
-//
-//                if let matchedGame = homeViewModel.games.first(where: { $0.id == bet.game.id }) {
-//                    let result = bet.game.betResult(for: bet.betOption)
-//                    if result != .pending {
-//                        if bet.result == .pending {
-//                            BetViewModel().updateBetResult(bet: bet, result: result)
-//                        }
-//                    }
-//                }
-//            }
-//            fetchData()
             for parlay in parlays {
                 if parlay.result == .pending {
                     BetViewModel().updateParlay(parlay: parlay)
@@ -90,7 +69,6 @@ struct MyBets: View {
             } else {
                 Text("POINTS: \((weeklyPoints ?? 0).oneDecimalString)")
                     .font(.system(.body, design: .rounded, weight: .bold))
-//                    .padding(.top, 4)
                 
                 ScrollView(showsIndicators: false) {
                     betSection(for: .tnf, settled: true)
@@ -176,13 +154,9 @@ struct MyBets: View {
         .zIndex(1000)
         .padding(.top, 4)
         .padding(.bottom)
-//        .padding(.leading, 24)
     }
     
     func parlaySection(settled: Bool) -> some View {
-        let filteredParlays = parlays.filter { parlay in
-            (parlay.result != .pending)
-        }
         return AnyView(
             VStack(alignment: .leading, spacing: 16) {
                 HStack(spacing: 8) {
@@ -250,8 +224,6 @@ struct MyBets: View {
     private func fetchData(_ value: Int? = nil) {
         Task {
             do {
-//                var fetchedGames = try await GameService().fetchGamesFromFirestore().chunked(into: 16)[0]
-//                GameService().updateDayType(for: &fetchedGames)
                 let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
                 bets = fetchedBets.filter({ $0.playerID == authViewModel.currentUser?.id && $0.week == week })
                 
@@ -267,11 +239,9 @@ struct MyBets: View {
     private func configureTabView() -> some View {
         TabView {
             activeBetsTab
-//                .padding(.top, 40)
                 .tabItem { Text("Active Bets") }
 
             settledBetsTab
-//                .padding(.top, 40)
                 .tabItem { Text("Settled Bets") }
         }
         .accentColor(.white)  // For the circle indicator
