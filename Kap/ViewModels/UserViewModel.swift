@@ -52,6 +52,39 @@ class UserViewModel: ObservableObject {
             print("Error updating user: \(error)")
         }
     }
+    
+    func updateUserPoints(user: User, bets: [Bet], parlays: [Parlay], week: Int, missing: Bool) {
+        let newUser = db.collection("users").document(user.id!)
+        print(newUser.documentID)
+        
+        let bets = bets.filter({ $0.playerID == user.id ?? "" && $0.result != .pending && $0.week == 2 })
+        let parlay = parlays.filter({ $0.playerID == user.id ?? "" && $0.result != .pending && week == 2 })
+        let points = bets.map { $0.points ?? 0 }.reduce(0, +) + (parlay.first?.totalPoints ?? 0)
+                
+        let dayTypeCounts: [DayType: Int] = [
+            .sunday: 7,
+            .mnf: 1,
+            .snf: 1,
+            .tnf: 1
+        ]
+
+        let totalMissedPoints: Double = dayTypeCounts.map { (dayType, expectedCount) in
+            Double(expectedCount - bets.filter { $0.betOption.game.dayType == dayType.rawValue }.count) * -10.0
+        }.reduce(0, +)
+        print(totalMissedPoints)
+        
+        let totalPoints = points + (missing ? totalMissedPoints : 0)
+        
+        newUser.updateData([
+            "totalPoints": totalPoints
+        ]) { err in
+            if let err = err {
+                print("Error updating USERRRR: \(err)")
+            } else {
+                print("Document successfully updated")
+            }
+        }
+    }
 
     // Add a new user
     func addUser(user: User) {

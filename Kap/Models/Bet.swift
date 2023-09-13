@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 class BetOption {
-    var id: UUID
+    let id: String
     let game: Game
     let betType: BetType
     var odds: Int
@@ -22,8 +22,8 @@ class BetOption {
     var dayType: DayType?
     var maxBets: Int?
     
-    init(game: Game, betType: BetType, odds: Int, spread: Double? = nil, over: Double, under: Double, selectedTeam: String? = nil, confirmBet: Bool = false) {
-        self.id = UUID()
+    init(id: String, game: Game, betType: BetType, odds: Int, spread: Double? = nil, over: Double, under: Double, selectedTeam: String? = nil, confirmBet: Bool = false) {
+        self.id = id
         self.game = game
         self.betType = betType
         self.odds = odds
@@ -156,7 +156,7 @@ class Bet {
 extension BetOption {
     var dictionary: [String: Any] {
         return [
-            "id": id.uuidString,
+            "id": id,
             "betType": betType.rawValue,
             "odds": odds,
             "spread": spread ?? NSNull(),
@@ -172,8 +172,7 @@ extension BetOption {
     
     static func fromDictionary(_ dictionary: [String: Any], game: Game) -> BetOption? {
         guard
-            let idString = dictionary["id"] as? String,
-            let id = UUID(uuidString: idString),
+            let id = dictionary["id"] as? String,
             let betTypeString = dictionary["betType"] as? String,
             let betType = BetType(rawValue: betTypeString),
             let odds = dictionary["odds"] as? Int,
@@ -188,8 +187,7 @@ extension BetOption {
         let confirmBet = dictionary["confirmBet"] as? Bool ?? false
         let dayTypeString = dictionary["dayType"] as? String
         
-        let betOption = BetOption(game: game, betType: betType, odds: odds, spread: spread, over: over, under: under, selectedTeam: selectedTeam, confirmBet: confirmBet)
-        betOption.id = id
+        let betOption = BetOption(id: id, game: game, betType: betType, odds: odds, spread: spread, over: over, under: under, selectedTeam: selectedTeam, confirmBet: confirmBet)
         return betOption
     }
 }

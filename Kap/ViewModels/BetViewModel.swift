@@ -14,12 +14,11 @@ class BetViewModel {
     private let db = Firestore.firestore()
     
     func findBetOption(games: [Game], gameID: String, betOptionID: String) -> (Game?, BetOption?) {
-        guard let game = games.first(where: { $0.id == gameID }) else {
+        guard let game = games.first(where: { $0.documentId == gameID }) else {
             print("No game")
             return (nil, nil) }
         
-        guard let betOption = game.betOptions.first(where: { $0.id.uuidString == betOptionID }) else { return (game, nil) }
-        
+        guard let betOption = game.betOptions.first(where: { $0.id == betOptionID }) else { return (game, nil) }
         return (game, betOption)
     }
     
@@ -59,8 +58,8 @@ class BetViewModel {
         
         let newBet: [String: Any] = [
             "id": bet.id,
-            "betOption": bet.betOption.id.uuidString,
-            "game": bet.game.id,
+            "betOption": bet.betOption.id,
+            "game": bet.game.documentId,
             "type": bet.type.rawValue,
             "result": bet.result?.rawValue ?? "",
             "odds": bet.odds,
@@ -76,7 +75,7 @@ class BetViewModel {
     }
 
     func makeBet(for game: Game, betOption: BetOption, playerID: String, week: Int) -> Bet {
-        let bet = Bet(id: betOption.id.uuidString + playerID, betOption: betOption, game: game, type: betOption.betType, result: .pending, odds: betOption.odds, selectedTeam: betOption.selectedTeam, playerID: playerID, week: week)
+        let bet = Bet(id: betOption.id + playerID, betOption: betOption, game: game, type: betOption.betType, result: .pending, odds: betOption.odds, selectedTeam: betOption.selectedTeam, playerID: playerID, week: week)
         
         return bet
     }
@@ -88,7 +87,7 @@ class BetViewModel {
             "result": bet.game.betResult(for: bet.betOption).rawValue
         ]) { err in
             if let err = err {
-                print("Error updating document: \(err)")
+                print("Error updating BETTTT: \(err)", bet.id)
             } else {
                 print("Document successfully updated")
             }
@@ -103,7 +102,7 @@ class BetViewModel {
                 "result": BetResult.loss.rawValue
             ]) { err in
                 if let err = err {
-                    print("Error updating document: \(err)")
+                    print("Error updating LAYYY: \(err)")
                 } else {
                     print("Document successfully updated. L")
                 }
@@ -113,7 +112,7 @@ class BetViewModel {
                 "result": BetResult.win.rawValue
             ]) { err in
                 if let err = err {
-                    print("Error updating document: \(err)")
+                    print("Error updating LAYYYYY: \(err)")
                 } else {
                     print("Document successfully updated. DUB.")
                 }
@@ -125,7 +124,7 @@ class BetViewModel {
                 "totalPoints":  -10
             ]) { err in
                 if let err = err {
-                    print("Error updating document: \(err)")
+                    print("Error updating LAYYYY: \(err)")
                 } else {
                     print("Document successfully updated. L POINTS")
                 }
@@ -136,12 +135,12 @@ class BetViewModel {
     func updateBetResult(bet: Bet, result: BetResult) {
         guard bet.result == .pending else { return }
         
-        let newbet = db.collection("bets").document(bet.id)
+        let newbet = db.collection("newBets").document(bet.id)
         newbet.updateData([
             "result": result.rawValue
         ]) { err in
             if let err = err {
-                print("Error updating document: \(err)")
+                print("Error updating BET RESULT: \(err)")
             } else {
                 print("Document successfully updatedddd")
                 
@@ -189,7 +188,7 @@ class BetViewModel {
                 team = game.homeTeam
             }
             
-            let bet = Bet(id: options[i].id.uuidString, betOption: options[i], game: game, type: type, result: .pending, odds: options[i].odds, selectedTeam: team, playerID: "", week: 0)
+            let bet = Bet(id: options[i].id, betOption: options[i], game: game, type: type, result: .pending, odds: options[i].odds, selectedTeam: team, playerID: "", week: 0)
             bets.append(bet)
         }
         let betss = [3, 4, 2, 0, 1, 5].compactMap { index in

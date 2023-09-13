@@ -116,8 +116,26 @@ class HomeViewModel: ObservableObject {
         }
     }
     
-    func fetchEssentials() async {
+    func updateGameDayType(game: Game) {
+        let db = Firestore.firestore()
+        let newGame = db.collection("nflGames").document(game.documentId)
+        GameService().updateDayType(for: &games)
+        newGame.updateData([
+            "dayType": DayType(rawValue: game.dayType ?? "Nope")?.rawValue ?? ""
+        ]) { err in
+            if let err = err {
+                print("Error updating document: \(err)")
+            }
+        }
+    }
+    
+    func fetchEssentials(updateGames: Bool) async {
         do {
+            if updateGames {
+                let updatedGames = try await GameService().getGames()
+                GameService().addGames(games: updatedGames)
+            }
+            
             let fetchedUsers = try await UserViewModel().fetchAllUsers()
             let fetchedLeagues = try await LeagueViewModel().fetchAllLeagues()
             let fetchedAllGames = try await GameService().fetchGamesFromFirestore()
@@ -133,7 +151,17 @@ class HomeViewModel: ObservableObject {
                 self.games = fetchedGames
                 self.bets = fetchedBets
                 self.parlays = fetchedParlays
+                
+                GameService().updateDayType(for: &self.games)
+                for game in self.games {
+                    self.updateGameDayType(game: game)
+                }
             }
+            
+//            GameService().updateDayType(for: &games)
+//            for game in games {
+//                updateGameDayType(game: game)
+//            }
         } catch {
             print("Failed")
         }
@@ -146,22 +174,32 @@ class HomeViewModel: ObservableObject {
             for game in alteredGames {
                 try await GameService().updateGameScore(game: game)
             }
-            games = alteredGames
             
-            bets = try await BetViewModel().fetchBets(games: allGames)
-            parlays = try await ParlayViewModel().fetchParlays(games: allGames)
-            for parlay in parlays {
-                if parlay.result == .pending  {
-                    BetViewModel().updateParlay(parlay: parlay)
-                }
-            }
-            parlays = try await ParlayViewModel().fetchParlays(games: allGames)
-            for bet in bets {
-                guard bet.result == .pending else { return }
+            let newBets = try await BetViewModel().fetchBets(games: allGames)
+            let newParlays = try await ParlayViewModel().fetchParlays(games: allGames)
 
-                let result = bet.game.betResult(for: bet.betOption)
-                if result != .pending {
-                    BetViewModel().updateBetResult(bet: bet, result: result)
+            DispatchQueue.main.async {
+                self.games = alteredGames
+
+                for parlay in newParlays {
+                    if parlay.result == .pending  {
+                        BetViewModel().updateParlay(parlay: parlay)
+                    }
+                }
+
+                self.parlays = newParlays
+
+                for bet in newBets {
+                    let result = bet.game.betResult(for: bet.betOption)
+                    if result != .pending {
+                        BetViewModel().updateBetResult(bet: bet, result: result)
+                    }
+                }
+
+                self.bets = newBets
+                
+                for user in self.users {
+                    UserViewModel().updateUserPoints(user: user, bets: self.bets, parlays: self.parlays, week: self.currentWeek, missing: false)
                 }
             }
         } catch {

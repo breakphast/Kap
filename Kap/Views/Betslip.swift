@@ -152,7 +152,7 @@ struct BetView: View {
         .padding(.horizontal, 20)
         .shadow(radius: 10)
         .task {
-            isValid = bets.filter({ $0.betOption.game.id == bet.game.id }).count < 1 && bets.count < 10
+            isValid = bets.filter({ $0.betOption.game.documentId == bet.game.documentId }).count < 1 && bets.count < 10
             switch DayType(rawValue: bet.game.dayType ?? "") {
             case .tnf, .mnf, .snf:
                 self.maxBets = 1
@@ -161,7 +161,7 @@ struct BetView: View {
             }
         }
         .onChange(of: bets.count) { newValue in
-            isValid = bets.filter({ $0.betOption.game.id == bet.game.id }).count < 1 && bets.count < 10
+            isValid = bets.filter({ $0.betOption.game.documentId == bet.game.documentId }).count < 1 && bets.count < 10
         }
     }
     
@@ -214,7 +214,7 @@ struct BetView: View {
                 Task {
                     let placedBet = BetViewModel().makeBet(for: bet.game, betOption: bet.betOption, playerID: authViewModel.currentUser?.id ?? "", week: homeViewModel.currentWeek)
                     
-                    if !bets.contains(where: { $0.game.id == placedBet.game.id }) {
+                    if !bets.contains(where: { $0.game.documentId == placedBet.game.documentId }) {
                         try await BetViewModel().addBet(bet: placedBet, playerID: authViewModel.currentUser?.id ?? "")
                         
                         let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)

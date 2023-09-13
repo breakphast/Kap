@@ -36,7 +36,7 @@ struct ScoreElement: Codable {
         let safeHomeTeam = scores?[0].name.replacingOccurrences(of: " ", with: "-")
         let safeAwayTeam = scores?[1].name.replacingOccurrences(of: " ", with: "-")
         
-        return "\(datePart)-\(safeAwayTeam!)-vs-\(safeHomeTeam!)"
+        return "\(datePart)-\(safeHomeTeam!)-vs-\(safeAwayTeam!)"
     }
 }
 
@@ -45,16 +45,16 @@ struct ScoreElement: Codable {
 class GameService {
     var games: [Game] = []
     private var db = Firestore.firestore()
+    let mock = false
     
     func updateGameScore(game: Game) async throws {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
 
-        let scores = try await fetchNFLScoresData()
-
+        let scores = try await mock ? loadnflScoresData() : fetchNFLScoresData()
+        
         do {
             let scoresData = try decoder.decode([ScoreElement].self, from: scores)
-
             // Filtering out the exact score data that matches the game id
             if let scoreElement = scoresData.first(where: { $0.documentId == game.documentId }) {
                 game.homeScore = scoreElement.scores?.first(where: { $0.name == game.homeTeam })?.score
@@ -72,12 +72,30 @@ class GameService {
                 } else {
                     print("No matching game found in Firestore")
                 }
-
             }
-            
-            
         } catch {
             print("Error decoding scores data:", error)
+        }
+    }
+    
+    func updateGame(game: Game) {
+        let newGame = db.collection("nflGames").document(game.documentId)
+        newGame.updateData([
+            "awayMoneyline": game.awayMoneyLine,
+            "homeMoneyline": game.homeMoneyLine,
+            "over": game.over,
+            "overPriceTemp": game.overPriceTemp,
+            "under": game.under,
+            "underPriceTemp": game.underPriceTemp,
+            "homeSpread": game.homeSpread,
+            "homeSpreadPriceTemp": game.homeSpreadPriceTemp,
+            "dayType": game.dayType ?? "Nope"
+        ]) { err in
+            if let err = err {
+                print("Error updating document: \(err)")
+            } else {
+                print("Document successfully updated")
+            }
         }
     }
     
@@ -85,7 +103,7 @@ class GameService {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         
-        let odds = try await fetchNFLOddsData()
+        let odds = try await mock ? loadnflData() : fetchNFLOddsData()
         let gamesData = try decoder.decode([GameElement].self, from: odds)
         
         games = gamesData.compactMap { Game(gameElement: $0) }
@@ -178,8 +196,6 @@ class GameService {
             ref.document(gameId).setData(game.dictionary) { error in
                 if let error = error {
                     print("Error adding game: \(error.localizedDescription)")
-                } else {
-                    print("Game with ID \(gameId) successfully added!")
                 }
             }
         }
@@ -236,36 +252,6 @@ class GameService {
         return data
     }
     
-    func fetchMLBOddsData() async throws -> Data {
-        let urlString = "https://api.the-odds-api.com/v4/sports/baseball_mlb/odds/?apiKey=e2f24898dae0ba3963da18e6e03456a7&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=fanduel"
-        
-        guard let url = URL(string: urlString) else {
-            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
-        }
-        
-        let (data, response) = try await URLSession.shared.data(from: url)
-        
-        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to fetch data from server"])
-        }
-        return data
-    }
-    
-    private func fetchMLBScoresData() async throws -> Data {
-        let urlString = "https://api.the-odds-api.com/v4/sports/baseball_mlb/scores/?daysFrom=1&apiKey=e2f24898dae0ba3963da18e6e03456a7"
-        
-        guard let url = URL(string: urlString) else {
-            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
-        }
-        
-        let (data, response) = try await URLSession.shared.data(from: url)
-        
-        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to fetch data from server"])
-        }
-        return data
-    }
-    
     private func fetchNFLScoresData() async throws -> Data {
         let urlString = "https://api.the-odds-api.com/v4/sports/americanfootball_nfl/scores/?daysFrom=1&apiKey=e2f24898dae0ba3963da18e6e03456a7"
         
@@ -279,6 +265,49 @@ class GameService {
             throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to fetch data from server"])
         }
         return data
+    }
+    
+    func updateDayType(for games: inout [Game]) {
+        for game in games.prefix(1) {
+            game.betOptions = game.betOptions.map { bet in
+                game.dayType = bet.dayType?.rawValue ?? "NAHHH"
+                let mutableBet = bet
+                mutableBet.dayType = .tnf
+                mutableBet.maxBets = 1
+                return mutableBet
+            }
+        }
+        
+        let sundayAfternoonGamesCount = games.count - 3
+        for game in games.dropFirst().prefix(sundayAfternoonGamesCount) {
+            game.betOptions = game.betOptions.map { bet in
+                game.dayType = bet.dayType?.rawValue ?? "NAHHH"
+                let mutableBet = bet
+                mutableBet.dayType = .sunday
+                mutableBet.maxBets = 7
+                return mutableBet
+            }
+        }
+        
+        for game in games.dropFirst(sundayAfternoonGamesCount + 1).prefix(1) {
+            game.betOptions = game.betOptions.map { bet in
+                game.dayType = bet.dayType?.rawValue ?? "NAHHH"
+                let mutableBet = bet
+                mutableBet.dayType = .snf
+                mutableBet.maxBets = 1
+                return mutableBet
+            }
+        }
+        
+        for game in games.suffix(1) {
+            game.betOptions = game.betOptions.map { bet in
+                game.dayType = bet.dayType?.rawValue ?? "NAHHH"
+                let mutableBet = bet
+                mutableBet.dayType = .mnf
+                mutableBet.maxBets = 1
+                return mutableBet
+            }
+        }
     }
     
     func deleteCollection(collectionName: String, batchSize: Int = 100, completion: @escaping (Error?) -> Void) {

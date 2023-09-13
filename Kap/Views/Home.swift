@@ -52,7 +52,7 @@ struct Home: View {
                     let activeDate = homeViewModel.formatter.string(from: Date())
                     homeViewModel.currentDate = activeDate
                     
-                    await homeViewModel.fetchEssentials()
+                    await homeViewModel.fetchEssentials(updateGames: false)
                     
 //                    await homeViewModel.updateAndFetch()
                     

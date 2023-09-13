@@ -106,12 +106,12 @@ class Game {
     }
     
     func createBetOptions() -> [BetOption] {
-        let homeSpreadBet = BetOption(game: self, betType: .spread, odds: Int(homeSpreadPriceTemp), spread: homeSpread, over: over, under: under, selectedTeam: homeTeam)
-        let awaySpreadBet = BetOption(game: self, betType: .spread, odds: Int(awaySpreadPriceTemp), spread: awaySpread, over: over, under: under, selectedTeam: awayTeam)
-        let homeMoneyLineBet = BetOption(game: self, betType: .moneyline, odds: homeMoneyLine, over: over, under: under, selectedTeam: homeTeam)
-        let awayMoneyLineBet = BetOption(game: self, betType: .moneyline, odds: awayMoneyLine, over: over, under: under, selectedTeam: awayTeam)
-        let overBet = BetOption(game: self, betType: .over, odds: Int(overPriceTemp), over: over, under: under, selectedTeam: homeTeam)
-        let underBet = BetOption(game: self, betType: .under, odds: Int(underPriceTemp), over: over, under: under, selectedTeam: homeTeam)
+        let homeSpreadBet = BetOption(id: self.documentId + "spread1", game: self, betType: .spread, odds: Int(homeSpreadPriceTemp), spread: homeSpread, over: over, under: under, selectedTeam: homeTeam)
+        let awaySpreadBet = BetOption(id: self.documentId + "spread2", game: self, betType: .spread, odds: Int(awaySpreadPriceTemp), spread: awaySpread, over: over, under: under, selectedTeam: awayTeam)
+        let homeMoneyLineBet = BetOption(id: self.documentId + "ml1", game: self, betType: .moneyline, odds: homeMoneyLine, over: over, under: under, selectedTeam: homeTeam)
+        let awayMoneyLineBet = BetOption(id: self.documentId + "ml2", game: self, betType: .moneyline, odds: awayMoneyLine, over: over, under: under, selectedTeam: awayTeam)
+        let overBet = BetOption(id: self.documentId + "over", game: self, betType: .over, odds: Int(overPriceTemp), over: over, under: under, selectedTeam: homeTeam)
+        let underBet = BetOption(id: self.documentId + "under", game: self, betType: .under, odds: Int(underPriceTemp), over: over, under: under, selectedTeam: homeTeam)
         
         return [homeSpreadBet, awaySpreadBet, homeMoneyLineBet, awayMoneyLineBet, overBet, underBet]
     }
