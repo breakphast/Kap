@@ -98,7 +98,7 @@ struct Leaderboard: View {
         }
         .overlay(
             RoundedRectangle(cornerRadius: 1)
-                .foregroundStyle(.white.opacity(0.01))
+                .foregroundStyle(Color("onyx").opacity(0.00001))
                 .onTapGesture {
                     withAnimation {
                         userID = user.id!
