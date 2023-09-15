@@ -96,6 +96,19 @@ struct Leaderboard: View {
                 userDetailZStack(index: index, user: user)
             }
         }
+        .overlay(
+            RoundedRectangle(cornerRadius: 1)
+                .foregroundStyle(.white.opacity(0.01))
+                .onTapGesture {
+                    withAnimation {
+                        userID = user.id!
+                        showUserBets.toggle()
+                    }
+                }
+                .sheet(isPresented: $showUserBets) {
+                    PlayerBetsView(userID: $userID)
+                }
+        )
     }
 
     func userDetailZStack(index: Int, user: User) -> some View {
@@ -114,13 +127,6 @@ struct Leaderboard: View {
             }
 
             userDetailHStack(for: user, index: index)
-                .onTapGesture {
-                    showUserBets.toggle()
-                    userID = user.id!
-                }
-                .sheet(isPresented: $showUserBets) {
-                    PlayerBetsView(userID: $userID)
-                }
         }
     }
 
