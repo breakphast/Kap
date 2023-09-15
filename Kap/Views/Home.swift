@@ -48,23 +48,13 @@ struct Home: View {
             .tint(Color("oW"))
             .preferredColorScheme(.dark)
             .task {
-                do {
-                    let activeDate = homeViewModel.formatter.string(from: Date())
-                    homeViewModel.currentDate = activeDate
-                    
-                    await homeViewModel.fetchEssentials(updateGames: false)
-                    
-//                    await homeViewModel.updateAndFetch()
-                    
-                    homeViewModel.leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, weeks: [homeViewModel.currentWeek - 1, homeViewModel.currentWeek])
-                    
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        withAnimation(.linear) {
-                            self.showingSplashScreen = false
-                        }
+                await homeViewModel.originalFetch(updateScores: false, updateGames: false)
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    withAnimation(.linear) {
+                        self.showingSplashScreen = false
                     }
                 }
-                
             }
             .overlay(
                 Group {

@@ -33,10 +33,10 @@ struct ScoreElement: Codable {
         guard scores?.count ?? 0 >= 2 else { return datePart }  // Safety check, just in case the scores array is too short
 
         // Converting team names to a URL-safe format
-        let safeHomeTeam = scores?[0].name.replacingOccurrences(of: " ", with: "-")
-        let safeAwayTeam = scores?[1].name.replacingOccurrences(of: " ", with: "-")
+        let safeHomeTeam = homeTeam.replacingOccurrences(of: " ", with: "-")
+        let safeAwayTeam = awayTeam.replacingOccurrences(of: " ", with: "-")
         
-        return "\(datePart)-\(safeHomeTeam!)-vs-\(safeAwayTeam!)"
+        return "\(datePart)-\(safeHomeTeam)-vs-\(safeAwayTeam)"
     }
 }
 
@@ -238,7 +238,7 @@ class GameService {
     }
     
     func fetchNFLOddsData() async throws -> Data {
-        let urlString = "https://api.the-odds-api.com/v4/sports/americanfootball_nfl/odds/?apiKey=e2f24898dae0ba3963da18e6e03456a7&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=fanduel"
+        let urlString = "https://api.the-odds-api.com/v4/sports/americanfootball_nfl/odds/?apiKey=\(HomeViewModel.keys.randomElement()!)&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=fanduel"
         
         guard let url = URL(string: urlString) else {
             throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
@@ -253,7 +253,7 @@ class GameService {
     }
     
     private func fetchNFLScoresData() async throws -> Data {
-        let urlString = "https://api.the-odds-api.com/v4/sports/americanfootball_nfl/scores/?daysFrom=1&apiKey=e2f24898dae0ba3963da18e6e03456a7"
+        let urlString = "https://api.the-odds-api.com/v4/sports/americanfootball_nfl/scores/?daysFrom=1&apiKey=\(HomeViewModel.keys.randomElement()!)"
         
         guard let url = URL(string: urlString) else {
             throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])

@@ -55,7 +55,6 @@ class UserViewModel: ObservableObject {
     
     func updateUserPoints(user: User, bets: [Bet], parlays: [Parlay], week: Int, missing: Bool) {
         let newUser = db.collection("users").document(user.id!)
-        print(newUser.documentID)
         
         let bets = bets.filter({ $0.playerID == user.id ?? "" && $0.result != .pending && $0.week == 2 })
         let parlay = parlays.filter({ $0.playerID == user.id ?? "" && $0.result != .pending && week == 2 })
@@ -71,7 +70,6 @@ class UserViewModel: ObservableObject {
         let totalMissedPoints: Double = dayTypeCounts.map { (dayType, expectedCount) in
             Double(expectedCount - bets.filter { $0.betOption.game.dayType == dayType.rawValue }.count) * -10.0
         }.reduce(0, +)
-        print(totalMissedPoints)
         
         let totalPoints = points + (missing ? totalMissedPoints : 0)
         
@@ -81,7 +79,7 @@ class UserViewModel: ObservableObject {
             if let err = err {
                 print("Error updating USERRRR: \(err)")
             } else {
-                print("Document successfully updated")
+//                print("Document successfully updated")
             }
         }
     }

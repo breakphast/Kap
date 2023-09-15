@@ -30,6 +30,12 @@ class HomeViewModel: ObservableObject {
     
     @Published var changed: Bool = false
     
+    static let keys = [
+        "943f74f30bf5cc70122808236c9036d0",
+        "82fee1c48841c270c9ec1d48b6af26c0",
+        "eff16b6cc4e272cc610212bd2dfa8836"
+    ]
+    
     let formatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "M/d/yyyy"
@@ -129,9 +135,10 @@ class HomeViewModel: ObservableObject {
         }
     }
     
-    func fetchEssentials(updateGames: Bool) async {
+    func fetchEssentials(updateGames: Bool, updateScores: Bool) async {
         do {
             if updateGames {
+                // update games odds and bet options
                 let updatedGames = try await GameService().getGames()
                 GameService().addGames(games: updatedGames)
             }
@@ -158,29 +165,24 @@ class HomeViewModel: ObservableObject {
                 }
             }
             
-//            GameService().updateDayType(for: &games)
-//            for game in games {
-//                updateGameDayType(game: game)
-//            }
+            if updateScores { await self.updateAndFetch(games: fetchedGames) }
+            
         } catch {
             print("Failed")
         }
     }
 
-    
-    func updateAndFetch() async {
+    // updates bets based on new game scores and updates game scores
+    func updateAndFetch(games: [Game]) async {
         do {
             let alteredGames = games
             for game in alteredGames {
                 try await GameService().updateGameScore(game: game)
             }
-            
             let newBets = try await BetViewModel().fetchBets(games: allGames)
             let newParlays = try await ParlayViewModel().fetchParlays(games: allGames)
-
             DispatchQueue.main.async {
                 self.games = alteredGames
-
                 for parlay in newParlays {
                     if parlay.result == .pending  {
                         BetViewModel().updateParlay(parlay: parlay)
@@ -203,7 +205,26 @@ class HomeViewModel: ObservableObject {
                 }
             }
         } catch {
-            print("Failed")
+            print("Failed update and fetch")
         }
     }
+    
+    func originalFetch(updateScores: Bool, updateGames: Bool) async {
+        do {
+            let activeDate = self.formatter.string(from: Date())
+            
+            DispatchQueue.main.async {
+                self.currentDate = activeDate
+            }
+            
+            await self.fetchEssentials(updateGames: updateGames, updateScores: updateScores)
+            
+            let newLeaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: activeLeague?.id ?? "", users: self.users, bets: self.bets, parlays: self.parlays, weeks: [self.currentWeek - 1, self.currentWeek])
+            
+            DispatchQueue.main.async {
+                self.leaderboards = newLeaderboards
+            }
+        }
+    }
+
 }
