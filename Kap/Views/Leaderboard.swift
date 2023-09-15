@@ -114,13 +114,13 @@ struct Leaderboard: View {
             }
 
             userDetailHStack(for: user, index: index)
-                .onTapGesture {
-                    showUserBets.toggle()
-                    userID = user.id!
-                }
-                .sheet(isPresented: $showUserBets) {
-                    PlayerBetsView(userID: $userID)
-                }
+        }
+        .onTapGesture {
+            showUserBets.toggle()
+            userID = user.id!
+        }
+        .sheet(isPresented: $showUserBets) {
+            PlayerBetsView(userID: $userID)
         }
     }
 
