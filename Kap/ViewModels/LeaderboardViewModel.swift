@@ -16,12 +16,12 @@ class LeaderboardViewModel {
             let bets = bets.filter({ $0.playerID == user.id ?? "" && $0.result != .pending})
             let parlay = parlays.filter({ $0.playerID == user.id ?? "" && $0.result != .pending})
             let points = bets.map { $0.points ?? 0 }.reduce(0, +) + (parlay.first?.totalPoints ?? 0)
-            let missedSundayPoints: Double = Double(7 - bets.filter({ $0.betOption.game.dayType == DayType.sunday.rawValue}).count) * -10.0
-            let missedMondayPoints: Double = Double(1 - bets.filter({ $0.betOption.game.dayType == DayType.mnf.rawValue}).count) * -10.0
-            let missedSNFPoints: Double = Double(1 - bets.filter({ $0.betOption.game.dayType == DayType.snf.rawValue}).count) * -10.0
-            let missedTNFPoints: Double = Double(1 - bets.filter({ $0.betOption.game.dayType == DayType.tnf.rawValue}).count) * -10.0
+//            let missedSundayPoints: Double = Double(7 - bets.filter({ $0.betOption.game.dayType == DayType.sunday.rawValue}).count) * -10.0
+//            let missedMondayPoints: Double = Double(1 - bets.filter({ $0.betOption.game.dayType == DayType.mnf.rawValue}).count) * -10.0
+//            let missedSNFPoints: Double = Double(1 - bets.filter({ $0.betOption.game.dayType == DayType.snf.rawValue}).count) * -10.0
+//            let missedTNFPoints: Double = Double(1 - bets.filter({ $0.betOption.game.dayType == DayType.tnf.rawValue}).count) * -10.0
             
-            newUser.totalPoints = points + missedSNFPoints + missedTNFPoints + missedMondayPoints + missedSundayPoints
+            newUser.totalPoints = points
             rankedUsers.append(newUser)
         }
         
@@ -43,12 +43,12 @@ class LeaderboardViewModel {
         let parlays = parlays.filter({ $0.playerID == userID && $0.result != .pending})
         let points = bets.map { $0.points ?? 0 }.reduce(0, +) + (parlays.first?.totalPoints ?? 0)
         
-        let missedSundayPoints: Double = Double(7 - bets.filter({ $0.betOption.game.dayType == DayType.sunday.rawValue}).count) * -10.0
-        let missedMondayPoints: Double = Double(1 - bets.filter({ $0.betOption.game.dayType == DayType.mnf.rawValue}).count) * -10.0
-        let missedSNFPoints: Double = Double(1 - bets.filter({ $0.betOption.game.dayType == DayType.snf.rawValue}).count) * -10.0
-        let missedTNFPoints: Double = Double(1 - bets.filter({ $0.betOption.game.dayType == DayType.tnf.rawValue}).count) * -10.0
+//        let missedSundayPoints: Double = Double(7 - bets.filter({ $0.betOption.game.dayType == DayType.sunday.rawValue}).count) * -10.0
+//        let missedMondayPoints: Double = Double(1 - bets.filter({ $0.betOption.game.dayType == DayType.mnf.rawValue}).count) * -10.0
+//        let missedSNFPoints: Double = Double(1 - bets.filter({ $0.betOption.game.dayType == DayType.snf.rawValue}).count) * -10.0
+//        let missedTNFPoints: Double = Double(1 - bets.filter({ $0.betOption.game.dayType == DayType.tnf.rawValue}).count) * -10.0
         
-        return points + missedSundayPoints + missedSNFPoints + missedMondayPoints + missedTNFPoints
+        return points
     }
     
     func getWeeklyPointsDifference(userID: String, bets: [Bet], parlays: [Parlay], currentWeek: Int, leagueID: String) async -> Double {

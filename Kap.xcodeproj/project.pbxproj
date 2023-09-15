@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		3E195C762A74683200FB0CAD /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E195C752A74683200FB0CAD /* Constants.swift */; };
 		3E195C782A747D8300FB0CAD /* LeaderboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E195C772A747D8300FB0CAD /* LeaderboardViewModel.swift */; };
+		3E2995852AB4ED5E00F40003 /* PlayerBetsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E2995842AB4ED5E00F40003 /* PlayerBetsView.swift */; };
 		3E3596BF2A6C0B1800948A38 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 3E3596BE2A6C0B1800948A38 /* FirebaseAuth */; };
 		3E3596C12A6C0B1800948A38 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 3E3596C02A6C0B1800948A38 /* FirebaseFirestore */; };
 		3E3596C32A6C0B1800948A38 /* FirebaseFirestoreSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 3E3596C22A6C0B1800948A38 /* FirebaseFirestoreSwift */; };
@@ -51,6 +52,7 @@
 /* Begin PBXFileReference section */
 		3E195C752A74683200FB0CAD /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		3E195C772A747D8300FB0CAD /* LeaderboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaderboardViewModel.swift; sourceTree = "<group>"; };
+		3E2995842AB4ED5E00F40003 /* PlayerBetsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerBetsView.swift; sourceTree = "<group>"; };
 		3E5D8D222A639B5300634DBE /* Board.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Board.swift; sourceTree = "<group>"; };
 		3E5D8D242A63A4F100634DBE /* CustomButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomButton.swift; sourceTree = "<group>"; };
 		3E5D8D262A64718C00634DBE /* MyBets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyBets.swift; sourceTree = "<group>"; };
@@ -193,6 +195,7 @@
 				3E5D8D242A63A4F100634DBE /* CustomButton.swift */,
 				3EDBFCD92A8EEE0D00EB8628 /* Profile.swift */,
 				3EDBFCDB2A8FC03000EB8628 /* LiveScore.swift */,
+				3E2995842AB4ED5E00F40003 /* PlayerBetsView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -325,6 +328,7 @@
 				3EE35E602A60DBE80026F952 /* HomeViewModel.swift in Sources */,
 				3EDBFCD42A8E907500EB8628 /* UserService.swift in Sources */,
 				3EDBFCD62A8EA18000EB8628 /* Login.swift in Sources */,
+				3E2995852AB4ED5E00F40003 /* PlayerBetsView.swift in Sources */,
 				3EE35E592A60D7B30026F952 /* Bet.swift in Sources */,
 				3ED8EC3B2A65F47400E05FF2 /* Betslip.swift in Sources */,
 				3EDBFCDA2A8EEE0D00EB8628 /* Profile.swift in Sources */,
@@ -460,7 +464,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_ASSET_PATHS = "\"Kap/Preview Content\"";
 				DEVELOPMENT_TEAM = G9RPYMS2PA;
 				ENABLE_PREVIEWS = YES;
@@ -476,7 +480,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1.4;
+				MARKETING_VERSION = 0.1.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.devsmond.loch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -491,7 +495,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_ASSET_PATHS = "\"Kap/Preview Content\"";
 				DEVELOPMENT_TEAM = G9RPYMS2PA;
 				ENABLE_PREVIEWS = YES;
@@ -507,7 +511,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1.4;
+				MARKETING_VERSION = 0.1.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.devsmond.loch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

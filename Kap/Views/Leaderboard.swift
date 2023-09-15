@@ -24,6 +24,9 @@ struct Leaderboard: View {
     @State private var parlays: [Parlay] = []
     @State private var weeklyPoints: Double?
     
+    @State private var showUserBets = false
+    @State private var userID = ""
+    
     var body: some View {
         ZStack(alignment: .top) {
             Color("onyx").ignoresSafeArea()
@@ -111,6 +114,13 @@ struct Leaderboard: View {
             }
 
             userDetailHStack(for: user, index: index)
+                .onTapGesture {
+                    showUserBets.toggle()
+                    userID = user.id!
+                }
+                .sheet(isPresented: $showUserBets) {
+                    PlayerBetsView(userID: $userID)
+                }
         }
     }
 
@@ -160,7 +170,7 @@ struct Leaderboard: View {
                     .fontWeight(.bold)
                 
                 HStack(spacing: 4) {
-                    Text("Points: \((((user.totalPoints ?? 0) + 100)).oneDecimalString)")
+                    Text("Points: \((((user.totalPoints ?? 0))).oneDecimalString)")
                         .font(.caption.bold())
                         .foregroundStyle(.secondary)
                 }
