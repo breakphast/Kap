@@ -26,6 +26,7 @@ struct Leaderboard: View {
     
     @State private var showUserBets = false
     @State private var userID = ""
+    @State private var missedCount = [String: Int]()
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -54,6 +55,10 @@ struct Leaderboard: View {
                 leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, weeks: [1, 2])
                 
                 bigMovers = LeaderboardViewModel().bigMover(from: homeViewModel.leaderboards[0], to: homeViewModel.leaderboards[1])
+                
+                for user in users {
+                    await fetchDataFor(user: user)
+                }
             } catch {
                 
             }
@@ -179,6 +184,11 @@ struct Leaderboard: View {
                     Text("Points: \((((user.totalPoints ?? 0))).twoDecimalString)")
                         .font(.caption.bold())
                         .foregroundStyle(.secondary)
+                    if missedCount[user.id ?? ""] ?? 0 > 0 {
+                        Text("(-\(missedCount[user.id ?? ""] ?? 0))")
+                            .foregroundStyle(Color("redd"))
+                            .font(.caption2.bold())
+                    }
                 }
             }
             
@@ -200,6 +210,10 @@ struct Leaderboard: View {
         .padding(.vertical, 12)
     }
 
+    func fetchDataFor(user: User) async {
+        let count = await UserViewModel().fetchMissedBetsCount(for: user.id ?? "", week: 2) ?? 0
+        missedCount[user.id ?? ""] = count
+    }
     
     private func bigMoverDirection(for user: User) -> Bool? {
         return bigMovers?.first(where: { $0.0.id == user.id })?.up
