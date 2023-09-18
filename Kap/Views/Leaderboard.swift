@@ -48,6 +48,9 @@ struct Leaderboard: View {
 
                 users = await LeaderboardViewModel().getLeaderboardData(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays)
                 await updatePointsDifferences()
+                for user in users {
+                    await fetchDataFor(user: user)
+                }
                 
                 homeViewModel.bets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
                 homeViewModel.parlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
@@ -55,10 +58,6 @@ struct Leaderboard: View {
                 leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, weeks: [1, 2])
                 
                 bigMovers = LeaderboardViewModel().bigMover(from: homeViewModel.leaderboards[0], to: homeViewModel.leaderboards[1])
-                
-                for user in users {
-                    await fetchDataFor(user: user)
-                }
             } catch {
                 
             }
@@ -118,38 +117,24 @@ struct Leaderboard: View {
 
     func userDetailZStack(index: Int, user: User) -> some View {
         ZStack(alignment: .leading) {
-            if index == 0 {
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.clear)
-                    .frame(minWidth: 0, maxWidth: .infinity)
-                    .padding()
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20)
-                            .stroke(week != 1 ? Color("leader") : Color("onyxLightish"), lineWidth: 3)
-                    )
-            } else {
-                userDetailStrokeRoundedRectangle(for: user)
-            }
-
+            userDetailStrokeRoundedRectangle(for: user)
             userDetailHStack(for: user, index: index)
         }
     }
 
     func userDetailStrokeRoundedRectangle(for user: User) -> some View {
         RoundedRectangle(cornerRadius: 20)
-            .stroke(determineColor(for: user), lineWidth: 3)
+            .stroke(determineColor(for: user), lineWidth: authViewModel.currentUser?.id == user.id ? 5 : 3)
     }
     
     func determineColor(for user: User) -> Color {
-        if week != 1 {
-            if let bigMove = bigMoverDirection(for: user) {
-                if homeViewModel.bets.filter({ $0.playerID == user.id }).count != 0 {
-                    return bigMove ? Color("bean") : Color.red
-                }
-            }
+        if authViewModel.currentUser?.id == user.id {
+            return Color("lion")
         }
+
         return Color("onyxLightish")
     }
+
     
     var menu: some View {
         Menu {

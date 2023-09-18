@@ -14,7 +14,7 @@ struct Login: View {
     @AppStorage("password") private var pass = ""
 
 
-    @State private var email = UserDefaults.standard.string(forKey: "email")
+    @State private var email = UserDefaults.standard.string(forKey: "email")?.lowercased()
     @State private var password = UserDefaults.standard.string(forKey: "password")
     @State private var username = ""
     @State private var fullName = ""

@@ -61,8 +61,6 @@ struct PlacedBetView: View {
                     }
                     .font(.caption2.bold())
                     .lineLimit(1)
-//                    .foregroundStyle(.secondary)
-//                    .padding(.trailing, 20)
                     
                     HStack {
                         HStack(spacing: 4) {
@@ -84,7 +82,6 @@ struct PlacedBetView: View {
                 .padding(.horizontal, 24)
             }
             .fontDesign(.rounded)
-//            .foregroundStyle(.white)
             .multilineTextAlignment(.leading)
             
             if Date() < bet.game.date {

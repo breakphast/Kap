@@ -44,19 +44,31 @@ struct PlayerBetsView: View {
                 .frame(width: 100, height: 4)
                 .foregroundStyle(Color("onyxLightish"))
             
-            Text("\(homeViewModel.users.first(where: { $0.id == userID })!.username)'s Bets")
-                .foregroundStyle(Color("lion"))
-                .font(.title3)
-                .fontWeight(.semibold)
-                .padding(.top)
             if isEmptyBets(for: .win) && isEmptyBets(for: .loss) && isEmptyBets(for: .push) && parlays.filter({ $0.result != .pending }).isEmpty {
                 Text("No settled bets")
                     .font(.largeTitle.bold())
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             } else {
-                Text("POINTS: \((weeklyPoints ?? 0).twoDecimalString)")
-                    .font(.system(.body, design: .rounded, weight: .bold))
-
+                VStack(alignment: .leading) {
+                    HStack {
+                        Image("avatar\(homeViewModel.users.first(where: { $0.id == userID })?.avatar ?? 0)")
+                            .resizable()
+                            .scaledToFill()
+                            .clipShape(Circle())
+                            .frame(width: 25, height: 25)
+                        
+                        Text("\(homeViewModel.users.first(where: { $0.id == userID })!.username)")
+                            .foregroundStyle(Color("lion"))
+                            .font(.title3)
+                            .fontWeight(.semibold)
+                    }
+                    
+                    Text("POINTS: \((weeklyPoints ?? 0).twoDecimalString)")
+                        .font(.system(.body, design: .rounded, weight: .bold))
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.leading, 20)
+                
                 ScrollView(showsIndicators: false) {
                     betSection(for: .tnf, settled: true)
                         .padding(.top)
@@ -66,7 +78,7 @@ struct PlayerBetsView: View {
                 }
             }
         }
-        .padding(.top, 16)
+        .padding(.top, 12)
     }
 
     func parlaySection(settled: Bool) -> some View {
