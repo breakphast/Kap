@@ -136,16 +136,19 @@ class BetViewModel {
         guard bet.result == .pending else { return }
         
         let newbet = db.collection("newBets").document(bet.id)
-        newbet.updateData([
-            "result": result.rawValue
-        ]) { err in
-            if let err = err {
-                print("Error updating BET RESULT: \(err)")
-            } else {
-                print("Document successfully updatedddd")
-                
+        if let newPoints = bet.points {
+            newbet.updateData([
+                "result": result.rawValue,
+                "points": result == .push ? 0 : newPoints * (result == .win ? 1 : -1)
+            ]) { err in
+                if let err = err {
+                    print("Error updating BET RESULT: \(err)")
+                } else {
+                    print("Bet result successfully updated")
+                    
+                }
             }
-        } 
+        }
     }
     
     func deleteBet(betID: String) async throws {

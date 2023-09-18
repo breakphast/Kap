@@ -176,7 +176,7 @@ struct Leaderboard: View {
                     .fontWeight(.bold)
                 
                 HStack(spacing: 4) {
-                    Text("Points: \((((user.totalPoints ?? 0))).oneDecimalString)")
+                    Text("Points: \((((user.totalPoints ?? 0))).twoDecimalString)")
                         .font(.caption.bold())
                         .foregroundStyle(.secondary)
                 }

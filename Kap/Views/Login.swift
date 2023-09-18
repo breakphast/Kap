@@ -46,6 +46,7 @@ struct Login: View {
                 .buttonStyle(.bordered)
                 .foregroundStyle(login ? Color("oW") : Color("onyx"))
                 .bold()
+                .disabled(true)
             }
             
             if login {

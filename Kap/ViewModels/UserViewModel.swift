@@ -53,34 +53,45 @@ class UserViewModel: ObservableObject {
         }
     }
     
-    func updateUserPoints(user: User, bets: [Bet], parlays: [Parlay], week: Int, missing: Bool) {
-        let newUser = db.collection("users").document(user.id!)
-        
-        let bets = bets.filter({ $0.playerID == user.id ?? "" && $0.result != .pending && $0.week == 2 })
-        let parlay = parlays.filter({ $0.playerID == user.id ?? "" && $0.result != .pending && week == 2 })
-        let points = bets.map { $0.points ?? 0 }.reduce(0, +) + (parlay.first?.totalPoints ?? 0)
-                
-        let dayTypeCounts: [DayType: Int] = [
-            .sunday: 7,
-            .mnf: 1,
-            .snf: 1,
-            .tnf: 1
-        ]
+    func fetchMissedBetsCount(for userID: String, week: Int) async -> Int? {
+        let weekDocumentID = "week\(week)"
+        let userDocument = db.collection("users").document(userID)
 
-        let totalMissedPoints: Double = dayTypeCounts.map { (dayType, expectedCount) in
-            Double(expectedCount - bets.filter { $0.betOption.game.dayType == dayType.rawValue }.count) * -10.0
-        }.reduce(0, +)
-        
-        let totalPoints = points + (missing ? totalMissedPoints : 0)
-        
-        newUser.updateData([
-            "totalPoints": totalPoints
-        ]) { err in
-            if let err = err {
-                print("Error updating USERRRR: \(err)")
-            } else {
-//                print("Document successfully updated")
+        do {
+            let document = try await userDocument.collection("missedBets").document(weekDocumentID).getDocument()
+            if let missedBet = try? document.data(as: MissedBet.self) {
+                return missedBet.missedCount
             }
+        } catch {
+            print("Error fetching missed bets for \(weekDocumentID): \(error)")
+        }
+        
+        return nil
+    }
+    
+    func updateUserPoints(user: User, bets: [Bet], parlays: [Parlay], week: Int, missing: Bool) async {
+        guard let userID = user.id else {
+            print("User ID is nil")
+            return
+        }
+
+        let newUser = db.collection("users").document(userID)
+
+        // Filter bets for the current user and the given week
+        let userBets = bets.filter { $0.playerID == userID && $0.week == week }
+        let settledBets = userBets.filter { $0.result != .pending }
+        let parlay = parlays.first(where: { $0.playerID == userID && $0.result != .pending && $0.week == week })
+
+        let points = settledBets.map { $0.points ?? 0 }.reduce(0, +) + (parlay?.totalPoints ?? 0)
+
+        var totalPoints = points
+        totalPoints += Double(await fetchMissedBetsCount(for: userID, week: week) ?? 0) * -10.0
+        
+        do {
+            try await newUser.updateData(["totalPoints": totalPoints])
+            print("User successfully updated")
+        } catch {
+            print("Error updating USERRRR: \(error)")
         }
     }
 
@@ -92,7 +103,7 @@ class UserViewModel: ObservableObject {
             print("Error adding user: \(error)")
         }
     }
-
+    
     // Delete a user
     func deleteUser(userId: String) {
         db.collection("users").document(userId).delete { error in
@@ -104,3 +115,60 @@ class UserViewModel: ObservableObject {
         }
     }
 }
+
+
+//func updateUserPoints(user: User, bets: [Bet], parlays: [Parlay], week: Int, missing: Bool) {
+//    guard let userID = user.id else {
+//        print("User ID is nil")
+//        return
+//    }
+//
+//    let newUser = db.collection("users").document(userID)
+//
+//    // Filter bets for the current user and the given week
+//    let userBets = bets.filter { $0.playerID == userID && $0.week == week }
+//    let settledBets = userBets.filter { $0.result != .pending }
+////        let unsettledBets = userBets.filter { $0.result == .pending }
+//    let parlay = parlays.first(where: { $0.playerID == userID && $0.result != .pending && $0.week == week })
+//
+//    let points = settledBets.map { $0.points ?? 0 }.reduce(0, +) + (parlay?.totalPoints ?? 0)
+//
+//    var totalPoints = points
+//
+//    Task {
+//        await totalPoints += Double(fetchMissedBetsCount(for: userID, week: week) ?? 0) * -10.0
+//    }
+//
+//    let weekDocumentID = "week\(week)"
+//    let missedBetDocument = newUser.collection("missedBets").document(weekDocumentID)
+//
+//    let ok = user.missedBets?.count
+//    print(ok ?? "fefeee")
+//
+////        missedBetDocument.getDocument { document, error in
+////            if let doc = document, doc.exists, let missedBet = try? doc.data(as: MissedBet.self) {
+////                // Increment missedCount by 1 and update the document
+////                missedBetDocument.setData([
+////                    "week": weekDocumentID,
+////                    "missedCount": missedBet.missedCount + 1
+////                ], merge: true)
+////            } else {
+////                // Create a new missedBet document for this week
+////                missedBetDocument.setData([
+////                    "week": weekDocumentID,
+////                    "missedCount": 1
+////                ])
+////            }
+////        }
+//
+//    newUser.updateData([
+//        "totalPoints": totalPoints
+//    ]) { err in
+//        if let err = err {
+//            print("Error updating USERRRR: \(err)")
+//        } else {
+//            print("User successfully updated")
+//        }
+//    }
+//
+//}

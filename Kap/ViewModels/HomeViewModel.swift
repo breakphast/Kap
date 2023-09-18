@@ -31,9 +31,9 @@ class HomeViewModel: ObservableObject {
     @Published var changed: Bool = false
     
     static let keys = [
-        "943f74f30bf5cc70122808236c9036d0",
-        "82fee1c48841c270c9ec1d48b6af26c0",
-        "eff16b6cc4e272cc610212bd2dfa8836"
+        "4361370f2df59d9c4aabf5b7ff5fd438",
+        "823ff29071d3b6ae29ac2463dc53b2b5",
+        "753dc10555c828e2828d33832e8e0ea3"
     ]
     
     let formatter: DateFormatter = {
@@ -195,17 +195,21 @@ class HomeViewModel: ObservableObject {
                     let result = bet.game.betResult(for: bet.betOption)
                     if result != .pending {
                         BetViewModel().updateBetResult(bet: bet, result: result)
+                    } else if result == .push {
+                        BetViewModel().updateBetResult(bet: bet, result: result)
                     }
                 }
 
                 self.bets = newBets
                 
-                for user in self.users {
-                    UserViewModel().updateUserPoints(user: user, bets: self.bets, parlays: self.parlays, week: self.currentWeek, missing: false)
+                Task {
+                    for user in self.users {
+                        await UserViewModel().updateUserPoints(user: user, bets: newBets, parlays: self.parlays, week: self.currentWeek, missing: true)
+                    }
                 }
             }
         } catch {
-            print("Failed update and fetch")
+            print("Failed update and fetch", error.localizedDescription)
         }
     }
     

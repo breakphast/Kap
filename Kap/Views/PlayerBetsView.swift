@@ -54,7 +54,7 @@ struct PlayerBetsView: View {
                     .font(.largeTitle.bold())
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             } else {
-                Text("POINTS: \((weeklyPoints ?? 0).oneDecimalString)")
+                Text("POINTS: \((weeklyPoints ?? 0).twoDecimalString)")
                     .font(.system(.body, design: .rounded, weight: .bold))
 
                 ScrollView(showsIndicators: false) {

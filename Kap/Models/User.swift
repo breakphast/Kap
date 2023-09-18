@@ -17,4 +17,10 @@ struct User: Codable, Identifiable {
     var leagues: [String]?  // Store league IDs the user is part of
     var totalPoints: Double?
     var avatar: Int?
+    var missedBets: [MissedBet]?
+}
+
+struct MissedBet: Codable {
+    var week: String
+    var missedCount: Int
 }

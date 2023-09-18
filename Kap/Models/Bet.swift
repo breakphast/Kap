@@ -215,7 +215,7 @@ enum DayType: String {
 }
 
 extension Double {
-    var oneDecimalString: String {
-        return String(format: "%.1f", self)
+    var twoDecimalString: String {
+        return String(format: "%.2f", self)
     }
 }
