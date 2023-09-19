@@ -75,14 +75,12 @@ struct HowToPlay: View {
                 .font(.title)
                 .fontWeight(.black)
             Text("A full season consists of 16 weeks.\nThe top 6 (varies by league settings) leaders in points advance to the Playoffs.")
-                .foregroundColor(Color("oW"))
                 .fontWeight(.none)
-            Text("There are 3 rounds of playoffs\n- Quarterfinals\n- Semifinals\n- Championship")
-                .foregroundColor(Color("oW"))
-            Text("The 2 players with the least amount of points are eliminated per round.\nThe points format stays the same, except there are no parlay bonuses.")
-                .foregroundColor(Color("oW"))
+            Text("There are 3 rounds of playoffs\n- Quarterfinals\n- Semifinals\n- Championship\n\nThe points format stays the same, except there are no parlay bonuses.")
+            Text("The 2 players with the least amount of points are eliminated per round until the Championship.\nThe player with the most points for week 16 wins the Championship.")
                 .fontWeight(.none)
         }
+        .foregroundColor(Color("oW"))
         .fontWeight(.semibold)
     }
 }
@@ -153,10 +151,11 @@ struct InstructionStep: View {
                     .fontWeight(.black)
                 Text("Each bet is calculated using a base of 10 points and is adjusted based on its odds.")
                     .foregroundColor(Color("oW"))
-                    .fontWeight(.none)
-                Text("If a bet ") + Text("wins").foregroundColor(Color("bean")) + Text(", the player is rewarded the calculated points.\nIf a bet ") + Text("loses").foregroundColor(Color("redd")) + Text(", the player is deducted 10 base points.")
-                    .fontWeight(.none)
+                Text("SEA Seahawks ML +150 = 15 Points\nDAL Cowboys -3.5 -110 = 9.1 Points")
+                    .fontWeight(.bold)
+                Text("If a bet ") + Text("wins").foregroundColor(Color("bean")) + Text(", the player is rewarded the calculated points.\nIf a bet ") + Text("loses").foregroundColor(Color("redd")) + Text(", the player is deducted 10 points.")
             }
+            .fontWeight(.none)
             
             HStack {
                 Image("settledBet")
