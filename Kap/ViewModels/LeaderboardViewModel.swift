@@ -25,7 +25,7 @@ class LeaderboardViewModel {
     }
     
     func getWeeklyPoints(userID: String, bets: [Bet], parlays: [Parlay], week: Int, leagueID: String) async -> Double {
-        let bets = bets.filter({ $0.playerID == userID && $0.week == week && $0.result != .pending})
+        let bets = bets.filter({ $0.playerID == userID && $0.week == week && $0.result != .pending && $0.result != .push})
         let parlays = parlays.filter({ $0.playerID == userID && $0.week == week && $0.result != .pending})
         let points = bets.map { $0.points ?? 0 }.reduce(0, +) + (parlays.first?.totalPoints ?? 0)
         
@@ -33,7 +33,7 @@ class LeaderboardViewModel {
     }
     
     func getTotalPoints(userID: String, bets: [Bet], parlays: [Parlay], leagueID: String) async -> Double {
-        let bets = bets.filter({ $0.playerID == userID && $0.result != .pending})
+        let bets = bets.filter({ $0.playerID == userID && $0.result != .pending && $0.result != .push})
         let parlays = parlays.filter({ $0.playerID == userID && $0.result != .pending})
         let points = bets.map { $0.points ?? 0 }.reduce(0, +) + (parlays.first?.totalPoints ?? 0)
         
