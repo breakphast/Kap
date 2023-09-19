@@ -24,7 +24,7 @@ class HomeViewModel: ObservableObject {
     
     @Published var activePlayer: Player?
     @Published var activeUserID: String
-    @Published var currentWeek = 2
+    @Published var currentWeek = 3
     @Published var activeLeague: League?
     @Published var currentDate: String = ""
     
@@ -137,16 +137,22 @@ class HomeViewModel: ObservableObject {
     
     func fetchEssentials(updateGames: Bool, updateScores: Bool) async {
         do {
-            if updateGames {
-                // update games odds and bet options
-                let updatedGames = try await GameService().getGames()
-                GameService().addGames(games: updatedGames)
-            }
-            
             let fetchedUsers = try await UserViewModel().fetchAllUsers()
             let fetchedLeagues = try await LeagueViewModel().fetchAllLeagues()
             let fetchedAllGames = try await GameService().fetchGamesFromFirestore()
             let fetchedGames = try await GameService().fetchGamesFromFirestore().chunked(into: 16)[Int(currentWeek) - 1]
+            
+            if updateGames {
+                let updatedGames = try await GameService().getGames()
+                let matchingGames = updatedGames.filter { updatedGame in
+                    fetchedGames.contains { fetchedGame in
+                        return updatedGame.id == fetchedGame.id
+                    }
+                }
+                print(matchingGames.map { $0.betOptions.map {$0.odds}}.count)
+                GameService().addGames(games: matchingGames)
+            }
+
             let fetchedBets = try await BetViewModel().fetchBets(games: fetchedAllGames)
             let fetchedParlays = try await ParlayViewModel().fetchParlays(games: fetchedAllGames)
             

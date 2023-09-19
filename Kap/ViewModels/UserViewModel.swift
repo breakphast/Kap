@@ -79,14 +79,13 @@ class UserViewModel: ObservableObject {
 
         // Filter bets for the current user and the given week
         let userBets = bets.filter { $0.playerID == userID && $0.week == week }
-        let settledBets = userBets.filter { $0.result != .pending }
+        let settledBets = userBets.filter { $0.result != .pending && $0.result != .push}
         let parlay = parlays.first(where: { $0.playerID == userID && $0.result != .pending && $0.week == week })
 
         let points = settledBets.map { $0.points ?? 0 }.reduce(0, +) + (parlay?.totalPoints ?? 0)
-
+        
         var totalPoints = points
         totalPoints += Double(await fetchMissedBetsCount(for: userID, week: week) ?? 0) * -10.0
-        
         do {
             try await newUser.updateData(["totalPoints": totalPoints])
             print("User successfully updated")

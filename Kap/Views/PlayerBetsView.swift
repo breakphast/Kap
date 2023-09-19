@@ -63,7 +63,7 @@ struct PlayerBetsView: View {
                             .fontWeight(.semibold)
                     }
                     
-                    Text("POINTS: \((weeklyPoints ?? 0).twoDecimalString)")
+                    Text("POINTS: \((homeViewModel.users.first(where: {$0.id == userID})?.totalPoints ?? 0).twoDecimalString)")
                         .font(.system(.body, design: .rounded, weight: .bold))
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
