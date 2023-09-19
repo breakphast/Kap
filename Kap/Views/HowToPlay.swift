@@ -9,66 +9,49 @@ import SwiftUI
 
 struct HowToPlay: View {
     var body: some View {
-            ZStack(alignment: .top) {
-                Color("onyx").ignoresSafeArea()
-                ScrollView(showsIndicators: false) {
-                    VStack {
-                        header
-                        titleText
-                        instructionsContent
-                        endSpacer
+        ZStack(alignment: .top) {
+            Color("onyx").ignoresSafeArea()
+            ScrollView(showsIndicators: false) {
+                VStack {
+                    HStack(spacing: 16) {
+                        Image("loch")
+                            .resizable()
+                            .frame(width: 60, height: 60)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                            .shadow(color: Color("oW").opacity(0.7), radius: 4)
+                        
+                        VStack(alignment: .leading) {
+                            Text("Loch")
+                                .font(.title.bold())
+                            Text("Competitive Sports Betting")
+                                .font(.title3)
+                                .fontWeight(.semibold)
+                                .foregroundColor(Color("lion"))
+                        }
                     }
-                }
-                .padding(.top, 4)
-            }
-            .fontDesign(.rounded)
-            .preferredColorScheme(.dark)
-        }
-        
-        var header: some View {
-            HStack(spacing: 16) {
-                Image("loch")
-                    .resizable()
-                    .frame(width: 60, height: 60)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                    .shadow(color: Color("oW").opacity(0.7), radius: 4)
-                
-                VStack(alignment: .leading) {
-                    Text("Loch")
-                        .font(.title.bold())
-                    Text("Competitive Sports Betting")
-                        .font(.title3)
-                        .fontWeight(.semibold)
-                        .foregroundColor(Color("lion"))
-                }
-            }
-            .padding(.top, 8)
-        }
-        
-        var titleText: some View {
-            Text("How To Play")
-                .font(.title.bold())
-                .padding(.top)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.leading, 20)
-        }
-        
-        var instructionsContent: some View {
-            VStack(alignment: .leading) {
-                InstructionStep(number: "1", description: "Select your bets for the week")
-                InstructionStep(number: "2", description: "Wait for your bets to settle")
-                schedule
+                    .padding(.top, 8)
+                    
+                    VStack(alignment: .leading) {
+                        Text("How To Play")
+                            .font(.title.bold())
+                        InstructionStep(number: "1", description: "Select your bets for the week")
+                        InstructionStep(number: "2", description: "Wait for your bets to settle")
+                        schedule
+                    }
+                    .padding(.horizontal, 20)
                     .padding(.top)
+                    
+                    RoundedRectangle(cornerRadius: 2)
+                        .frame(height: 20)
+                        .foregroundColor(.clear)
+                }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 20)
+            .padding(.top, 4)
         }
-        
-        var endSpacer: some View {
-            RoundedRectangle(cornerRadius: 2)
-                .frame(height: 20)
-                .foregroundColor(.clear)
-        }
+        .fontDesign(.rounded)
+        .preferredColorScheme(.dark)
+    }
+    
     var schedule: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Season & Playoffs")
@@ -76,7 +59,8 @@ struct HowToPlay: View {
                 .fontWeight(.black)
             Text("A full season consists of 16 weeks.\nThe top 6 (varies by league settings) leaders in points advance to the Playoffs.")
                 .fontWeight(.none)
-            Text("There are 3 rounds of playoffs\n- Quarterfinals\n- Semifinals\n- Championship\n\nThe points format stays the same, except there are no parlay bonuses.")
+            Text("There are 3 rounds of playoffs\n- Quarterfinals\n- Semifinals\n- Championship")
+            Text("The points format stays the same, except there are no parlay bonuses.")
             Text("The 2 players with the least amount of points are eliminated per round until the Championship.\nThe player with the most points for week 16 wins the Championship.")
                 .fontWeight(.none)
         }
@@ -129,7 +113,7 @@ struct InstructionStep: View {
                         Text("Thursday Night Football: 1 Bet\nSunday Afternoon Games: 7 Bets\nSunday Night Football: 1 Bet\nMonday Night Football: 1 Bet")
                             .foregroundColor(Color("oW"))
                             .fontWeight(.none)
-                        Text("Users must bet all 10 games in the specified format. Each missed bet will be counted as a loss.")
+                        Text("Players must bet all 10 games in the specified format. Each missed bet will be counted as a loss.")
                             .fontWeight(.bold)
                         Text("Players also get 1 Parlay Bonus per week. The parlay must be between +400 and +1000. This is optional and can result in a loss (-10 points).")
                     }
@@ -162,17 +146,17 @@ struct InstructionStep: View {
                     .resizable()
                     .scaledToFill()
                     .clipShape(RoundedRectangle(cornerRadius: 10))
-                    .frame(width: 120, height: 120)  // Specify both width and height
+                    .frame(width: 120, height: 120)
                     .shadow(color: Color("oW").opacity(0.2), radius: 4)
                 Spacer()
                 Image("lostBet")
                     .resizable()
                     .scaledToFill()
                     .clipShape(RoundedRectangle(cornerRadius: 10))
-                    .frame(width: 120, height: 120)  // Specify both width and height
+                    .frame(width: 120, height: 120)
                     .shadow(color: Color("oW").opacity(0.2), radius: 4)
             }
-            .padding(.horizontal, 30)
+            .padding(.horizontal, 20)
             
             Text("As bets settle, the leaderboard is updated accordingly. This shows league rankings per week and overall.")
                 .fontWeight(.bold)
