@@ -40,6 +40,11 @@ struct Home: View {
                         Label("Leaderboard", systemImage: "rosette")
                     }
                 
+                HowToPlay()
+                    .tabItem {
+                        Label("Guide", systemImage: "text.book.closed.fill")
+                    }
+                
                 Profile(loggedIn: $loggedIn)
                 .tabItem {
                     Label("Profile", systemImage: "person.fill")

@@ -354,10 +354,10 @@ struct ParlayView: View {
         .padding(.horizontal, 20)
         .shadow(radius: 10)
         .onAppear {
-            isValid = parlays.count == 0 && parlay.totalOdds <= 800
+            isValid = parlays.count == 0 && parlay.totalOdds <= 1000
         }
         .onChange(of: parlays.count) { _ in
-            isValid = parlays.count == 0 && parlay.totalOdds <= 800
+            isValid = parlays.count == 0 && parlay.totalOdds <= 1000
         }
     }
     
