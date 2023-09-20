@@ -85,7 +85,7 @@ struct InstructionStep: View {
                     Text("Each week, players select 10 bets to compete and showcase their sports knowledge.")
                         .fontWeight(.medium)
                         .padding(.bottom, 2)
-                    Text("1. Select your bet(s) on the homepage.\n2.Click the BETSLIP tab to place your bets.")
+                    Text("1. Select your bet(s) on the homepage.\n2. Click the BETSLIP tab to place your bets.")
                         .fontWeight(.bold)
                     HStack {
                         Image("chooseBet")

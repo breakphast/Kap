@@ -15,6 +15,7 @@ struct PlacedBetView: View {
     @Namespace var trash
     let bet: Bet
     @Binding var bets: [Bet]
+    let week: Int
     
     func pointsColor(for result: BetResult) -> Color {
         switch result {
@@ -47,7 +48,7 @@ struct PlacedBetView: View {
                                 .lineLimit(nil)
                                 .fixedSize(horizontal: false, vertical: true)
                             Spacer()
-                            Text("(\(bet.game.dayType ?? "") \(bets.filter({ $0.game.dayType ?? "" == bet.betOption.game.dayType && bet.week == homeViewModel.currentWeek }).count)/\(maxBets))")
+                            Text("(\(bet.game.dayType ?? "") \(bets.filter({ $0.game.dayType ?? "" == bet.betOption.game.dayType && bet.week == week && $0.game.date == bet.game.date }).count)/\(maxBets))")
                                 .font(.caption.bold())
                                 .foregroundStyle(.secondary)
                         }
