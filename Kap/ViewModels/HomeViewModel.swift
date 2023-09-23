@@ -31,9 +31,11 @@ class HomeViewModel: ObservableObject {
     @Published var changed: Bool = false
     
     static let keys = [
-        "4361370f2df59d9c4aabf5b7ff5fd438",
-        "823ff29071d3b6ae29ac2463dc53b2b5",
-        "753dc10555c828e2828d33832e8e0ea3"
+        "4c43e84559d63c5465e9a1d972be7d2d",
+        "94d568e36a33661ecd2a6585aed7540a",
+        "7015a86284ef3ad5dab00b2bf1f15028",
+        "9cde7c14b69228fe849b0343c750622f",
+        "e7b29662e60b567df0f26156feb6da67"
     ]
     
     let formatter: DateFormatter = {
@@ -219,12 +221,16 @@ class HomeViewModel: ObservableObject {
         }
     }
     
-    func originalFetch(updateScores: Bool, updateGames: Bool) async {
+    func originalFetch(updateScores: Bool, updateGames: Bool, updateLeaderboards: Bool) async {
         do {
             let activeDate = self.formatter.string(from: Date())
             
             DispatchQueue.main.async {
                 self.currentDate = activeDate
+            }
+            
+            if updateLeaderboards {
+                let newLeaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: activeLeague?.id ?? "", users: self.users, bets: self.bets, parlays: self.parlays, weeks: [self.currentWeek - 1, self.currentWeek])
             }
             
             await self.fetchEssentials(updateGames: updateGames, updateScores: updateScores)

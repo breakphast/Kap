@@ -48,7 +48,7 @@ struct PlacedBetView: View {
                                 .lineLimit(nil)
                                 .fixedSize(horizontal: false, vertical: true)
                             Spacer()
-                            Text("(\(bet.game.dayType ?? "") \(bets.filter({ $0.game.dayType ?? "" == bet.betOption.game.dayType && bet.week == week && $0.game.date == bet.game.date }).count)/\(maxBets))")
+                            Text("(\(bet.game.dayType!) \(bets.filter({ $0.game.dayType! == bet.game.dayType && bet.week == week }).count)/\(maxBets))")
                                 .font(.caption.bold())
                                 .foregroundStyle(.secondary)
                         }
@@ -72,6 +72,11 @@ struct PlacedBetView: View {
                                 .foregroundStyle(pointsColor(for: bet.result ?? .pending))
                         }
                         Spacer()
+                        
+                        if Date() < bet.game.date && bet.result == .pending {
+                            menu
+                        }
+                        
                         if bet.result != .pending {
                             Image(systemName: bet.result == .win ? "checkmark.circle" : "xmark.circle")
                                 .font(.title3.bold())
@@ -84,57 +89,9 @@ struct PlacedBetView: View {
             }
             .fontDesign(.rounded)
             .multilineTextAlignment(.leading)
-            
-            if Date() < bet.game.date {
-                if deleteActive {
-                    HStack(spacing: 14) {
-                        Image(systemName: "xmark")
-                            .foregroundColor(Color("redd"))
-                            .font(.title.bold())
-                            .fontDesign(.rounded)
-                            .padding(.bottom, 12)
-                            .onTapGesture {
-                                withAnimation {
-                                    deleteActive.toggle()
-                                }
-                            }
-                        
-                        Image(systemName: "checkmark")
-                            .foregroundColor(Color("bean"))
-                            .font(.title.bold())
-                            .fontDesign(.rounded)
-                            .padding(.bottom, 12)
-                            .onTapGesture {
-                                withAnimation {
-                                    deleteActive.toggle()
-                                    Task {
-                                        let _ = try await BetViewModel().deleteBet(betID: bet.id)
-                                        bets.removeAll(where: { $0.id == bet.id })
-                                    }
-                                }
-                            }
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                    .padding(.bottom, 12)
-                    .matchedGeometryEffect(id: "trash", in: trash)
-                } else if bet.result == .pending {
-                    Image(systemName: "trash")
-                        .foregroundColor(.secondary)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                        .font(.system(.title2, design: .rounded, weight: .bold))
-                        .padding(.bottom, 12)
-                        .onTapGesture {
-                            withAnimation {
-                                deleteActive.toggle()
-                            }
-                        }
-                        .matchedGeometryEffect(id: "trash", in: trash)
-                }
-            }
         }
         .frame(height: 150)
         .cornerRadius(20)
-        .padding(.horizontal, 20)
         .task {
             switch DayType(rawValue: bet.game.dayType ?? "") {
             case .tnf, .mnf, .snf:
@@ -143,6 +100,29 @@ struct PlacedBetView: View {
                 self.maxBets = 7
             }
         }
+    }
+    
+    private var menu: some View {
+        Menu {
+            Button {
+                withAnimation {
+                    deleteActive.toggle()
+                    Task {
+                        let _ = try await BetViewModel().deleteBet(betID: bet.id)
+                        bets.removeAll(where: { $0.id == bet.id })
+                    }
+                }
+            } label: {
+                Label("Delete bet", systemImage: "trash")
+            }
+            Button("Cancel") {
+                
+            }
+        } label: {
+            Image(systemName: "ellipsis")
+                .font(.title2.bold())
+        }
+        .zIndex(1000)
     }
     
     var betText: String {
@@ -288,7 +268,6 @@ struct PlacedParlayView: View {
         }
         .frame(height: 160)
         .cornerRadius(20)
-        .padding(.horizontal, 20)
         .task {
             formattedBets = parlay.betString?.split(separator: ",").map { String($0.trimmingCharacters(in: .whitespaces))
             } ?? []

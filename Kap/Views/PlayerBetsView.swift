@@ -19,8 +19,10 @@ struct PlayerBetsView: View {
     @State private var parlays: [Parlay] = []
     @State private var weeklyPoints: Double?
     
-    @State private var selectedOption = "Week 3"
-    @State private var week = 2
+    @State private var selectedOption = "Overall"
+    @State private var week = 0
+    @State private var missedBets = 0
+    @State private var totalPoints: Double = 0
     
     @State private var selectedSegment = 0
     
@@ -35,13 +37,13 @@ struct PlayerBetsView: View {
         }
         .task {
             fetchData()
-            week = homeViewModel.currentWeek - (bets.isEmpty ? 1 : 0)
-            selectedOption = "Week \(week)"
             for parlay in parlays {
                 if parlay.result == .pending {
                     BetViewModel().updateParlay(parlay: parlay)
                 }
             }
+            missedBets = await UserViewModel().fetchMissedBetsCount(for: userID, week: homeViewModel.currentWeek) ?? 0
+            totalPoints = homeViewModel.users.first(where: { $0.id == userID })!.totalPoints!
         }
     }
 
@@ -57,21 +59,27 @@ struct PlayerBetsView: View {
                         .resizable()
                         .scaledToFill()
                         .clipShape(Circle())
-                        .frame(width: 25, height: 25)
+                        .frame(width: 30, height: 30)
                     
-                    Text("\(homeViewModel.users.first(where: { $0.id == userID })!.username)")
+                    Text("\(homeViewModel.users.first(where: { $0.id == userID })!.username.uppercased())")
                         .foregroundStyle(Color("lion"))
                         .font(.title3)
-                        .fontWeight(.semibold)
+                        .fontWeight(.black)
+                        .kerning(0.8)
                 }
                 
-                Text("POINTS: \((homeViewModel.users.first(where: {$0.id == userID})?.totalPoints ?? 0).twoDecimalString)")
-                    .font(.system(.body, design: .rounded, weight: .bold))
-                
-                menu
+                HStack(alignment: .center) {
+                    menu
+                    VStack(alignment: .leading) {
+                        Text(week == 0 ? totalPoints.twoDecimalString : calculateWeeklyPoints().twoDecimalString)
+                            .font(.system(.caption2, design: .rounded, weight: .bold))
+                        Text("Missing Bets: \(missedBets)")
+                            .font(.system(.caption2, design: .rounded, weight: .bold))
+                    }
+                }
+                .padding(.bottom, 4)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.leading, 20)
             
             ScrollView(showsIndicators: false) {
                 betSection(for: .tnf, settled: true)
@@ -81,8 +89,17 @@ struct PlayerBetsView: View {
             }
         }
         .padding(.top, 12)
+        .padding(.horizontal, 20)
     }
     
+    func calculateWeeklyPoints() -> Double {
+        let filteredBetsPoints = bets.filter { $0.week == week && $0.result != .push && $0.result != .pending }
+            .reduce(0) { $0 + ($1.points ?? 0) }
+        let parlayPoints = parlays.reduce(0) { $0 + ($1.totalPoints) }
+        
+        return filteredBetsPoints + parlayPoints
+    }
+
     func parlaySection(settled: Bool) -> some View {
         return AnyView(
             VStack(alignment: .leading, spacing: 16) {
@@ -132,7 +149,6 @@ struct PlayerBetsView: View {
                         .padding(.vertical, 8)
                         .background(Color("lion"))
                         .cornerRadius(4)
-                        .padding(.leading, 24)
                     
                     ForEach(filteredBets.sorted(by: { $0.game.date < $1.game.date }), id: \.id) { bet in
                         PlacedBetView(bet: bet, bets: $bets, week: bet.week)
@@ -150,6 +166,9 @@ struct PlayerBetsView: View {
     
     private var menu: some View {
         Menu {
+            Button("Overall") {
+                updateForWeek(0)
+            }
             ForEach(1...homeViewModel.currentWeek, id: \.self) { weekNumber in
                 Button("Week \(weekNumber)", action: {
                     updateForWeek(weekNumber)
@@ -177,11 +196,18 @@ struct PlayerBetsView: View {
             Task {
                 do {
                     let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
-                    bets = fetchedBets.filter { $0.playerID == userID && $0.week == weekNumber }
+                    if week == 0 {
+                        bets = fetchedBets.filter { $0.playerID == userID }
+                    } else {
+                        bets = fetchedBets.filter { $0.playerID == userID && $0.week == weekNumber }
+                    }
                     
                     let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
-                    parlays = fetchedParlays.filter { $0.playerID == userID && $0.week == weekNumber }
-                    
+                    if week == 0 {
+                        parlays = fetchedParlays.filter { $0.playerID == userID }
+                    } else {
+                        parlays = fetchedParlays.filter { $0.playerID == userID && $0.week == weekNumber }
+                    }
                     weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: userID, bets: bets, parlays: homeViewModel.parlays, week: weekNumber, leagueID: homeViewModel.activeLeague?.id ?? "")
                 } catch {
                     print("Error fetching data for week \(weekNumber): \(error)")
@@ -198,10 +224,17 @@ struct PlayerBetsView: View {
         Task {
             do {
                 let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
-                bets = fetchedBets.filter({ $0.playerID == userID && $0.week == week })
-                
+                if week == 0 {
+                    bets = fetchedBets.filter { $0.playerID == userID }
+                } else {
+                    bets = fetchedBets.filter { $0.playerID == userID && $0.week == week }
+                }
                 let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
-                parlays = fetchedParlays.filter({ $0.playerID == userID && $0.week == week })
+                if week == 0 {
+                    parlays = fetchedParlays.filter { $0.playerID == userID }
+                } else {
+                    parlays = fetchedParlays.filter { $0.playerID == userID && $0.week == week }
+                }
                 weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: userID, bets: bets, parlays: homeViewModel.parlays, week: week, leagueID: homeViewModel.activeLeague?.id ?? "")
             } catch {
                 print("Error fetching bets: \(error)")

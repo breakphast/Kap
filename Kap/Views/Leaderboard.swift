@@ -196,7 +196,7 @@ struct Leaderboard: View {
     }
 
     func fetchDataFor(user: User) async {
-        let count = await UserViewModel().fetchMissedBetsCount(for: user.id ?? "", week: 2) ?? 0
+        let count = await UserViewModel().fetchMissedBetsCount(for: user.id ?? "", week: homeViewModel.currentWeek) ?? 0
         missedCount[user.id ?? ""] = count
     }
     

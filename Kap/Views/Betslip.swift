@@ -126,6 +126,29 @@ struct BetView: View {
     @Binding var bets: [Bet]
     let bet: Bet
     
+    private func fetchData() async {
+        do {
+            let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
+            bets = fetchedBets.filter({ $0.playerID == authViewModel.currentUser?.id })
+            bets = bets.filter({ $0.week == homeViewModel.currentWeek })
+            
+            let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
+//            parlays = fetchedParlays.filter({ $0.playerID == authViewModel.currentUser?.id })
+//            parlays = parlays.filter({ $0.week == homeViewModel.currentWeek })
+        } catch {
+            print("Error fetching bets: \(error)")
+        }
+    }
+    
+    var maxBets2: Int {
+        switch bet.game.dayType {
+        case "SUN":
+            7
+        default:
+            1
+        }
+    }
+    
     var body: some View {
         ZStack(alignment: .center) {
             Color("onyxLightish")
@@ -152,7 +175,11 @@ struct BetView: View {
         .padding(.horizontal, 20)
         .shadow(radius: 10)
         .task {
-            isValid = bets.filter({ $0.betOption.game.documentId == bet.game.documentId }).count < 1 && bets.count < 10
+            await fetchData()
+            let dayType = bet.game.dayType
+            
+            isValid = bets.filter({ $0.game.dayType! == bet.game.dayType! && $0.week == homeViewModel.currentWeek }).count < maxBets2 && bets.filter({ $0.game.id == bet.game.id }).isEmpty
+            
             switch DayType(rawValue: bet.game.dayType ?? "") {
             case .tnf, .mnf, .snf:
                 self.maxBets = 1
@@ -161,7 +188,7 @@ struct BetView: View {
             }
         }
         .onChange(of: bets.count) { newValue in
-            isValid = bets.filter({ $0.betOption.game.documentId == bet.game.documentId }).count < 1 && bets.count < 10
+            isValid = bets.filter({ $0.game.dayType! == bet.game.dayType! && $0.week == homeViewModel.currentWeek }).count < maxBets2 && bets.filter({ $0.game.id == bet.game.id }).isEmpty
         }
     }
     

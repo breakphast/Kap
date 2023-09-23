@@ -24,24 +24,42 @@ struct MyBets: View {
     @State private var selectedSegment = 0
     
     var body: some View {
-        VStack(spacing: 40) {
+        VStack {
             ZStack(alignment: .topLeading) {
                 Color("onyx").ignoresSafeArea()
-                VStack(alignment: .leading) {
+                
+                VStack(alignment: .leading, spacing: 4) {
                     Picker("", selection: $selectedSegment) {
                         Text("Active").tag(0)
                         Text("Settled").tag(1)
                     }
                     .pickerStyle(SegmentedPickerStyle())
-                    menu
+                    
+                    HStack {
+                        menu
+                        Spacer()
+                        VStack(alignment: .trailing, spacing: 4) {
+                            HStack(spacing: 8) {
+                                dayTrackerElement(bets: $bets, parlays: $parlays, dayType: .tnf)
+                                dayTrackerElement(bets: $bets, parlays: $parlays, dayType: .sunday)
+                            }
+                            HStack(spacing: 8) {
+                                dayTrackerElement(bets: $bets, parlays: $parlays, dayType: .snf)
+                                dayTrackerElement(bets: $bets, parlays: $parlays, dayType: .mnf)
+                            }
+//                            dayTrackerElement(bets: $bets, parlays: $parlays, dayType: .parlay)
+//                                .padding(.trailing, 2)
+                        }
+                        .font(.system(.caption2, design: .rounded, weight: .bold))
+                    }
+                    
+                    if selectedSegment == 0 {
+                        activeBetsTab
+                    } else {
+                        settledBetsTab
+                    }
                 }
                 .padding(.horizontal, 24)
-                
-                if selectedSegment == 0 {
-                    activeBetsTab
-                } else {
-                    settledBetsTab
-                }
             }
         }
         .fontDesign(.rounded)
@@ -49,8 +67,6 @@ struct MyBets: View {
             fetchData()
         })
         .task {
-//            week = homeViewModel.currentWeek
-//            selectedOption = "Week \(week)"
             fetchData()
             for parlay in parlays {
                 if parlay.result == .pending {
@@ -61,38 +77,30 @@ struct MyBets: View {
     }
     
     var settledBetsTab: some View {
-        VStack(spacing: 8) {
+        VStack {
             if isEmptyBets(for: .win) && isEmptyBets(for: .loss) && isEmptyBets(for: .push) && parlays.filter({ $0.result != .pending }).isEmpty {
                 Text("No settled bets")
                     .font(.largeTitle.bold())
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             } else {
-                Text("POINTS: \((weeklyPoints ?? 0).twoDecimalString)")
-                    .font(.system(.body, design: .rounded, weight: .bold))
-                
                 ScrollView(showsIndicators: false) {
                     betSection(for: .tnf, settled: true)
-                        .padding(.top)
                     if !parlays.filter({ $0.result != .pending }).isEmpty {
                         parlaySection(settled: true)
                     }
                 }
             }
         }
-        .padding(.top, 50)
     }
     
     var activeBetsTab: some View {
-        VStack(spacing: 8) {
+        VStack {
             if isEmptyBets(for: .pending) && parlays.filter({ $0.result == .pending }).isEmpty {
                 Text("No active bets")
                     .foregroundColor(.white)
                     .font(.largeTitle.bold())
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             } else {
-                Text("")
-                    .padding(.top, 4)
-                
                 ScrollView(showsIndicators: false) {
                     betSection(for: .tnf, settled: false)
                     if !parlays.filter({ $0.result == .pending }).isEmpty {
@@ -101,7 +109,6 @@ struct MyBets: View {
                 }
             }
         }
-        .padding(.top, 60)
     }
     
     var menu: some View {
@@ -120,11 +127,9 @@ struct MyBets: View {
             .font(.system(size: 14, weight: .bold, design: .rounded))
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
-            .background(RoundedRectangle(cornerRadius: 10).fill(Color("onyxLightish")))
+            .background(RoundedRectangle(cornerRadius: 8).fill(Color("onyxLightish")))
         }
         .zIndex(1000)
-        .padding(.top, 4)
-        .padding(.bottom)
     }
 
     private func updateForWeek(_ weekNumber: Int) {
@@ -149,7 +154,6 @@ struct MyBets: View {
         }
     }
 
-    
     func parlaySection(settled: Bool) -> some View {
         return AnyView(
             VStack(alignment: .leading, spacing: 16) {
@@ -160,7 +164,7 @@ struct MyBets: View {
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
                         .background(Color("lion"))
-                        .cornerRadius(4)
+                        .cornerRadius(8)
                     
                     Image(systemName: "gift.fill")
                         .fontDesign(.rounded)
@@ -191,15 +195,18 @@ struct MyBets: View {
         
         if !filteredBets.isEmpty {
             return AnyView(
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("POINTS: \(calculateWeeklyPoints().twoDecimalString)")
+                        .font(.system(.caption, design: .rounded, weight: .bold))
+                        .padding(.leading, 1)
+                    
                     Text("NFL")
                         .font(.caption.bold())
                         .foregroundColor(Color("oW"))
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
                         .background(Color("lion"))
-                        .cornerRadius(4)
-                        .padding(.leading, 24)
+                        .cornerRadius(8)
                     
                     ForEach(filteredBets.sorted(by: { $0.game.date < $1.game.date }), id: \.id) { bet in
                         PlacedBetView(bet: bet, bets: $bets, week: week)
@@ -230,6 +237,14 @@ struct MyBets: View {
         }
     }
     
+    func calculateWeeklyPoints() -> Double {
+        let filteredBetsPoints = bets.filter { $0.week == week && $0.result != .push && $0.result != .pending }
+            .reduce(0) { $0 + ($1.points ?? 0) }
+        let parlayPoints = parlays.reduce(0) { $0 + ($1.totalPoints) }
+        
+        return filteredBetsPoints + parlayPoints
+    }
+    
     private func configureTabView() -> some View {
         TabView {
             activeBetsTab
@@ -244,3 +259,30 @@ struct MyBets: View {
     }
 }
 
+struct dayTrackerElement: View {
+    @Binding var bets: [Bet]
+    @Binding var parlays: [Parlay]
+    let dayType: DayType
+    
+    var maxBets: Int {
+        switch dayType {
+        case .sunday:
+            7
+        default:
+            1
+        }
+    }
+    
+    var body: some View {
+        if dayType != .parlay {
+            let filteredBetsCount = bets.filter { $0.game.dayType == dayType.rawValue }.count
+            Text("\(dayType.rawValue) ")
+            + Text("\(filteredBetsCount)").foregroundColor(filteredBetsCount < maxBets ? .redd : .bean)
+            + Text("/\(maxBets)").foregroundColor(filteredBetsCount < maxBets ? .redd : .bean)
+        } else {
+            Text("Parlay ")
+            + Text("\(parlays.count)").foregroundColor(.oW)
+            + Text("/1").foregroundColor(.oW)
+        }
+    }
+}

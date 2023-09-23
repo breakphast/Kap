@@ -53,7 +53,7 @@ struct Home: View {
             .tint(Color("oW"))
             .preferredColorScheme(.dark)
             .task {
-                await homeViewModel.originalFetch(updateScores: false, updateGames: false)
+                await homeViewModel.originalFetch(updateScores: false, updateGames: false, updateLeaderboards: false)
                 
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     withAnimation(.linear) {
