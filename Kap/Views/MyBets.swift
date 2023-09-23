@@ -23,6 +23,8 @@ struct MyBets: View {
     
     @State private var selectedSegment = 0
     
+    let swipeThreshold: CGFloat = 50.0
+    
     var body: some View {
         VStack {
             ZStack(alignment: .topLeading) {
@@ -47,8 +49,6 @@ struct MyBets: View {
                                 dayTrackerElement(bets: $bets, parlays: $parlays, dayType: .snf)
                                 dayTrackerElement(bets: $bets, parlays: $parlays, dayType: .mnf)
                             }
-//                            dayTrackerElement(bets: $bets, parlays: $parlays, dayType: .parlay)
-//                                .padding(.trailing, 2)
                         }
                         .font(.system(.caption2, design: .rounded, weight: .bold))
                     }
@@ -59,6 +59,7 @@ struct MyBets: View {
                         settledBetsTab
                     }
                 }
+                .gesture(swipeGesture)
                 .padding(.horizontal, 24)
             }
         }
@@ -220,6 +221,26 @@ struct MyBets: View {
     
     func isEmptyBets(for result: BetResult) -> Bool {
         return bets.filter { $0.result == result }.isEmpty
+    }
+    
+    private var swipeGesture: some Gesture {
+        DragGesture(minimumDistance: swipeThreshold)
+            .onEnded { value in
+                // if the horizontal swipe distance is more than swipeThreshold, it is a valid swipe
+                if abs(value.translation.width) > swipeThreshold {
+                    if value.translation.width < 0 && selectedSegment < 1 {
+                        // Swipe Left: Go to next segment if available
+                        withAnimation {
+                            selectedSegment += 1
+                        }
+                    } else if value.translation.width > 0 && selectedSegment > 0 {
+                        // Swipe Right: Go to previous segment if available
+                        withAnimation {
+                            selectedSegment -= 1
+                        }
+                    }
+                }
+            }
     }
     
     private func fetchData(_ value: Int? = nil) {
