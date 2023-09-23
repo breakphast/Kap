@@ -90,8 +90,8 @@ struct PlacedBetView: View {
             .fontDesign(.rounded)
             .multilineTextAlignment(.leading)
         }
-        .frame(height: 150)
-        .cornerRadius(20)
+        .frame(height: 125)
+        .cornerRadius(18)
         .task {
             switch DayType(rawValue: bet.game.dayType ?? "") {
             case .tnf, .mnf, .snf:
