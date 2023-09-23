@@ -190,7 +190,7 @@ struct PlayerBetsView: View {
 
     private func updateForWeek(_ weekNumber: Int) {
         withAnimation {
-            selectedOption = "Week \(weekNumber)"
+            selectedOption = week == 0 ? "Overall" : "Week \(weekNumber)"
             week = weekNumber
             
             Task {
