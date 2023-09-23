@@ -22,6 +22,7 @@ struct MyBets: View {
     @State private var week = 3
     
     @State private var selectedSegment = 0
+    @State private var live = false
     
     let swipeThreshold: CGFloat = 50.0
     
@@ -190,6 +191,8 @@ struct MyBets: View {
     }
     
     func betSection(for dayType: DayType, settled: Bool) -> some View {
+        @State var liveBets = homeViewModel.bets.filter({$0.week == homeViewModel.currentWeek && Date() > $0.game.date && $0.game.completed == false})
+        
         let filteredBets = bets.filter { bet in
             (settled ? bet.result != .pending : bet.result == .pending)
         }
@@ -201,13 +204,31 @@ struct MyBets: View {
                         .font(.system(.caption, design: .rounded, weight: .bold))
                         .padding(.leading, 1)
                     
-                    Text("NFL")
-                        .font(.caption.bold())
-                        .foregroundColor(Color("oW"))
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color("lion"))
-                        .cornerRadius(8)
+                    HStack {
+                        Text("NFL")
+                            .font(.caption.bold())
+                            .foregroundColor(Color("oW"))
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                            .background(Color("lion"))
+                            .cornerRadius(8)
+                        Spacer()
+                        Text("• LIVE")
+                            .font(.caption.bold())
+                            .foregroundColor(.oW)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                            .background(Color.redd)
+                            .overlay(liveBets.isEmpty ? .gray.opacity(0.8) : .clear)
+                            .cornerRadius(8)
+                            .sheet(isPresented: $live) {
+                                LiveBetsView(bets: $liveBets, users: homeViewModel.users)
+                            }
+                            .onTapGesture {
+                                live.toggle()
+                            }
+                            .disabled(liveBets.isEmpty)
+                    }
                     
                     ForEach(filteredBets.sorted(by: { $0.game.date < $1.game.date }), id: \.id) { bet in
                         PlacedBetView(bet: bet, bets: $bets, week: week)

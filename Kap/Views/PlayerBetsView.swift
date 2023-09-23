@@ -118,7 +118,6 @@ struct PlayerBetsView: View {
                         .foregroundStyle(Color("lion"))
                         .font(.title2)
                 }
-                .padding(.leading, 24)
                 .padding(.vertical, 8)
                 
                 if settled {

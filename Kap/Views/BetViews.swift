@@ -48,7 +48,7 @@ struct PlacedBetView: View {
                                 .lineLimit(nil)
                                 .fixedSize(horizontal: false, vertical: true)
                             Spacer()
-                            Text("(\(bet.game.dayType!) \(bets.filter({ $0.game.dayType! == bet.game.dayType && $0.week == bet.week }).count)/\(maxBets))")
+                            Text("(\(bet.game.dayType!) \(bets.filter({ $0.game.dayType! == bet.game.dayType && $0.week == bet.week && $0.playerID == bet.playerID }).count)/\(maxBets))")
                                 .font(.caption.bold())
                                 .foregroundStyle(.secondary)
                         }
