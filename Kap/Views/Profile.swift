@@ -28,7 +28,6 @@ struct Profile: View {
                 
                 Button("Sign Out") {
                     authViewModel.signOut()
-                    homeViewModel.activeUserID = ""
                     loggedIn = false
                 }
                 .font(.title2)

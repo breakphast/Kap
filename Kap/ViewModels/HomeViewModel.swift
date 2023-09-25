@@ -23,12 +23,12 @@ class HomeViewModel: ObservableObject {
     @Published var leaderboards: [[User]] = [[]]
     
     @Published var activePlayer: Player?
-    @Published var activeUserID: String
     @Published var currentWeek = 3
     @Published var activeLeague: League?
     @Published var currentDate: String = ""
     
     @Published var changed: Bool = false
+    @Published var showingSplashScreen = true
     
     static let keys = [
         "4c43e84559d63c5465e9a1d972be7d2d",
@@ -44,9 +44,15 @@ class HomeViewModel: ObservableObject {
         return formatter
     }()
     
-    init(activeUserID: String) {
-        self.activeUserID = activeUserID
-        
+    init() {
+        Task {
+            await originalFetch(updateScores: false, updateGames: false, updateLeaderboards: false)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                withAnimation(.linear) {
+                    self.showingSplashScreen = false
+                }
+            }
+        }
     }
     
     enum FetchError: Error {

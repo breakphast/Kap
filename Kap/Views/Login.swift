@@ -91,7 +91,6 @@ struct Login: View {
                 loggingIn.toggle()
                 authViewModel.login(withEmail: emailAddy.lowercased(), password: pass) { userID in
                     if userID != nil {
-//                        self.homeViewModel.activeUserID = validUserID
                         loggedIn.toggle()
                         loginFailed = false
                     } else {
@@ -165,10 +164,6 @@ struct Login: View {
             Button("Register") {
                 AuthViewModel().register(withEmail: emailAddy, password: pass, username: username, fullName: fullName)
                 login = true
-//                AuthViewModel().login(withEmail: email, password: password) { userID in
-//                    homeViewModel.activeUserID = userID ?? ""
-//                }
-//                loggedIn.toggle()
             }
             .buttonStyle(.borderedProminent)
             .foregroundStyle(Color("lion"))

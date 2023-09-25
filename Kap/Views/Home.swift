@@ -12,7 +12,6 @@ import FirebaseFirestoreSwift
 struct Home: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
-    @State private var showingSplashScreen = true
     @State private var loggedIn = false
     @State private var date: Date = Date()
     
@@ -52,18 +51,9 @@ struct Home: View {
             }
             .tint(Color("oW"))
             .preferredColorScheme(.dark)
-            .task {
-                await homeViewModel.originalFetch(updateScores: false, updateGames: false, updateLeaderboards: false)
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    withAnimation(.linear) {
-                        self.showingSplashScreen = false
-                    }
-                }
-            }
             .overlay(
                 Group {
-                    if showingSplashScreen {
+                    if homeViewModel.showingSplashScreen {
                         Color("lion")
                             .ignoresSafeArea()
                             .overlay(
