@@ -133,8 +133,6 @@ struct BetView: View {
             bets = bets.filter({ $0.week == homeViewModel.currentWeek })
             
             let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
-//            parlays = fetchedParlays.filter({ $0.playerID == authViewModel.currentUser?.id })
-//            parlays = parlays.filter({ $0.week == homeViewModel.currentWeek })
         } catch {
             print("Error fetching bets: \(error)")
         }
@@ -176,7 +174,6 @@ struct BetView: View {
         .shadow(radius: 10)
         .task {
             await fetchData()
-            let dayType = bet.game.dayType
             
             isValid = bets.filter({ $0.game.dayType! == bet.game.dayType! && $0.week == homeViewModel.currentWeek }).count < maxBets2 && bets.filter({ $0.game.id == bet.game.id }).isEmpty
             
@@ -189,6 +186,13 @@ struct BetView: View {
         }
         .onChange(of: bets.count) { newValue in
             isValid = bets.filter({ $0.game.dayType! == bet.game.dayType! && $0.week == homeViewModel.currentWeek }).count < maxBets2 && bets.filter({ $0.game.id == bet.game.id }).isEmpty
+            
+            switch DayType(rawValue: bet.game.dayType ?? "") {
+            case .tnf, .mnf, .snf:
+                self.maxBets = 1
+            default:
+                self.maxBets = 7
+            }
         }
     }
     

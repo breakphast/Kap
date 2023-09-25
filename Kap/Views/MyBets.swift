@@ -53,6 +53,7 @@ struct MyBets: View {
                         }
                         .font(.system(.caption2, design: .rounded, weight: .bold))
                     }
+                    .padding(.top, 8)
                     
                     if selectedSegment == 0 {
                         activeBetsTab
@@ -247,14 +248,17 @@ struct MyBets: View {
     private var swipeGesture: some Gesture {
         DragGesture(minimumDistance: swipeThreshold)
             .onEnded { value in
-                // if the horizontal swipe distance is more than swipeThreshold, it is a valid swipe
-                if abs(value.translation.width) > swipeThreshold {
-                    if value.translation.width < 0 && selectedSegment < 1 {
+                let horizontalDistance = value.translation.width
+                let verticalDistance = value.translation.height
+                let isHorizontalSwipe = abs(horizontalDistance) > abs(verticalDistance)
+                
+                if isHorizontalSwipe && abs(horizontalDistance) > swipeThreshold {
+                    if horizontalDistance < 0 && selectedSegment < 1 {
                         // Swipe Left: Go to next segment if available
                         withAnimation {
                             selectedSegment += 1
                         }
-                    } else if value.translation.width > 0 && selectedSegment > 0 {
+                    } else if horizontalDistance > 0 && selectedSegment > 0 {
                         // Swipe Right: Go to previous segment if available
                         withAnimation {
                             selectedSegment -= 1

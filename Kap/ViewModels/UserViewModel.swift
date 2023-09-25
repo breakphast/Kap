@@ -56,7 +56,7 @@ class UserViewModel: ObservableObject {
     func fetchMissedBetsCount(for userID: String, week: Int) async -> Int? {
         let weekDocumentID = "week\(week)"
         let userDocument = db.collection("users").document(userID)
-
+        
         do {
             let document = try await userDocument.collection("missedBets").document(weekDocumentID).getDocument()
             if let missedBet = try? document.data(as: MissedBet.self) {
@@ -65,8 +65,19 @@ class UserViewModel: ObservableObject {
         } catch {
             print("Error fetching missed bets for \(weekDocumentID): \(error)")
         }
-        
         return nil
+    }
+    
+    func fetchAllMissedBets(for userID: String, startingWeek: Int) async -> Int {
+        for week in (1...startingWeek).reversed() {
+            if let count = await fetchMissedBetsCount(for: userID, week: week) {
+                print("Missed Bets for week\(week): \(count)")
+                return count
+            } else {
+                print("No data for week\(week)")
+            }
+        }
+        return 0
     }
     
     func updateUserPoints(user: User, bets: [Bet], parlays: [Parlay], week: Int, missing: Bool) async {

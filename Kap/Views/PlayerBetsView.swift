@@ -42,7 +42,12 @@ struct PlayerBetsView: View {
                     BetViewModel().updateParlay(parlay: parlay)
                 }
             }
-            missedBets = await UserViewModel().fetchMissedBetsCount(for: userID, week: homeViewModel.currentWeek) ?? 0
+            
+            if week == 0 {
+                missedBets = await UserViewModel().fetchAllMissedBets(for: userID, startingWeek: homeViewModel.currentWeek)
+            } else {
+                missedBets = await UserViewModel().fetchMissedBetsCount(for: userID, week: homeViewModel.currentWeek) ?? 0
+            }
             totalPoints = homeViewModel.users.first(where: { $0.id == userID })!.totalPoints!
         }
     }
@@ -194,6 +199,8 @@ struct PlayerBetsView: View {
             
             Task {
                 do {
+                    missedBets = await UserViewModel().fetchMissedBetsCount(for: userID, week: week) ?? 0
+                    
                     let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
                     if week == 0 {
                         bets = fetchedBets.filter { $0.playerID == userID }
