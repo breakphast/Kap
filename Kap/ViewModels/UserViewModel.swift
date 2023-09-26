@@ -68,6 +68,50 @@ class UserViewModel: ObservableObject {
         return nil
     }
     
+    func updateMissedBetsCount(for userID: String, week: Int, newValue: Int) async {
+        let weekDocumentID = "week\(week)"
+        let userDocument = db.collection("users").document(userID)
+        let missedBetsDocument = userDocument.collection("missedBets").document(weekDocumentID)
+
+        do {
+            try await missedBetsDocument.setData(["missedCount": newValue], merge: true)
+            print("Successfully updated missed bets count")
+        } catch {
+            print("Error updating missed bets count for \(weekDocumentID): \(error)")
+        }
+    }
+    
+    func updateLeagues(for userID: String, leagueID: String) async {
+        let userDocument = db.collection("users").document(userID)
+        let leagueDocument = userDocument.collection("leagues").document(leagueID)
+
+        do {
+            try await leagueDocument.setData(["id": leagueID], merge: true)
+            print("Successfully updated leagues")
+        } catch {
+            print("Error updating missed bets count for \(leagueDocument.documentID): \(error)")
+        }
+    }
+    
+    func fetchUserLeagues(for userID: String, leagueID: String) async -> [String: Any]? {
+        let userDocument = db.collection("users").document(userID)
+        let leagueDocument = userDocument.collection("leagues").document(leagueID)
+        
+        do {
+            let document = try await leagueDocument.getDocument()
+            if let leagueData = document.data() {
+                return leagueData
+            } else {
+                print("Document does not exist")
+            }
+        } catch {
+            print("Error fetching league data for \(leagueDocument.documentID): \(error)")
+        }
+        
+        return nil
+    }
+
+    
     func fetchAllMissedBets(for userID: String, startingWeek: Int) async -> Int {
         for week in (1...startingWeek).reversed() {
             if let count = await fetchMissedBetsCount(for: userID, week: week) {

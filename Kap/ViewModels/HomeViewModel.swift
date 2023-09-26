@@ -23,12 +23,19 @@ class HomeViewModel: ObservableObject {
     @Published var leaderboards: [[User]] = [[]]
     
     @Published var activePlayer: Player?
-    @Published var currentWeek = 3
+    @Published var currentWeek = 4
     @Published var activeLeague: League?
     @Published var currentDate: String = ""
     
     @Published var changed: Bool = false
     @Published var showingSplashScreen = true
+    
+    @Published var activeLeagueID: String?
+    @Published var leagueCodes: [String] = []
+    
+    @Published var userLeagues: [League] = []
+    
+    static let leagueIDs = ["2222"]
     
     static let keys = [
         "4c43e84559d63c5465e9a1d972be7d2d",
@@ -154,10 +161,9 @@ class HomeViewModel: ObservableObject {
                 let updatedGames = try await GameService().getGames()
                 let matchingGames = updatedGames.filter { updatedGame in
                     fetchedGames.contains { fetchedGame in
-                        return updatedGame.id == fetchedGame.id
+                        return updatedGame.documentId == fetchedGame.documentId
                     }
                 }
-                print(matchingGames.map { $0.betOptions.map {$0.odds}}.count)
                 GameService().addGames(games: matchingGames)
             }
 

@@ -163,9 +163,10 @@ struct PlacedParlayView: View {
             HStack(spacing: 8) {
                 VStack(alignment: .leading) {
                     VStack(alignment: .leading, spacing: 8) {
-                        HStack {
+                        HStack(alignment: .center) {
                             Text("\(legs) Leg Parlay")
-                            
+                            Text("(Week \(parlay.week))")
+                                .font(.caption2)
                             Spacer()
                             
                             Text("+\(parlay.totalOdds)".replacingOccurrences(of: ",", with: ""))

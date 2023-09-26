@@ -11,23 +11,32 @@ class LeagueViewModel {
         let leagues: [League] = querySnapshot.documents.compactMap { document in
             try? document.data(as: League.self)
         }
+        return leagues
+    }
+    
+    func fetchLeaguesContainingID(id: String) async throws -> [League] {
+        let querySnapshot = try await db.collection("leagues").getDocuments()
 
+        let leagues: [League] = querySnapshot.documents.compactMap { document in
+            guard let league = try? document.data(as: League.self),
+                  league.players.contains(id) else {
+                return nil
+            }
+            return league
+        }
         return leagues
     }
     
     // CREATE: Create a new league
     func createNewLeague(league: League) async throws -> String {
         return try await withCheckedThrowingContinuation { continuation in
-            // Exclude the id from the data you're sending to Firestore
             let data: [String: Any] = [
                 "name": league.name,
-                "players": league.players
+                "players": league.players,
+                "code": "\(Int.random(in: 1000 ... 9999))"
             ]
 
-            // Create a new document reference with an auto-generated ID
             let newLeagueDocument = db.collection("leagues").document()
-
-            // Get the ID before setting the data
             let leagueId = newLeagueDocument.documentID
 
             newLeagueDocument.setData(data) { error in

@@ -11,6 +11,9 @@
 		3E195C782A747D8300FB0CAD /* LeaderboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E195C772A747D8300FB0CAD /* LeaderboardViewModel.swift */; };
 		3E2995852AB4ED5E00F40003 /* PlayerBetsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E2995842AB4ED5E00F40003 /* PlayerBetsView.swift */; };
 		3E2995872AB9F4E600F40003 /* HowToPlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E2995862AB9F4E600F40003 /* HowToPlay.swift */; };
+		3E3451882AC2250C00332133 /* LeagueIntro.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E3451872AC2250C00332133 /* LeagueIntro.swift */; };
+		3E34518B2AC226C800332133 /* JoinLeague.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E34518A2AC226C800332133 /* JoinLeague.swift */; };
+		3E34518D2AC3477600332133 /* LeagueList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E34518C2AC3477600332133 /* LeagueList.swift */; };
 		3E3596BF2A6C0B1800948A38 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 3E3596BE2A6C0B1800948A38 /* FirebaseAuth */; };
 		3E3596C12A6C0B1800948A38 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 3E3596C02A6C0B1800948A38 /* FirebaseFirestore */; };
 		3E3596C32A6C0B1800948A38 /* FirebaseFirestoreSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 3E3596C22A6C0B1800948A38 /* FirebaseFirestoreSwift */; };
@@ -56,6 +59,9 @@
 		3E195C772A747D8300FB0CAD /* LeaderboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaderboardViewModel.swift; sourceTree = "<group>"; };
 		3E2995842AB4ED5E00F40003 /* PlayerBetsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerBetsView.swift; sourceTree = "<group>"; };
 		3E2995862AB9F4E600F40003 /* HowToPlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HowToPlay.swift; sourceTree = "<group>"; };
+		3E3451872AC2250C00332133 /* LeagueIntro.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeagueIntro.swift; sourceTree = "<group>"; };
+		3E34518A2AC226C800332133 /* JoinLeague.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinLeague.swift; sourceTree = "<group>"; };
+		3E34518C2AC3477600332133 /* LeagueList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeagueList.swift; sourceTree = "<group>"; };
 		3E5D8D222A639B5300634DBE /* Board.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Board.swift; sourceTree = "<group>"; };
 		3E5D8D242A63A4F100634DBE /* CustomButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomButton.swift; sourceTree = "<group>"; };
 		3E5D8D262A64718C00634DBE /* MyBets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyBets.swift; sourceTree = "<group>"; };
@@ -114,6 +120,16 @@
 				3E195C752A74683200FB0CAD /* Constants.swift */,
 			);
 			path = Helpers;
+			sourceTree = "<group>";
+		};
+		3E3451892AC2251400332133 /* League */ = {
+			isa = PBXGroup;
+			children = (
+				3E34518A2AC226C800332133 /* JoinLeague.swift */,
+				3E3451872AC2250C00332133 /* LeagueIntro.swift */,
+				3E34518C2AC3477600332133 /* LeagueList.swift */,
+			);
+			path = League;
 			sourceTree = "<group>";
 		};
 		3EA650342A5F7565007CA5ED = {
@@ -189,6 +205,7 @@
 		3EE35E612A60DC550026F952 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				3E3451892AC2251400332133 /* League */,
 				3EE35E522A5F86CB0026F952 /* Home.swift */,
 				3E5D8D222A639B5300634DBE /* Board.swift */,
 				3ED8EC3A2A65F47400E05FF2 /* Betslip.swift */,
@@ -310,8 +327,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				3EDBFCDE2A8FC04900EB8628 /* LiveScoreViewModel.swift in Sources */,
+				3E34518D2AC3477600332133 /* LeagueList.swift in Sources */,
 				3EE35E572A60D7940026F952 /* League.swift in Sources */,
 				3EFA18772A709A99002D6E94 /* ParlayViewModel.swift in Sources */,
+				3E3451882AC2250C00332133 /* LeagueIntro.swift in Sources */,
 				3EDBFCDC2A8FC03000EB8628 /* LiveScore.swift in Sources */,
 				3EE35E6A2A61C8C00026F952 /* Leaderboard.swift in Sources */,
 				3EE35E5D2A60D7FB0026F952 /* Game.swift in Sources */,
@@ -320,6 +339,7 @@
 				3E5D8D272A64718C00634DBE /* MyBets.swift in Sources */,
 				3E195C782A747D8300FB0CAD /* LeaderboardViewModel.swift in Sources */,
 				3EE35E552A60D77A0026F952 /* User.swift in Sources */,
+				3E34518B2AC226C800332133 /* JoinLeague.swift in Sources */,
 				3EE35E532A5F86CB0026F952 /* Home.swift in Sources */,
 				3EF3991B2A71CF5100E03B76 /* Player.swift in Sources */,
 				3E5D8D232A639B5300634DBE /* Board.swift in Sources */,
@@ -472,7 +492,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 17;
+				CURRENT_PROJECT_VERSION = 18;
 				DEVELOPMENT_ASSET_PATHS = "\"Kap/Preview Content\"";
 				DEVELOPMENT_TEAM = G9RPYMS2PA;
 				ENABLE_PREVIEWS = YES;
@@ -488,7 +508,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.2.4;
+				MARKETING_VERSION = 0.2.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.devsmond.loch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -503,7 +523,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 17;
+				CURRENT_PROJECT_VERSION = 18;
 				DEVELOPMENT_ASSET_PATHS = "\"Kap/Preview Content\"";
 				DEVELOPMENT_TEAM = G9RPYMS2PA;
 				ENABLE_PREVIEWS = YES;
@@ -519,7 +539,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.2.4;
+				MARKETING_VERSION = 0.2.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.devsmond.loch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

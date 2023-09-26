@@ -14,9 +14,13 @@ struct Home: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @State private var loggedIn = false
     @State private var date: Date = Date()
+    @State private var leagues = 0
+    @State private var showingSplashScreen = true
+    let leagueID: String
     
-    init() {
+    init(leagueID: String) {
         UITabBar.appearance().barTintColor = UIColor(named: "onyx")
+        self.leagueID = leagueID
     }
     
     var body: some View {
@@ -45,15 +49,22 @@ struct Home: View {
                     }
                 
                 Profile(loggedIn: $loggedIn)
-                .tabItem {
-                    Label("Profile", systemImage: "person.fill")
-                }
+                    .tabItem {
+                        Label("Profile", systemImage: "person.fill")
+                    }
             }
             .tint(Color("oW"))
             .preferredColorScheme(.dark)
+            .task {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                    withAnimation(.linear) {
+                        self.showingSplashScreen = false
+                    }
+                }
+            }
             .overlay(
                 Group {
-                    if homeViewModel.showingSplashScreen {
+                    if showingSplashScreen {
                         Color("lion")
                             .ignoresSafeArea()
                             .overlay(

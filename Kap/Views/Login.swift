@@ -13,15 +13,15 @@ struct Login: View {
     @AppStorage("email") private var emailAddy = ""
     @AppStorage("password") private var pass = ""
 
-
     @State private var email = UserDefaults.standard.string(forKey: "email")?.lowercased()
     @State private var password = UserDefaults.standard.string(forKey: "password")
     @State private var username = ""
     @State private var fullName = ""
-    
     @State private var login = true
     @State private var loginFailed = false
     @State private var loggingIn = false
+    @State private var showLeagueList = false
+    @State private var showLeagueIntro = false
     @Binding var loggedIn: Bool
     
     var body: some View {
@@ -54,6 +54,12 @@ struct Login: View {
             } else {
                 registerView
             }
+        }
+        .fullScreenCover(isPresented: $showLeagueList) {
+            LeagueList(leagues: $homeViewModel.userLeagues, loggedIn: $loggedIn)
+        }
+        .fullScreenCover(isPresented: $showLeagueIntro) {
+            LeagueIntro(loggedIn: $loggedIn)
         }
     }
     
@@ -88,15 +94,22 @@ struct Login: View {
             }
             
             Button {
-                loggingIn.toggle()
                 authViewModel.login(withEmail: emailAddy.lowercased(), password: pass) { userID in
-                    if userID != nil {
-                        loggedIn.toggle()
-                        loginFailed = false
-                    } else {
+                    guard userID != nil else {
                         print("Login failed")
                         loginFailed = true
+                        return
                     }
+                    Task {
+                        homeViewModel.userLeagues = try await LeagueViewModel().fetchLeaguesContainingID(id: userID!)
+                        if homeViewModel.userLeagues.count > 0 {
+                            showLeagueList.toggle()
+                        } else {
+                            showLeagueIntro.toggle()
+                        }
+                    }
+                    
+                    loggingIn = true
                 }
             } label: {
                 Text("Login")

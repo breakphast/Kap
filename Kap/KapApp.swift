@@ -19,7 +19,7 @@ struct KapApp: App {
     
     var body: some Scene {
         WindowGroup {
-            Home()
+            Home(leagueID: "")
                 .environmentObject(homeViewModel)
                 .environmentObject(authViewModel)
         }
