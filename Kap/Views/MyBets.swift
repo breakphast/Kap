@@ -116,7 +116,7 @@ struct MyBets: View {
     
     var menu: some View {
         Menu {
-            ForEach(1...3, id: \.self) { weekNumber in
+            ForEach(1...week, id: \.self) { weekNumber in
                 Button("Week \(weekNumber)", action: {
                     updateForWeek(weekNumber)
                 })
@@ -144,7 +144,7 @@ struct MyBets: View {
             Task {
                 do {
                     let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
-                    bets = fetchedBets.filter { $0.playerID == currentUserId && $0.week == weekNumber }
+                    bets = fetchedBets.filter { $0.playerID == currentUserId && $0.week == weekNumber && $0.leagueID == homeViewModel.activeLeagueID! }
                     
                     let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
                     parlays = fetchedParlays.filter { $0.playerID == currentUserId && $0.week == weekNumber }
@@ -272,7 +272,7 @@ struct MyBets: View {
         Task {
             do {
                 let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
-                bets = fetchedBets.filter({ $0.playerID == authViewModel.currentUser?.id && $0.week == week })
+                bets = fetchedBets.filter({ $0.playerID == authViewModel.currentUser?.id && $0.week == week && $0.leagueID == homeViewModel.activeLeagueID! })
                 
                 let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
                 parlays = fetchedParlays.filter({ $0.playerID == authViewModel.currentUser?.id && $0.week == week })

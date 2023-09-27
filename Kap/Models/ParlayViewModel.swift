@@ -12,7 +12,7 @@ class ParlayViewModel {
     private let db = Firestore.firestore()
 
     func fetchParlays(games: [Game]) async throws -> [Parlay] {
-        let querySnapshot = try await db.collection("parlays").getDocuments()
+        let querySnapshot = try await db.collection("parlays1").getDocuments()
         let parlays = querySnapshot.documents.compactMap { queryDocumentSnapshot -> Parlay? in
             let data = queryDocumentSnapshot.data()
 
@@ -24,7 +24,8 @@ class ParlayViewModel {
                 let result = BetResult(rawValue: resultString),
                 let betString = data["betString"] as? String,
                 let playerID = data["playerID"] as? String,
-                let week = data["week"] as? Int
+                let week = data["week"] as? Int,
+                let leagueID = data["leagueID"] as? String
             else { return nil }
 
             var bets = [Bet]()
@@ -37,17 +38,18 @@ class ParlayViewModel {
                     let odds = betData["odds"] as? Int,
                     let selectedTeam = betData["selectedTeam"] as? String,
                     let playerID = betData["playerID"] as? String,
-                    let week = betData["week"] as? Int
+                    let week = betData["week"] as? Int,
+                    let leagueID = data["leagueID"] as? String
                 else {
                     continue
                 }
                 let (foundGame, foundBetOption) = BetViewModel().findBetOption(games: games, gameID: gameID, betOptionID: betOptionID)
                 if let foundGame = foundGame, let foundBetOption = foundBetOption {
-                    let bet = Bet(id: foundBetOption.id + playerID, betOption: foundBetOption, game: foundGame, type: type, result: result, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week)
+                    let bet = Bet(id: foundBetOption.id + playerID, betOption: foundBetOption, game: foundGame, type: type, result: result, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueID: leagueID)
                     bets.append(bet)
                 }
             }
-            let parlay = Parlay(id: id, bets: bets, totalOdds: totalOdds, result: result, playerID: playerID, week: week)
+            let parlay = Parlay(id: id, bets: bets, totalOdds: totalOdds, result: result, playerID: playerID, week: week, leagueID: leagueID)
             parlay.totalOdds = totalOdds
             parlay.betString = betString
 
@@ -95,12 +97,12 @@ class ParlayViewModel {
         newParlay["betString"] = betString
 
 //        let _ = try await db.collection("parlays").addDocument(data: newParlay)
-        let _ = try await db.collection("parlays").document(parlay.id).setData(newParlay)
+        let _ = try await db.collection("parlays1").document(parlay.id).setData(newParlay)
     }
     
     func deleteParlay(parlayID: String) async throws {
         return try await withCheckedThrowingContinuation { continuation in
-            db.collection("parlays").document(parlayID).delete() { error in
+            db.collection("parlays1").document(parlayID).delete() { error in
                 if let error = error {
                     continuation.resume(throwing: error)
                 } else {
@@ -111,8 +113,21 @@ class ParlayViewModel {
         } 
     }
     
-    func makeParlay(for bets: [Bet], playerID: String, week: Int) -> Parlay {
-        let parlay = Parlay(id: playerID + String(week), bets: bets, totalOdds: calculateParlayOdds(bets: bets), result: .pending, playerID: playerID, week: week)
+    func makeParlay(for bets: [Bet], playerID: String, week: Int, leagueID: String) -> Parlay {
+        let parlay = Parlay(id: playerID + String(week), bets: bets, totalOdds: calculateParlayOdds(bets: bets), result: .pending, playerID: playerID, week: week, leagueID: leagueID)
         return parlay
+    }
+    
+    func updateParlayLeague(parlay: Parlay, leagueID: String) {
+        let newbet = db.collection("parlays1").document(parlay.id)
+        newbet.updateData([
+            "leagueID": leagueID,
+        ]) { err in
+            if let err = err {
+                print("Error updating BETTTT: \(err)", parlay.id)
+            } else {
+                print("Document successfully updated")
+            }
+        }
     }
 }

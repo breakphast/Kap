@@ -31,7 +31,7 @@ class BetViewModel {
     }
     
     func fetchBets(games: [Game]) async throws -> [Bet] {
-        let querySnapshot = try await db.collection("newBets").getDocuments()
+        let querySnapshot = try await db.collection("newBets1").getDocuments()
         let bets = querySnapshot.documents.map { queryDocumentSnapshot -> Bet in
             let data = queryDocumentSnapshot.data()
             
@@ -45,8 +45,9 @@ class BetViewModel {
             let playerID = data["playerID"] as? String ?? ""
             let week = data["week"] as? Int ?? 0
             let (foundGame, foundBetOption) = self.findBetOption(games: games, gameID: game, betOptionID: betOption)
+            let leagueID = data["leagueID"] as? String ?? ""
             
-            let bet = Bet(id: id, betOption: foundBetOption!, game: foundGame!, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week)
+            let bet = Bet(id: id, betOption: foundBetOption!, game: foundGame!, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueID: leagueID)
             
             return bet
         }
@@ -68,20 +69,21 @@ class BetViewModel {
             "betString": bet.betString,
             "selectedTeam": bet.selectedTeam ?? "",
             "playerID": playerID,
-            "week": bet.week
+            "week": bet.week,
+            "leagueID": bet.leagueID
         ]
         
-        let _ = try await db.collection("newBets").document(bet.id).setData(newBet)
+        let _ = try await db.collection("newBets1").document(bet.id).setData(newBet)
     }
 
-    func makeBet(for game: Game, betOption: BetOption, playerID: String, week: Int) -> Bet {
-        let bet = Bet(id: betOption.id + playerID, betOption: betOption, game: game, type: betOption.betType, result: .pending, odds: betOption.odds, selectedTeam: betOption.selectedTeam, playerID: playerID, week: week)
+    func makeBet(for game: Game, betOption: BetOption, playerID: String, week: Int, leagueID: String) -> Bet {
+        let bet = Bet(id: betOption.id + playerID, betOption: betOption, game: game, type: betOption.betType, result: .pending, odds: betOption.odds, selectedTeam: betOption.selectedTeam, playerID: playerID, week: week, leagueID: leagueID)
         
         return bet
     }
     
     func updateBet(bet: Bet) {
-        let newbet = db.collection("newBets").document(bet.id)
+        let newbet = db.collection("newBets1").document(bet.id)
         newbet.updateData([
             "betString": bet.betString,
             "result": bet.game.betResult(for: bet.betOption).rawValue
@@ -94,8 +96,21 @@ class BetViewModel {
         }
     }
     
+    func updateBetLeague(bet: Bet, leagueID: String) {
+        let newbet = db.collection("newBets1").document(bet.id)
+        newbet.updateData([
+            "leagueID": leagueID,
+        ]) { err in
+            if let err = err {
+                print("Error updating BETTTT: \(err)", bet.id)
+            } else {
+                print("Document successfully updated")
+            }
+        }
+    }
+    
     func updateParlay(parlay: Parlay) {
-        let newParlay = db.collection("parlays").document(parlay.id)
+        let newParlay = db.collection("parlays1").document(parlay.id)
         let parlayBets = parlay.bets
         if !parlayBets.filter({ $0.game.betResult(for: $0.betOption) == .loss }).isEmpty {
             newParlay.updateData([
@@ -135,7 +150,7 @@ class BetViewModel {
     func updateBetResult(bet: Bet, result: BetResult) {
         guard bet.result == .pending else { return }
         
-        let newbet = db.collection("newBets").document(bet.id)
+        let newbet = db.collection("newBets1").document(bet.id)
         if let newPoints = bet.points {
             newbet.updateData([
                 "result": result.rawValue,
@@ -153,7 +168,7 @@ class BetViewModel {
     
     func deleteBet(betID: String) async throws {
         return try await withCheckedThrowingContinuation { continuation in
-            db.collection("newBets").document(betID).delete() { error in
+            db.collection("newBets1").document(betID).delete() { error in
                 if let error = error {
                     continuation.resume(throwing: error)
                 } else {
@@ -191,7 +206,7 @@ class BetViewModel {
                 team = game.homeTeam
             }
             
-            let bet = Bet(id: options[i].id, betOption: options[i], game: game, type: type, result: .pending, odds: options[i].odds, selectedTeam: team, playerID: "", week: 0)
+            let bet = Bet(id: options[i].id, betOption: options[i], game: game, type: type, result: .pending, odds: options[i].odds, selectedTeam: team, playerID: "", week: 0, leagueID: "")
             bets.append(bet)
         }
         let betss = [3, 4, 2, 0, 1, 5].compactMap { index in

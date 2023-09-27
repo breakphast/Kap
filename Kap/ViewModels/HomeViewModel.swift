@@ -152,7 +152,11 @@ class HomeViewModel: ObservableObject {
     
     func fetchEssentials(updateGames: Bool, updateScores: Bool) async {
         do {
-            let fetchedUsers = try await UserViewModel().fetchAllUsers()
+            var fetchedUsers = try await UserViewModel().fetchAllUsers()
+            let leaguePlayers = leagues.first(where: {$0.code == activeLeagueID})?.players
+            if let leaguePlayers {
+                fetchedUsers = fetchedUsers.filter({leaguePlayers.contains($0.id ?? "")})
+            }
             let fetchedLeagues = try await LeagueViewModel().fetchAllLeagues()
             let fetchedAllGames = try await GameService().fetchGamesFromFirestore()
             let fetchedGames = try await GameService().fetchGamesFromFirestore().chunked(into: 16)[Int(currentWeek) - 1]

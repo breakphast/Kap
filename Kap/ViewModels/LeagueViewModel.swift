@@ -33,7 +33,8 @@ class LeagueViewModel {
             let data: [String: Any] = [
                 "name": league.name,
                 "players": league.players,
-                "code": "\(Int.random(in: 1000 ... 9999))"
+                "code": "\(Int.random(in: 1000 ... 9999))",
+                "points": []
             ]
 
             let newLeagueDocument = db.collection("leagues").document()
@@ -65,6 +66,42 @@ class LeagueViewModel {
             }
         }
     }
+    
+    func addPointsToLeague(leagueId: String, points: Double, atIndex index: Int) async throws {
+        return try await withCheckedThrowingContinuation { continuation in
+            let docRef = db.collection("leagues").document(leagueId)
+            
+            docRef.getDocument { (document, error) in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+                
+                guard let document = document, document.exists, var pointsArray = document.get("points") as? [Double] else {
+                    let error = NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey : "Document does not exist or points array is missing/invalid"])
+                    continuation.resume(throwing: error)
+                    return
+                }
+                
+                if index < 0 || index >= pointsArray.count {
+                    let error = NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey : "Index out of range"])
+                    continuation.resume(throwing: error)
+                    return
+                }
+                
+                pointsArray[index] += points
+                
+                docRef.updateData(["points": pointsArray]) { error in
+                    if let error = error {
+                        continuation.resume(throwing: error)
+                    } else {
+                        continuation.resume()
+                    }
+                }
+            }
+        }
+    }
+
     
     // DELETE: Delete a league
     func deleteLeague(leagueId: String) async throws {

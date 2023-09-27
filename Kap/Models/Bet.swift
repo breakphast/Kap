@@ -66,8 +66,9 @@ class Bet {
     let selectedTeam: String?
     let playerID: String
     var week: Int
+    let leagueID: String
     
-    init(id: String, betOption: BetOption, game: Game, type: BetType, result: BetResult?, odds: Int, selectedTeam: String?, playerID: String, week: Int) {
+    init(id: String, betOption: BetOption, game: Game, type: BetType, result: BetResult?, odds: Int, selectedTeam: String?, playerID: String, week: Int, leagueID: String) {
         self.id = id
         self.betOption = betOption
         self.game = game
@@ -77,6 +78,7 @@ class Bet {
         self.selectedTeam = selectedTeam
         self.playerID = playerID
         self.week = week
+        self.leagueID = leagueID
         
         switch type {
         case .spread:

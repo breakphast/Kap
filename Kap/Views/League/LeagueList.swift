@@ -53,19 +53,15 @@ struct LeagueList: View {
     
     func leagueRow(index: Int, league: League) -> some View {
         VStack(alignment: .leading) {
-            HStack {
-                Text("\(index + 1)")
-                    .frame(width: 24)
-                    .font(.title3.bold())
-                
-                leagueDetailZStack(index: index, league: league)
-            }
+            leagueDetailZStack(index: index, league: league)
         }
         .frame(height: 60)
         .overlay(
             RoundedRectangle(cornerRadius: 1)
                 .foregroundStyle(Color("onyx").opacity(0.00001))
                 .onTapGesture {
+//                    homeViewModel.bets = homeViewModel.bets.filter({$0.leagueID == homeViewModel.activeLeagueID ?? ""})
+//                    print(homeViewModel.bets)
                     homeViewModel.activeLeagueID = league.code
                     loggedIn.toggle()
                 }

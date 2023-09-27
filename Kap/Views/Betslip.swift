@@ -243,7 +243,7 @@ struct BetView: View {
         HStack {
             Button {
                 Task {
-                    let placedBet = BetViewModel().makeBet(for: bet.game, betOption: bet.betOption, playerID: authViewModel.currentUser?.id ?? "", week: homeViewModel.currentWeek)
+                    let placedBet = BetViewModel().makeBet(for: bet.game, betOption: bet.betOption, playerID: authViewModel.currentUser?.id ?? "", week: homeViewModel.currentWeek, leagueID: homeViewModel.activeLeagueID ?? "")
                     
                     if !bets.contains(where: { $0.game.documentId == placedBet.game.documentId }) {
                         try await BetViewModel().addBet(bet: placedBet, playerID: authViewModel.currentUser?.id ?? "")
@@ -395,7 +395,7 @@ struct ParlayView: View {
     
     var buttons: some View {
         Button {
-            let placedParlay = ParlayViewModel().makeParlay(for: parlay.bets, playerID: authViewModel.currentUser?.id ?? "", week: homeViewModel.currentWeek)
+            let placedParlay = ParlayViewModel().makeParlay(for: parlay.bets, playerID: authViewModel.currentUser?.id ?? "", week: homeViewModel.currentWeek, leagueID: homeViewModel.activeLeagueID ?? "")
             Task {
                 try await ParlayViewModel().addParlay(parlay: placedParlay)
                 parlays.append(placedParlay)

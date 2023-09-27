@@ -47,6 +47,9 @@ struct Leaderboard: View {
                 selectedOption = "Overall"
 
                 users = await LeaderboardViewModel().getLeaderboardData(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays)
+                if let leaguePlayers = homeViewModel.leagues.first(where: {$0.code == homeViewModel.activeLeagueID})?.players {
+                    users = users.filter({leaguePlayers.contains($0.id ?? "")})
+                }
                 await updatePointsDifferences()
                 for user in users {
                     await fetchDataFor(user: user)
@@ -66,6 +69,9 @@ struct Leaderboard: View {
         .onChange(of: self.homeViewModel.selectedBets.count, perform: { newValue in
             Task {
                 users = await LeaderboardViewModel().getLeaderboardData(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays)
+                if let leaguePlayers = homeViewModel.leagues.first(where: {$0.code == homeViewModel.activeLeagueID})?.players {
+                    users = users.filter({leaguePlayers.contains($0.id ?? "")})
+                }
                 await updatePointsDifferences()
                 
                 homeViewModel.bets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
