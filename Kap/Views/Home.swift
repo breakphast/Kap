@@ -28,7 +28,7 @@ struct Home: View {
         if authViewModel.currentUser == nil || loggedIn == false {
             Login(loggedIn: $loggedIn)
         } else if leagueViewModel.activeLeague == nil {
-            LeagueList(leagues: $homeViewModel.leagues, loggedIn: $loggedIn)
+            LeagueList(leagues: $homeViewModel.userLeagues, loggedIn: $loggedIn)
         } else {
             TabView {
                 Board()

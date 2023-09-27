@@ -107,14 +107,14 @@ struct Login: View {
                         guard fault == "" else {
                             homeViewModel.activeLeagueID = fault
                             leagueViewModel.activeLeague = homeViewModel.leagues.first(where: {$0.code == fault})
-                            print("Should be 1nd")
                             if let activeLeague = leagueViewModel.activeLeague {
-                                print("ACive", activeLeague.name)
                                 leagueViewModel.points = activeLeague.points ?? [:]
                             }
-                            loggedIn = true
-                            loggingIn = true
-
+                            if homeViewModel.userLeagues.count > 0 {
+                                showLeagueList.toggle()
+                            } else {
+                                showLeagueIntro.toggle()
+                            }
                             return
                         }
                         if homeViewModel.userLeagues.count > 0 {
@@ -123,7 +123,6 @@ struct Login: View {
                             showLeagueIntro.toggle()
                         }
                     }
-                    
                     loggingIn = true
                 }
             } label: {

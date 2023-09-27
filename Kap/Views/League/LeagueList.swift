@@ -63,9 +63,6 @@ struct LeagueList: View {
                 }
             }
         }
-        .onAppear {
-            print(leagues.map {$0.name})
-        }
     }
     
     func leagueRow(index: Int, league: League) -> some View {

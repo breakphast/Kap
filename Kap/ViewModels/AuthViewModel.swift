@@ -75,7 +75,6 @@ class AuthViewModel: ObservableObject {
                 .document(user.uid)
                 .setData(data) { _ in
                     self.didAuthenticateUser = true
-                    print("Set to true")
                 }
         }
     }

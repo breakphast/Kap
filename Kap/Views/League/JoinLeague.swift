@@ -138,12 +138,11 @@ struct DigitTextField: View {
                         if let activeLeague = leagueViewModel.activeLeague {
                             leagueViewModel.points = activeLeague.points ?? [:]
                             try await LeagueViewModel().addPlayerToLeague(leagueId: activeLeague.id!, playerId: userID)
-                            print(leagueViewModel.points)
                         }
                         homeViewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
                         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                             validCode = true
-                            loggedIn.toggle()
+                            loggedIn = true
                         }
                     }
                 }

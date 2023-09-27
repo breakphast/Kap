@@ -124,7 +124,7 @@ class ParlayViewModel {
             "leagueID": leagueID,
         ]) { err in
             if let err = err {
-                print("Error updating BETTTT: \(err)", parlay.id)
+                print("Error updating LAYYY: \(err)", parlay.id)
             } else {
                 print("Document successfully updated")
             }

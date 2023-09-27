@@ -31,7 +31,7 @@ class BetViewModel {
     }
     
     func fetchBets(games: [Game]) async throws -> [Bet] {
-        let querySnapshot = try await db.collection("newBets1").getDocuments()
+        let querySnapshot = try await db.collection("newBets").getDocuments()
         let bets = querySnapshot.documents.map { queryDocumentSnapshot -> Bet in
             let data = queryDocumentSnapshot.data()
             
@@ -73,7 +73,7 @@ class BetViewModel {
             "leagueID": bet.leagueID
         ]
         
-        let _ = try await db.collection("newBets1").document(bet.id).setData(newBet)
+        let _ = try await db.collection("newBets").document(bet.id).setData(newBet)
     }
 
     func makeBet(for game: Game, betOption: BetOption, playerID: String, week: Int, leagueID: String) -> Bet {
@@ -83,7 +83,7 @@ class BetViewModel {
     }
     
     func updateBet(bet: Bet) {
-        let newbet = db.collection("newBets1").document(bet.id)
+        let newbet = db.collection("newBets").document(bet.id)
         newbet.updateData([
             "betString": bet.betString,
             "result": bet.game.betResult(for: bet.betOption).rawValue
@@ -97,7 +97,7 @@ class BetViewModel {
     }
     
     func updateBetLeague(bet: Bet, leagueID: String) {
-        let newbet = db.collection("newBets1").document(bet.id)
+        let newbet = db.collection("newBets").document(bet.id)
         newbet.updateData([
             "leagueID": leagueID,
         ]) { err in
@@ -150,7 +150,7 @@ class BetViewModel {
     func updateBetResult(bet: Bet, result: BetResult) {
         guard bet.result == .pending else { return }
         
-        let newbet = db.collection("newBets1").document(bet.id)
+        let newbet = db.collection("newBets").document(bet.id)
         if let newPoints = bet.points {
             newbet.updateData([
                 "result": result.rawValue,
@@ -168,7 +168,7 @@ class BetViewModel {
     
     func deleteBet(betID: String) async throws {
         return try await withCheckedThrowingContinuation { continuation in
-            db.collection("newBets1").document(betID).delete() { error in
+            db.collection("newBets").document(betID).delete() { error in
                 if let error = error {
                     continuation.resume(throwing: error)
                 } else {
