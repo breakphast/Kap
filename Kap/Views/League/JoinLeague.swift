@@ -124,7 +124,7 @@ struct DigitTextField: View {
 
     private func validateCodeWhenIndexIsThree() {
         if index == 3 {
-            if HomeViewModel.leagueIDs.contains(code.joined()) {
+            if homeViewModel.leagueIDs.contains(code.joined()) {
                 withAnimation(.easeInOut) {
                     result = true
                 }
@@ -132,16 +132,17 @@ struct DigitTextField: View {
                     if let userID = authViewModel.currentUser?.id {
                         await UserViewModel().updateLeagues(for: userID, leagueID: code.joined())
                         homeViewModel.users = try await UserViewModel().fetchAllUsers()
-                        try await LeagueViewModel().addPlayerToLeague(leagueId: "HnWa1XjrTwiz5UAs87I1", playerId: userID)
+                        
+                        homeViewModel.activeLeagueID = code.joined()
+                        leagueViewModel.activeLeague = homeViewModel.leagues.first(where: {$0.code == code.joined()})
+                        if let activeLeague = leagueViewModel.activeLeague {
+                            leagueViewModel.points = activeLeague.points ?? [:]
+                            try await LeagueViewModel().addPlayerToLeague(leagueId: activeLeague.id!, playerId: userID)
+                            print(leagueViewModel.points)
+                        }
                         homeViewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
                         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                             validCode = true
-                            homeViewModel.activeLeagueID = code.joined()
-                            leagueViewModel.activeLeague = homeViewModel.leagues.first(where: {$0.code == code.joined()})
-                            if let activeLeague = leagueViewModel.activeLeague {
-                                leagueViewModel.points = activeLeague.points
-                                print(leagueViewModel.points)
-                            }
                             loggedIn.toggle()
                         }
                     }

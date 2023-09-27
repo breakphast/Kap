@@ -35,7 +35,7 @@ class HomeViewModel: ObservableObject {
     
     @Published var userLeagues: [League] = []
     
-    static let leagueIDs = ["2222"]
+    @Published var leagueIDs = [String]()
     
     static let keys = [
         "4c43e84559d63c5465e9a1d972be7d2d",
@@ -183,6 +183,7 @@ class HomeViewModel: ObservableObject {
                 self.games = fetchedGames
                 self.bets = fetchedBets
                 self.parlays = fetchedParlays
+                self.leagueIDs = self.leagues.map { $0.code }
                 
                 GameService().updateDayType(for: &self.games)
                 for game in self.games {

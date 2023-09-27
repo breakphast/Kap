@@ -14,14 +14,38 @@ struct LeagueList: View {
     @Environment(\.dismiss) var dismiss
     @Binding var leagues: [League]
     @Binding var loggedIn: Bool
+    @State private var defaultLeague = true
+    @AppStorage("defaultLeagueID") private var defaultLeagueID = ""
     
     var body: some View {
         NavigationStack {
             ZStack {
                 Color.onyx.ignoresSafeArea()
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .center, spacing: 12) {
                     ForEach(Array(leagues.enumerated()), id: \.1.id) { index, league in
                         leagueRow(index: index, league: league)
+                    }
+                    ZStack {
+                        HStack(spacing: 2) {
+                            Text("Set as default")
+                                .font(.title3)
+                                .fontWeight(.semibold)
+                        }
+                        Toggle("", isOn: $defaultLeague)
+                            .toggleStyle(.switch).tint(.lion)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .padding(.leading, 100)
+                    Spacer()
+                    NavigationLink(destination: JoinLeague(loggedIn: $loggedIn)) {
+                        Text("Join League")
+                            .font(.title3.bold())
+                            .foregroundStyle(.oW)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 8)
+                            .background(.clear)
+                            .cornerRadius(8)
+                            .padding(.top)
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -56,9 +80,14 @@ struct LeagueList: View {
                     homeViewModel.activeLeagueID = league.code
                     leagueViewModel.activeLeague = homeViewModel.leagues.first(where: {$0.code == league.code})
                     if let activeLeague = leagueViewModel.activeLeague {
-                        leagueViewModel.points = activeLeague.points 
+                        leagueViewModel.points = activeLeague.points ?? [:]
                     }
-                    loggedIn.toggle()
+                    loggedIn = true
+                    if defaultLeague {
+                        defaultLeagueID = league.code
+                    } else {
+                        defaultLeagueID = ""
+                    }
                 }
         )
     }

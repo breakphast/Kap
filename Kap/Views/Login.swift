@@ -10,6 +10,7 @@ import SwiftUI
 struct Login: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
+    @EnvironmentObject var leagueViewModel: LeagueViewModel
     @AppStorage("email") private var emailAddy = ""
     @AppStorage("password") private var pass = ""
 
@@ -102,6 +103,20 @@ struct Login: View {
                     }
                     Task {
                         homeViewModel.userLeagues = try await LeagueViewModel().fetchLeaguesContainingID(id: userID!)
+                        let fault = UserDefaults.standard.string(forKey: "defaultLeagueID")
+                        guard fault == "" else {
+                            homeViewModel.activeLeagueID = fault
+                            leagueViewModel.activeLeague = homeViewModel.leagues.first(where: {$0.code == fault})
+                            print("Should be 1nd")
+                            if let activeLeague = leagueViewModel.activeLeague {
+                                print("ACive", activeLeague.name)
+                                leagueViewModel.points = activeLeague.points ?? [:]
+                            }
+                            loggedIn = true
+                            loggingIn = true
+
+                            return
+                        }
                         if homeViewModel.userLeagues.count > 0 {
                             showLeagueList.toggle()
                         } else {

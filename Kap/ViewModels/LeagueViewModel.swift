@@ -21,7 +21,7 @@ class LeagueViewModel: ObservableObject {
 
         let leagues: [League] = querySnapshot.documents.compactMap { document in
             guard let league = try? document.data(as: League.self),
-                  league.players.contains(id) else {
+                  ((league.players?.contains(id)) != nil) else {
                 return nil
             }
             return league

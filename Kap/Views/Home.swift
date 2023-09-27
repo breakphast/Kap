@@ -12,6 +12,7 @@ import FirebaseFirestoreSwift
 struct Home: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
+    @EnvironmentObject var leagueViewModel: LeagueViewModel
     @State private var loggedIn = false
     @State private var date: Date = Date()
     @State private var leagues = 0
@@ -26,6 +27,8 @@ struct Home: View {
     var body: some View {
         if authViewModel.currentUser == nil || loggedIn == false {
             Login(loggedIn: $loggedIn)
+        } else if leagueViewModel.activeLeague == nil {
+            LeagueList(leagues: $homeViewModel.leagues, loggedIn: $loggedIn)
         } else {
             TabView {
                 Board()

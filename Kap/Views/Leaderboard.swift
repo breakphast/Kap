@@ -59,7 +59,7 @@ struct Leaderboard: View {
                 homeViewModel.bets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
                 homeViewModel.parlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
                             
-                leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: homeViewModel.activeLeague?.id ?? "", users: users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, weeks: [1, 2])
+                leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: leagueViewModel.activeLeague?.id ?? "", users: users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, weeks: [1, 2])
                 
                 bigMovers = LeaderboardViewModel().bigMover(from: homeViewModel.leaderboards[0], to: homeViewModel.leaderboards[1])
             } catch {
@@ -69,7 +69,7 @@ struct Leaderboard: View {
         }
         .onChange(of: self.homeViewModel.selectedBets.count, perform: { newValue in
             Task {
-                users = await LeaderboardViewModel().getLeaderboardData(leagueID: homeViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays)
+                users = await LeaderboardViewModel().getLeaderboardData(leagueID: leagueViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays)
                 if let leaguePlayers = homeViewModel.leagues.first(where: {$0.code == homeViewModel.activeLeagueID})?.players {
                     users = users.filter({leaguePlayers.contains($0.id ?? "")})
                 }
@@ -78,7 +78,7 @@ struct Leaderboard: View {
                 homeViewModel.bets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
                 homeViewModel.parlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
                 
-                leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: homeViewModel.activeLeague!.id!, users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, weeks: [homeViewModel.currentWeek - 1, homeViewModel.currentWeek])
+                leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: leagueViewModel.activeLeague!.id!, users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, weeks: [homeViewModel.currentWeek - 1, homeViewModel.currentWeek])
                 
                 bigMovers = LeaderboardViewModel().bigMover(from: homeViewModel.leaderboards[0], to: homeViewModel.leaderboards[1])
             }
@@ -173,7 +173,7 @@ struct Leaderboard: View {
                     .fontWeight(.bold)
                 
                 HStack(spacing: 4) {
-                    Text("Points: \((leagueViewModel.points[user.id!]?.twoDecimalString) ?? "")")
+                    Text("Points: \((leagueViewModel.points[user.id!]?.twoDecimalString) ?? "0")")
                         .font(.caption.bold())
                         .foregroundStyle(.secondary)
                     if missedCount[user.id ?? ""] ?? 0 > 0 {
@@ -218,7 +218,7 @@ struct Leaderboard: View {
     private func updatePointsDifferences() async {
         var newPointsDifferences: [String: Double] = [:]
         for user in users {
-            let diff = await LeaderboardViewModel().getWeeklyPointsDifference(userID: user.id ?? "", bets: homeViewModel.bets, parlays: homeViewModel.parlays, currentWeek: week, leagueID: homeViewModel.activeLeague?.id ?? "")
+            let diff = await LeaderboardViewModel().getWeeklyPointsDifference(userID: user.id ?? "", bets: homeViewModel.bets, parlays: homeViewModel.parlays, currentWeek: week, leagueID: leagueViewModel.activeLeague?.id ?? "")
             newPointsDifferences[user.id ?? ""] = diff
         }
         pointsDifferences = newPointsDifferences
@@ -233,7 +233,7 @@ struct Leaderboard: View {
                 let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
                 parlays = fetchedParlays.filter({ $0.playerID == authViewModel.currentUser?.id })
                 
-                weeklyPoints = await LeaderboardViewModel().getTotalPoints(userID: authViewModel.currentUser?.id ?? "", bets: bets, parlays: homeViewModel.parlays, leagueID: homeViewModel.activeLeague?.id ?? "")
+                weeklyPoints = await LeaderboardViewModel().getTotalPoints(userID: authViewModel.currentUser?.id ?? "", bets: bets, parlays: homeViewModel.parlays, leagueID: leagueViewModel.activeLeague?.id ?? "")
             } catch {
                 print("Error fetching bets: \(error)")
             }

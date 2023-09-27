@@ -13,6 +13,8 @@ struct PlayerBetsView: View {
     @Binding var userID: String
 
     @EnvironmentObject var homeViewModel: HomeViewModel
+    @EnvironmentObject var leagueViewModel: LeagueViewModel
+
     @Environment(\.dismiss) private var dismiss
 
     @State private var bets: [Bet] = []
@@ -214,7 +216,7 @@ struct PlayerBetsView: View {
                     } else {
                         parlays = fetchedParlays.filter { $0.playerID == userID && $0.week == weekNumber }
                     }
-                    weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: userID, bets: bets, parlays: homeViewModel.parlays, week: weekNumber, leagueID: homeViewModel.activeLeague?.id ?? "")
+                    weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: userID, bets: bets, parlays: homeViewModel.parlays, week: weekNumber, leagueID: leagueViewModel.activeLeague?.id ?? "")
                 } catch {
                     print("Error fetching data for week \(weekNumber): \(error)")
                 }
@@ -241,7 +243,7 @@ struct PlayerBetsView: View {
                 } else {
                     parlays = fetchedParlays.filter { $0.playerID == userID && $0.week == week }
                 }
-                weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: userID, bets: bets, parlays: homeViewModel.parlays, week: week, leagueID: homeViewModel.activeLeague?.id ?? "")
+                weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: userID, bets: bets, parlays: homeViewModel.parlays, week: week, leagueID: leagueViewModel.activeLeague?.id ?? "")
             } catch {
                 print("Error fetching bets: \(error)")
             }

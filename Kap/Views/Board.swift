@@ -11,6 +11,7 @@ struct Board: View {
     let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 3)
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
+    @EnvironmentObject var leagueViewModel: LeagueViewModel
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
@@ -23,8 +24,17 @@ struct Board: View {
                         .navigationBarBackButtonHidden()
                         .toolbar {
                             ToolbarItem(placement: .navigationBarLeading) {
-                                Text("Loch Sports")
-                                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                                HStack {
+                                    Text(leagueViewModel.activeLeague?.name ?? "Loch Sports")
+                                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                                    
+                                    Image(systemName: "arrow.left.arrow.right.square")
+                                        .font(.caption.bold())
+                                        .foregroundStyle(.lion)
+                                }
+                                .onTapGesture {
+                                    leagueViewModel.activeLeague = nil
+                                }
                             }
                             
                             ToolbarItem(placement: .navigationBarTrailing) {
