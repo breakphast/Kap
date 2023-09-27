@@ -10,6 +10,7 @@ import SwiftUI
 struct LeagueList: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
+    @EnvironmentObject var leagueViewModel: LeagueViewModel
     @Environment(\.dismiss) var dismiss
     @Binding var leagues: [League]
     @Binding var loggedIn: Bool
@@ -31,14 +32,6 @@ struct LeagueList: View {
             .fontDesign(.rounded)
             .navigationBarBackButtonHidden()
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
-                        .foregroundStyle(.oW)
-                        .onTapGesture {
-                            dismiss()
-                        }
-                }
                 ToolbarItem(placement: .principal) {
                     Text("Leagues")
                         .font(.system(size: 24, weight: .bold, design: .rounded))
@@ -60,9 +53,15 @@ struct LeagueList: View {
             RoundedRectangle(cornerRadius: 1)
                 .foregroundStyle(Color("onyx").opacity(0.00001))
                 .onTapGesture {
-//                    homeViewModel.bets = homeViewModel.bets.filter({$0.leagueID == homeViewModel.activeLeagueID ?? ""})
-//                    print(homeViewModel.bets)
                     homeViewModel.activeLeagueID = league.code
+                    leagueViewModel.activeLeague = homeViewModel.leagues.first(where: {$0.code == league.code})
+                    if let activeLeague = leagueViewModel.activeLeague {
+                        leagueViewModel.points = activeLeague.points ?? [:]
+                    }
+                    
+                    Task {
+                        try await LeagueViewModel().addPointsToLeague(leagueId: league.id!, points: 134, forKey: authViewModel.currentUser?.id ?? "")
+                    }
                     loggedIn.toggle()
                 }
         )

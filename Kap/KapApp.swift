@@ -12,6 +12,7 @@ import Firebase
 struct KapApp: App {
     @StateObject private var homeViewModel = HomeViewModel()
     @StateObject private var authViewModel = AuthViewModel()
+    @StateObject private var leagueViewModel = LeagueViewModel()
 
     init() {
         FirebaseApp.configure()
@@ -22,6 +23,7 @@ struct KapApp: App {
             Home(leagueID: "")
                 .environmentObject(homeViewModel)
                 .environmentObject(authViewModel)
+                .environmentObject(leagueViewModel)
         }
     }
 }

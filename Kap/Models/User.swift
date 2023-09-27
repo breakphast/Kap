@@ -18,6 +18,7 @@ struct User: Codable, Identifiable {
     var totalPoints: Double?
     var avatar: Int?
     var missedBets: [MissedBet]?
+    var leagueIndex: Int?
 }
 
 struct MissedBet: Codable {

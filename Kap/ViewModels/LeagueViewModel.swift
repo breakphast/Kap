@@ -1,7 +1,9 @@
 import Foundation
 import Firebase
 
-class LeagueViewModel {
+class LeagueViewModel: ObservableObject {
+    @Published var points = [String: Double]()
+    @Published var activeLeague: League?
     
     private var db = Firestore.firestore()
     
@@ -33,8 +35,7 @@ class LeagueViewModel {
             let data: [String: Any] = [
                 "name": league.name,
                 "players": league.players,
-                "code": "\(Int.random(in: 1000 ... 9999))",
-                "points": []
+                "code": "\(Int.random(in: 1000 ... 9999))"
             ]
 
             let newLeagueDocument = db.collection("leagues").document()
@@ -50,9 +51,6 @@ class LeagueViewModel {
         }
     }
 
-
-    
-    // UPDATE: Add player (a Player's ID) to a league
     func addPlayerToLeague(leagueId: String, playerId: String) async throws {
         return try await withCheckedThrowingContinuation { continuation in
             db.collection("leagues").document(leagueId).updateData([
@@ -67,7 +65,7 @@ class LeagueViewModel {
         }
     }
     
-    func addPointsToLeague(leagueId: String, points: Double, atIndex index: Int) async throws {
+    func addPointsToLeague(leagueId: String, points: Double, forKey key: String) async throws {
         return try await withCheckedThrowingContinuation { continuation in
             let docRef = db.collection("leagues").document(leagueId)
             
@@ -77,21 +75,15 @@ class LeagueViewModel {
                     return
                 }
                 
-                guard let document = document, document.exists, var pointsArray = document.get("points") as? [Double] else {
-                    let error = NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey : "Document does not exist or points array is missing/invalid"])
+                guard let document = document, document.exists, var pointsDictionary = document.get("points") as? [String: Double] else {
+                    let error = NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey : "Document does not exist or points dictionary is missing/invalid"])
                     continuation.resume(throwing: error)
                     return
                 }
                 
-                if index < 0 || index >= pointsArray.count {
-                    let error = NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey : "Index out of range"])
-                    continuation.resume(throwing: error)
-                    return
-                }
+                pointsDictionary[key, default: 0] += points
                 
-                pointsArray[index] += points
-                
-                docRef.updateData(["points": pointsArray]) { error in
+                docRef.updateData(["points": pointsDictionary]) { error in
                     if let error = error {
                         continuation.resume(throwing: error)
                     } else {
@@ -101,9 +93,7 @@ class LeagueViewModel {
             }
         }
     }
-
     
-    // DELETE: Delete a league
     func deleteLeague(leagueId: String) async throws {
         return try await withCheckedThrowingContinuation { continuation in
             db.collection("leagues").document(leagueId).delete() { error in

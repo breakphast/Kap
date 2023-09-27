@@ -10,6 +10,7 @@ import SwiftUI
 struct Leaderboard: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
+    @EnvironmentObject var leagueViewModel: LeagueViewModel
     let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 3)
     
     @State private var users: [User] = []
@@ -172,7 +173,7 @@ struct Leaderboard: View {
                     .fontWeight(.bold)
                 
                 HStack(spacing: 4) {
-                    Text("Points: \((((user.totalPoints ?? 0))).twoDecimalString)")
+                    Text("Points: \((leagueViewModel.points[user.id!]?.twoDecimalString) ?? "")")
                         .font(.caption.bold())
                         .foregroundStyle(.secondary)
                     if missedCount[user.id ?? ""] ?? 0 > 0 {

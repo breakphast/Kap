@@ -14,7 +14,7 @@ struct League: Codable, Identifiable {
     var name: String
     var players: [String]
     var code: String
-    var points: [Int]
+    var points: [String: Double]
 //    var bets: [Bet] = []
 //    var parlays: [Parlay] = []
 //    var leaderboards: [[Player]] = [[]]
