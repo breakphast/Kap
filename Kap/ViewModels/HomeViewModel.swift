@@ -153,13 +153,14 @@ class HomeViewModel: ObservableObject {
     func fetchEssentials(updateGames: Bool, updateScores: Bool) async {
         do {
             var fetchedUsers = try await UserViewModel().fetchAllUsers()
-            let leaguePlayers = leagues.first(where: {$0.code == activeLeagueID})?.players
-            if let leaguePlayers {
-                fetchedUsers = fetchedUsers.filter({leaguePlayers.contains($0.id ?? "")})
+            let leaguePlayers = leagues.first(where: { $0.code == activeLeagueID })?.players
+            if let leaguePlayers = leaguePlayers {
+                fetchedUsers = fetchedUsers.filter({ leaguePlayers.contains($0.id!) })
             }
+            
             let fetchedLeagues = try await LeagueViewModel().fetchAllLeagues()
             let fetchedAllGames = try await GameService().fetchGamesFromFirestore()
-            let fetchedGames = try await GameService().fetchGamesFromFirestore().chunked(into: 16)[Int(currentWeek) - 1]
+            let fetchedGames = fetchedAllGames.chunked(into: 16)[Int(currentWeek) - 1]
             
             if updateGames {
                 let updatedGames = try await GameService().getGames()
@@ -170,12 +171,12 @@ class HomeViewModel: ObservableObject {
                 }
                 GameService().addGames(games: matchingGames)
             }
-
+            
             let fetchedBets = try await BetViewModel().fetchBets(games: fetchedAllGames)
             let fetchedParlays = try await ParlayViewModel().fetchParlays(games: fetchedAllGames)
             
-            DispatchQueue.main.async {
-                self.users = fetchedUsers
+            DispatchQueue.main.async { [fetchedUsersCopy = fetchedUsers] in
+                self.users = fetchedUsersCopy
                 self.leagues = fetchedLeagues
                 self.activeLeague = fetchedLeagues.first
                 self.allGames = fetchedAllGames
@@ -189,10 +190,12 @@ class HomeViewModel: ObservableObject {
                 }
             }
             
-            if updateScores { await self.updateAndFetch(games: fetchedGames) }
+            if updateScores {
+                await self.updateAndFetch(games: fetchedGames)
+            }
             
         } catch {
-            print("Failed")
+            print("Failed with error: \(error.localizedDescription)")
         }
     }
 

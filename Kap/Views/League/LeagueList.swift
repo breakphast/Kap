@@ -56,11 +56,7 @@ struct LeagueList: View {
                     homeViewModel.activeLeagueID = league.code
                     leagueViewModel.activeLeague = homeViewModel.leagues.first(where: {$0.code == league.code})
                     if let activeLeague = leagueViewModel.activeLeague {
-                        leagueViewModel.points = activeLeague.points ?? [:]
-                    }
-                    
-                    Task {
-                        try await LeagueViewModel().addPointsToLeague(leagueId: league.id!, points: 134, forKey: authViewModel.currentUser?.id ?? "")
+                        leagueViewModel.points = activeLeague.points 
                     }
                     loggedIn.toggle()
                 }

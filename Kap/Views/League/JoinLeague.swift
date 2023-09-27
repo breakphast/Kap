@@ -23,15 +23,10 @@ struct JoinLeague: View {
                 Color.onyx.ignoresSafeArea()
                 
                 if result == true {
-                    HStack(spacing: 4) {
-                        Text("Joined league successfully!")
-                            .font(.title2.bold())
-                            .foregroundStyle(.oW)
-                        
-                        Image(systemName: "checkmark")
-                            .font(.title2.bold())
-                            .foregroundStyle(.bean)
-                    }
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 48))
+                        .bold()
+                        .foregroundStyle(.bean)
                 } else {
                     VStack {
                         Text("Enter Code")
@@ -74,6 +69,7 @@ struct JoinLeague: View {
 struct DigitTextField: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
+    @EnvironmentObject var leagueViewModel: LeagueViewModel
     @Binding var digit: String
     @Binding var code: [String]
     @FocusState var focusedField: Int?
@@ -137,12 +133,18 @@ struct DigitTextField: View {
                         await UserViewModel().updateLeagues(for: userID, leagueID: code.joined())
                         homeViewModel.users = try await UserViewModel().fetchAllUsers()
                         try await LeagueViewModel().addPlayerToLeague(leagueId: "HnWa1XjrTwiz5UAs87I1", playerId: userID)
+                        homeViewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                            validCode = true
+                            homeViewModel.activeLeagueID = code.joined()
+                            leagueViewModel.activeLeague = homeViewModel.leagues.first(where: {$0.code == code.joined()})
+                            if let activeLeague = leagueViewModel.activeLeague {
+                                leagueViewModel.points = activeLeague.points
+                                print(leagueViewModel.points)
+                            }
+                            loggedIn.toggle()
+                        }
                     }
-                }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                    validCode = true
-                    homeViewModel.activeLeagueID = code.joined()
-                    loggedIn.toggle()
                 }
             } else {
                 validCode = false
