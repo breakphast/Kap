@@ -11,6 +11,7 @@ struct Login: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var leagueViewModel: LeagueViewModel
+    @EnvironmentObject var leaderboardViewModel: LeaderboardViewModel
     @AppStorage("email") private var emailAddy = ""
     @AppStorage("password") private var pass = ""
 
@@ -20,7 +21,6 @@ struct Login: View {
     @State private var fullName = ""
     @State private var login = true
     @State private var loginFailed = false
-    @State private var loggingIn = false
     @State private var showLeagueList = false
     @State private var showLeagueIntro = false
     @Binding var loggedIn: Bool
@@ -109,26 +109,31 @@ struct Login: View {
                             leagueViewModel.activeLeague = homeViewModel.leagues.first(where: {$0.code == fault})
                             if let activeLeague = leagueViewModel.activeLeague {
                                 leagueViewModel.points = activeLeague.points ?? [:]
+                                let leaguePlayers = homeViewModel.leagues.first(where: { $0.code == activeLeague.code })?.players
+                                if let leaguePlayers = leaguePlayers {
+                                    homeViewModel.users = homeViewModel.users.filter({ leaguePlayers.contains($0.id!) })
+                                }
                             }
+                            await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, week: homeViewModel.currentWeek)
+                            
                             loggedIn = true
-                            loggingIn = true
                             return
                         }
+                        
                         if homeViewModel.userLeagues.count > 0 {
                             showLeagueList.toggle()
                         } else {
                             showLeagueIntro.toggle()
                         }
                     }
-                    loggingIn = true
                 }
             } label: {
                 Text("Login")
                     .font(.title2.bold())
-                    .foregroundStyle(loggingIn ? Color("oW") : Color("lion"))
+                    .foregroundStyle(Color("oW"))
                     .padding(.horizontal, 20)
                     .padding(.vertical, 8)
-                    .background(loggingIn ? Color("lion") : Color("oW"))
+                    .background(Color("lion"))
                     .cornerRadius(8)
             }
             .autocorrectionDisabled()

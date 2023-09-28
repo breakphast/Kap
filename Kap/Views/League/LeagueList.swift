@@ -11,6 +11,8 @@ struct LeagueList: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var leagueViewModel: LeagueViewModel
+    @EnvironmentObject var leaderboardViewModel: LeaderboardViewModel
+    
     @Environment(\.dismiss) var dismiss
     @Binding var leagues: [League]
     @Binding var loggedIn: Bool
@@ -74,15 +76,22 @@ struct LeagueList: View {
             RoundedRectangle(cornerRadius: 1)
                 .foregroundStyle(Color("onyx").opacity(0.00001))
                 .onTapGesture {
-                    homeViewModel.activeLeagueID = league.code
-                    leagueViewModel.activeLeague = homeViewModel.leagues.first(where: {$0.code == league.code})
-                    if let activeLeague = leagueViewModel.activeLeague {
-                        leagueViewModel.points = activeLeague.points ?? [:]
-                    }
-                    loggedIn = true
-                    if defaultLeague {
-                        defaultLeagueID = league.code
-                        print("Set default league: ", league.name)
+                    Task {
+                        homeViewModel.activeLeagueID = league.code
+                        homeViewModel.users = try await UserViewModel().fetchAllUsers()
+                        leagueViewModel.activeLeague = homeViewModel.leagues.first(where: {$0.code == league.code})
+                        if let activeLeague = leagueViewModel.activeLeague {
+                            leagueViewModel.points = activeLeague.points ?? [:]
+                            let leaguePlayers = homeViewModel.leagues.first(where: { $0.code == league.code })?.players
+                            if let leaguePlayers = leaguePlayers {
+                                homeViewModel.users = homeViewModel.users.filter({ leaguePlayers.contains($0.id!) })
+                            }
+                        }
+                        await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, week: homeViewModel.currentWeek)
+                        loggedIn = true
+                        if defaultLeague {
+                            defaultLeagueID = league.code
+                        }
                     }
                 }
         )
