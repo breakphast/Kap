@@ -110,11 +110,8 @@ struct Login: View {
                             if let activeLeague = leagueViewModel.activeLeague {
                                 leagueViewModel.points = activeLeague.points ?? [:]
                             }
-                            if homeViewModel.userLeagues.count > 0 {
-                                showLeagueList.toggle()
-                            } else {
-                                showLeagueIntro.toggle()
-                            }
+                            loggedIn = true
+                            loggingIn = true
                             return
                         }
                         if homeViewModel.userLeagues.count > 0 {

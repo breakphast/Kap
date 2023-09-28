@@ -36,6 +36,7 @@ class HomeViewModel: ObservableObject {
     @Published var userLeagues: [League] = []
     
     @Published var leagueIDs = [String]()
+    @Published var leagueType: LeagueType = .weekly
     
     static let keys = [
         "4c43e84559d63c5465e9a1d972be7d2d",
@@ -153,12 +154,15 @@ class HomeViewModel: ObservableObject {
     func fetchEssentials(updateGames: Bool, updateScores: Bool) async {
         do {
             var fetchedUsers = try await UserViewModel().fetchAllUsers()
-            let leaguePlayers = leagues.first(where: { $0.code == activeLeagueID })?.players
+//            for user in fetchedUsers {
+//                try await LeagueViewModel().addPlayerToLeague(leagueId: "nZeeNcgdDZWiya0QFnke", playerId: user.id!)
+//            }
+            let fetchedLeagues = try await LeagueViewModel().fetchAllLeagues()
+            let leaguePlayers = fetchedLeagues.first(where: { $0.code == activeLeagueID })?.players
             if let leaguePlayers = leaguePlayers {
                 fetchedUsers = fetchedUsers.filter({ leaguePlayers.contains($0.id!) })
             }
             
-            let fetchedLeagues = try await LeagueViewModel().fetchAllLeagues()
             let fetchedAllGames = try await GameService().fetchGamesFromFirestore()
             let fetchedGames = fetchedAllGames.chunked(into: 16)[Int(currentWeek) - 1]
             
@@ -194,7 +198,6 @@ class HomeViewModel: ObservableObject {
             if updateScores {
                 await self.updateAndFetch(games: fetchedGames)
             }
-            
         } catch {
             print("Failed with error: \(error.localizedDescription)")
         }
@@ -249,17 +252,7 @@ class HomeViewModel: ObservableObject {
                 self.currentDate = activeDate
             }
             
-            if updateLeaderboards {
-                let newLeaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: activeLeague?.id ?? "", users: self.users, bets: self.bets, parlays: self.parlays, weeks: [self.currentWeek - 1, self.currentWeek])
-            }
-            
             await self.fetchEssentials(updateGames: updateGames, updateScores: updateScores)
-            
-            let newLeaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: activeLeague?.id ?? "", users: self.users, bets: self.bets, parlays: self.parlays, weeks: [self.currentWeek - 1, self.currentWeek])
-            
-            DispatchQueue.main.async {
-                self.leaderboards = newLeaderboards
-            }
         }
     }
 

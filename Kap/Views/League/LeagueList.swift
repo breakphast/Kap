@@ -82,8 +82,7 @@ struct LeagueList: View {
                     loggedIn = true
                     if defaultLeague {
                         defaultLeagueID = league.code
-                    } else {
-                        defaultLeagueID = ""
+                        print("Set default league: ", league.name)
                     }
                 }
         )

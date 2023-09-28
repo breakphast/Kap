@@ -106,3 +106,8 @@ class LeagueViewModel: ObservableObject {
         }
     }
 }
+
+enum LeagueType {
+    case weekly
+    case season
+}

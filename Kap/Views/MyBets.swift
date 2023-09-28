@@ -151,7 +151,7 @@ struct MyBets: View {
                     let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
                     parlays = fetchedParlays.filter { $0.playerID == currentUserId && $0.week == weekNumber }
                     
-                    weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: currentUserId, bets: bets, parlays: homeViewModel.parlays, week: weekNumber, leagueID: leagueViewModel.activeLeague?.id ?? "")
+                    weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: currentUserId, bets: bets, parlays: homeViewModel.parlays, week: weekNumber)
                 } catch {
                     print("Error fetching data for week \(weekNumber): \(error)")
                 }
@@ -277,7 +277,7 @@ struct MyBets: View {
                 bets = fetchedBets.filter({ $0.playerID == authViewModel.currentUser?.id && $0.week == week && $0.leagueID == homeViewModel.activeLeagueID! })
                 let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
                 parlays = fetchedParlays.filter({ $0.playerID == authViewModel.currentUser?.id && $0.week == week })
-                weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: authViewModel.currentUser?.id ?? "", bets: bets, parlays: homeViewModel.parlays, week: week, leagueID: leagueViewModel.activeLeague?.id ?? "")
+                weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: authViewModel.currentUser?.id ?? "", bets: bets, parlays: homeViewModel.parlays, week: week)
             } catch {
                 print("Error fetching bets: \(error)")
             }

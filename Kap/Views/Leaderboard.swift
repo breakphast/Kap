@@ -11,23 +11,16 @@ struct Leaderboard: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var leagueViewModel: LeagueViewModel
+    @EnvironmentObject var leaderboardViewModel: LeaderboardViewModel
+    
     let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 3)
     
-    @State private var users: [User] = []
     @State private var selectedOption = "Overall"
-    @State private var week = 1
-    @State private var pointsDifferences: [String: Double] = [:]
-    @State private var leaderboards: [[User]] = [[]]
-    @State private var bigMovers: [(User, up: Bool)]?
     @State private var points: Int = 0
-    
-    @State private var bets: [Bet] = []
-    @State private var parlays: [Parlay] = []
-    @State private var weeklyPoints: Double?
-    
-    @State private var showUserBets = false
+    @State private var weeklyPoints: [String: Double] = [:]
     @State private var userID = ""
     @State private var missedCount = [String: Int]()
+    @State private var showUserBets = false
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -37,64 +30,37 @@ struct Leaderboard: View {
                     .font(.system(size: 32, weight: .bold, design: .rounded))
                 menu
             }
-            
-            scrollViewContent
-            .padding(.top, 80)
+            scrollViewContent.padding(.top, 80)
         }
         .fontDesign(.rounded)
-        .task {
-            do {
-                week = 1
-                selectedOption = "Overall"
-                homeViewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
-
-                if let leaguePlayers = homeViewModel.leagues.first(where: {$0.code == homeViewModel.activeLeagueID})?.players {
-                    users = homeViewModel.users.filter({leaguePlayers.contains($0.id!)})
-                }
-                await updatePointsDifferences()
-                for user in users {
-                    await fetchDataFor(user: user)
-                }
-                
-                homeViewModel.bets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
-                homeViewModel.parlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
-                            
-                leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: leagueViewModel.activeLeague?.id ?? "", users: users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, weeks: [1, 2])
-                
-                bigMovers = LeaderboardViewModel().bigMover(from: homeViewModel.leaderboards[0], to: homeViewModel.leaderboards[1])
-            } catch {
-                
-            }
-            
-        }
-        .onChange(of: self.homeViewModel.selectedBets.count, perform: { newValue in
-            Task {
-                users = await LeaderboardViewModel().getLeaderboardData(leagueID: leagueViewModel.activeLeague?.id ?? "", users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays)
-                if let leaguePlayers = homeViewModel.leagues.first(where: {$0.code == homeViewModel.activeLeagueID})?.players {
-                    users = users.filter({leaguePlayers.contains($0.id ?? "")})
-                }
-                await updatePointsDifferences()
-                
-                homeViewModel.bets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
-                homeViewModel.parlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
-                
-                leaderboards = await LeaderboardViewModel().generateLeaderboards(leagueID: leagueViewModel.activeLeague!.id!, users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, weeks: [homeViewModel.currentWeek - 1, homeViewModel.currentWeek])
-                
-                bigMovers = LeaderboardViewModel().bigMover(from: homeViewModel.leaderboards[0], to: homeViewModel.leaderboards[1])
-            }
-        })
     }
     
+    // MARK: - Subviews
     var scrollViewContent: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 16) {
-                ForEach(Array(users.enumerated()), id: \.1.id) { index, user in
+                ForEach(Array(leaderboardViewModel.rankedUsers.enumerated()), id: \.1.id) { index, user in
                     userRow(index: index, user: user)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .padding()
         }
+    }
+    
+    var menu: some View {
+        Menu { } label: {
+            HStack(spacing: 4) {
+                Text(selectedOption.isEmpty ? (homeViewModel.activeLeague?.name ?? "") : selectedOption)
+                Image(systemName: "chevron.down")
+                    .font(.caption2.bold())
+            }
+            .font(.system(size: 14, weight: .bold, design: .rounded))
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(RoundedRectangle(cornerRadius: 10).fill(Color.gray.opacity(0.2)))
+        }
+        .disabled(true)
     }
     
     func userRow(index: Int, user: User) -> some View {
@@ -142,24 +108,6 @@ struct Leaderboard: View {
         return Color("onyxLightish")
     }
 
-    
-    var menu: some View {
-        Menu {
-            
-        } label: {
-            HStack(spacing: 4) {
-                Text(selectedOption.isEmpty ? (homeViewModel.activeLeague?.name ?? "") : selectedOption)
-                Image(systemName: "chevron.down")
-                    .font(.caption2.bold())
-            }
-            .font(.system(size: 14, weight: .bold, design: .rounded))
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .background(RoundedRectangle(cornerRadius: 10).fill(Color.gray.opacity(0.2)))
-        }
-        .disabled(true)
-    }
-    
     func userDetailHStack(for user: User, index: Int) -> some View {
         HStack {
             Image("avatar\(user.avatar ?? 0)")
@@ -173,7 +121,7 @@ struct Leaderboard: View {
                     .fontWeight(.bold)
                 
                 HStack(spacing: 4) {
-                    Text("Points: \((leagueViewModel.points[user.id!]?.twoDecimalString) ?? "0")")
+                    Text("Points: \((leaderboardViewModel.usersPoints[user.id!]?[homeViewModel.currentWeek]?.twoDecimalString) ?? "0")")
                         .font(.caption.bold())
                         .foregroundStyle(.secondary)
                     if missedCount[user.id ?? ""] ?? 0 > 0 {
@@ -183,60 +131,17 @@ struct Leaderboard: View {
                     }
                 }
             }
-            
-            if selectedOption != "Week 1" && homeViewModel.bets.filter({ $0.playerID == user.id }).count != 0 {
-                Spacer()
-                Image(systemName:
-                        LeaderboardViewModel().rankDifference(for: user, from: homeViewModel.leaderboards[0], to: homeViewModel.leaderboards[1]) > 0 ?
-                      "chevron.up.circle" :
-                        (LeaderboardViewModel().rankDifference(for: user, from: homeViewModel.leaderboards[0], to: homeViewModel.leaderboards[1]) < 0 ?
-                         "chevron.down.circle" : "minus")
-                )
-                .font(.title2.bold())
-                .foregroundStyle(LeaderboardViewModel().rankDifference(for: user, from: homeViewModel.leaderboards[0], to: homeViewModel.leaderboards[1]) > 0 ? Color("bean") : (LeaderboardViewModel().rankDifference(for: user, from: homeViewModel.leaderboards[0], to: homeViewModel.leaderboards[1]) < 0 ? Color.red : Color("oW"))
-                )
-            }
         }
         .padding(.horizontal)
         .padding(.trailing, index == 0 ? 1 : 0)
         .padding(.vertical, 12)
     }
-
-    func fetchDataFor(user: User) async {
-        let count = await UserViewModel().fetchMissedBetsCount(for: user.id ?? "", week: homeViewModel.currentWeek) ?? 0
-        missedCount[user.id ?? ""] = count
-    }
     
-    private func bigMoverDirection(for user: User) -> Bool? {
-        return bigMovers?.first(where: { $0.0.id == user.id })?.up
-    }
-    
-    private func pointsDifference(for user: User) -> Double {
-        return pointsDifferences[user.id ?? ""] ?? 0
-    }
-    
-    private func updatePointsDifferences() async {
-        var newPointsDifferences: [String: Double] = [:]
-        for user in users {
-            let diff = await LeaderboardViewModel().getWeeklyPointsDifference(userID: user.id ?? "", bets: homeViewModel.bets, parlays: homeViewModel.parlays, currentWeek: week, leagueID: leagueViewModel.activeLeague?.id ?? "")
-            newPointsDifferences[user.id ?? ""] = diff
-        }
-        pointsDifferences = newPointsDifferences
-    }
-    
-    private func fetchData(_ value: Int? = nil) {
-        Task {
-            do {
-                let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
-                bets = fetchedBets.filter({ $0.playerID == authViewModel.currentUser?.id })
-                
-                let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
-                parlays = fetchedParlays.filter({ $0.playerID == authViewModel.currentUser?.id })
-                
-                weeklyPoints = await LeaderboardViewModel().getTotalPoints(userID: authViewModel.currentUser?.id ?? "", bets: bets, parlays: homeViewModel.parlays, leagueID: leagueViewModel.activeLeague?.id ?? "")
-            } catch {
-                print("Error fetching bets: \(error)")
-            }
+    private func sortUsersByPoints() {
+        homeViewModel.users.sort { user1, user2 in
+            let points1 = weeklyPoints[user1.id!] ?? 0.0
+            let points2 = weeklyPoints[user2.id!] ?? 0.0
+            return points1 > points2
         }
     }
 }

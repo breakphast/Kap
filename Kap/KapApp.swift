@@ -13,6 +13,7 @@ struct KapApp: App {
     @StateObject private var homeViewModel = HomeViewModel()
     @StateObject private var authViewModel = AuthViewModel()
     @StateObject private var leagueViewModel = LeagueViewModel()
+    @StateObject private var leaderboardViewModel = LeaderboardViewModel()
 
     init() {
         FirebaseApp.configure()
@@ -24,6 +25,7 @@ struct KapApp: App {
                 .environmentObject(homeViewModel)
                 .environmentObject(authViewModel)
                 .environmentObject(leagueViewModel)
+                .environmentObject(leaderboardViewModel)
         }
     }
 }

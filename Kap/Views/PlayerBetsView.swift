@@ -216,7 +216,7 @@ struct PlayerBetsView: View {
                     } else {
                         parlays = fetchedParlays.filter { $0.playerID == userID && $0.week == weekNumber }
                     }
-                    weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: userID, bets: bets, parlays: homeViewModel.parlays, week: weekNumber, leagueID: leagueViewModel.activeLeague?.id ?? "")
+                    weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: userID, bets: bets, parlays: homeViewModel.parlays, week: weekNumber)
                 } catch {
                     print("Error fetching data for week \(weekNumber): \(error)")
                 }
@@ -243,7 +243,7 @@ struct PlayerBetsView: View {
                 } else {
                     parlays = fetchedParlays.filter { $0.playerID == userID && $0.week == week }
                 }
-                weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: userID, bets: bets, parlays: homeViewModel.parlays, week: week, leagueID: leagueViewModel.activeLeague?.id ?? "")
+                weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: userID, bets: bets, parlays: homeViewModel.parlays, week: week)
             } catch {
                 print("Error fetching bets: \(error)")
             }
