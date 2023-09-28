@@ -70,6 +70,8 @@ struct DigitTextField: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var leagueViewModel: LeagueViewModel
+    @EnvironmentObject var leaderboardViewModel: LeaderboardViewModel
+
     @Binding var digit: String
     @Binding var code: [String]
     @FocusState var focusedField: Int?
@@ -129,21 +131,29 @@ struct DigitTextField: View {
                     result = true
                 }
                 Task {
-                    if let userID = authViewModel.currentUser?.id {
-                        await UserViewModel().updateLeagues(for: userID, leagueID: code.joined())
-                        homeViewModel.users = try await UserViewModel().fetchAllUsers()
-                        
-                        homeViewModel.activeLeagueID = code.joined()
-                        leagueViewModel.activeLeague = homeViewModel.leagues.first(where: {$0.code == code.joined()})
-                        if let activeLeague = leagueViewModel.activeLeague {
-                            leagueViewModel.points = activeLeague.points ?? [:]
+                    homeViewModel.activeLeagueID = code.joined()
+                    homeViewModel.users = try await UserViewModel().fetchAllUsers()
+                    leagueViewModel.activeLeague = homeViewModel.leagues.first(where: {$0.code == code.joined()})
+                    
+                    if let activeLeague = leagueViewModel.activeLeague {
+                        leagueViewModel.points = activeLeague.points ?? [:]
+                        let leaguePlayers = homeViewModel.leagues.first(where: { $0.code == code.joined() })?.players
+                        if let leaguePlayers = leaguePlayers {
+                            homeViewModel.users = homeViewModel.users.filter({ leaguePlayers.contains($0.id!) })
+                        }
+                        leagueViewModel.points = activeLeague.points ?? [:]
+                        if let userID = authViewModel.currentUser!.id {
                             try await LeagueViewModel().addPlayerToLeague(leagueId: activeLeague.id!, playerId: userID)
                         }
-                        homeViewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                            validCode = true
-                            loggedIn = true
-                        }
+                    }
+                    
+                    await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, week: homeViewModel.currentWeek)
+
+                    homeViewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
+                    homeViewModel.userLeagues = try await LeagueViewModel().fetchLeaguesContainingID(id: authViewModel.currentUser!.id ?? "")
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        validCode = true
+                        loggedIn = true
                     }
                 }
             } else {
@@ -159,7 +169,3 @@ struct DigitTextField: View {
         }
     }
 }
-
-//#Preview {
-//    JoinLeague()
-//}

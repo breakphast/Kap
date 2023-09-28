@@ -20,8 +20,7 @@ class LeagueViewModel: ObservableObject {
         let querySnapshot = try await db.collection("leagues").getDocuments()
 
         let leagues: [League] = querySnapshot.documents.compactMap { document in
-            guard let league = try? document.data(as: League.self),
-                  ((league.players?.contains(id)) != nil) else {
+            guard let league = try? document.data(as: League.self), ((league.players?.contains(id)) != nil) else {
                 return nil
             }
             return league
@@ -34,7 +33,6 @@ class LeagueViewModel: ObservableObject {
         return try await withCheckedThrowingContinuation { continuation in
             let data: [String: Any] = [
                 "name": league.name,
-                "players": league.players,
                 "code": "\(Int.random(in: 1000 ... 9999))"
             ]
 
