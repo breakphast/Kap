@@ -21,14 +21,14 @@ class LeaderboardViewModel: ObservableObject {
                     if leagueType == .season {
                         for currentWeek in 1...week {
                             let points = await getWeeklyPoints(userID: userID, bets: bets, parlays: parlays, week: currentWeek)
-                            let missingBets = await UserViewModel().fetchMissedBetsCount(for: userID, week: currentWeek) ?? 0
+                            let missingBets = leagueType == .weekly ? 0 : await UserViewModel().fetchMissedBetsCount(for: userID, week: currentWeek) ?? 0
                             
                             let pointsWithMissingBets = points + Double(missingBets) * -10.0
                             totalPoints += pointsWithMissingBets
                         }
                     } else {
                         let points = await getWeeklyPoints(userID: userID, bets: bets, parlays: parlays, week: week)
-                        let missingBets = await UserViewModel().fetchAllMissedBets(for: userID, startingWeek: week)
+                        let missingBets = 0
                         totalPoints = points + Double(missingBets) * -10.0
                     }
                     return totalPoints
@@ -61,7 +61,7 @@ class LeaderboardViewModel: ObservableObject {
         var totalPoints = 0.0
         for currentWeek in 1...week {
             let points = await getWeeklyPoints(userID: userID, bets: bets, parlays: parlays, week: currentWeek)
-            let missingBets = await UserViewModel().fetchMissedBetsCount(for: userID, week: currentWeek) ?? 0
+            let missingBets = leagueType == .weekly ? 0 : await UserViewModel().fetchMissedBetsCount(for: userID, week: currentWeek) ?? 0
             let pointsWithMissingBets = points + Double(missingBets) * -10.0
             totalPoints += pointsWithMissingBets
         }

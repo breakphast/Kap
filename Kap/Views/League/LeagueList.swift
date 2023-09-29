@@ -78,6 +78,11 @@ struct LeagueList: View {
                 .onTapGesture {
                     Task {
                         homeViewModel.activeLeagueID = league.code
+                        if league.code == "5555" {
+                            leaderboardViewModel.leagueType = .season
+                        } else {
+                            leaderboardViewModel.leagueType = .weekly
+                        }
                         homeViewModel.users = try await UserViewModel().fetchAllUsers()
                         leagueViewModel.activeLeague = homeViewModel.leagues.first(where: {$0.code == league.code})
                         homeViewModel.bets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)

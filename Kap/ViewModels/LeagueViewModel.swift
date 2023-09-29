@@ -17,16 +17,18 @@ class LeagueViewModel: ObservableObject {
     }
     
     func fetchLeaguesContainingID(id: String) async throws -> [League] {
-        let querySnapshot = try await db.collection("leagues").getDocuments()
+        let querySnapshot = try await db.collection("leagues").whereField("players", arrayContains: id).getDocuments()
 
         let leagues: [League] = querySnapshot.documents.compactMap { document in
-            guard let league = try? document.data(as: League.self), ((league.players?.contains(id)) != nil) else {
+            guard let league = try? document.data(as: League.self) else {
+                print("Error mapping document to League")
                 return nil
             }
             return league
         }
         return leagues
     }
+
     
     // CREATE: Create a new league
     func createNewLeague(league: League) async throws -> String {

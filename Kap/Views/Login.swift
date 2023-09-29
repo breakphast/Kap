@@ -23,6 +23,7 @@ struct Login: View {
     @State private var loginFailed = false
     @State private var showLeagueList = false
     @State private var showLeagueIntro = false
+    @State var loggingIn = false
     @Binding var loggedIn: Bool
     
     var body: some View {
@@ -95,6 +96,8 @@ struct Login: View {
             }
             
             Button {
+                loggingIn = true
+
                 authViewModel.login(withEmail: emailAddy.lowercased(), password: pass) { userID in
                     guard userID != nil else {
                         print("Login failed")
@@ -105,7 +108,7 @@ struct Login: View {
                         homeViewModel.userLeagues = try await LeagueViewModel().fetchLeaguesContainingID(id: userID!)
                         let fault = UserDefaults.standard.string(forKey: "defaultLeagueID")
                         guard fault == "" else {
-                            if fault != "2222" {
+                            if fault == "5555" {
                                 leaderboardViewModel.leagueType = .season
                             } else {
                                 leaderboardViewModel.leagueType = .weekly
@@ -119,7 +122,9 @@ struct Login: View {
                                     homeViewModel.users = homeViewModel.users.filter({ leaguePlayers.contains($0.id!) })
                                 }
                             }
-                            await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, week: homeViewModel.currentWeek)
+//                            await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, week: homeViewModel.currentWeek)
+                            await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.bets.filter({$0.leagueID == leagueViewModel.activeLeague!.code}), parlays: homeViewModel.parlays.filter({$0.leagueID == leagueViewModel.activeLeague!.code}), week: homeViewModel.currentWeek)
+
                             loggedIn = true
                             return
                         }
@@ -132,12 +137,12 @@ struct Login: View {
                     }
                 }
             } label: {
-                Text("Login")
+                Text(loggingIn ? "Logging in..." : "Login")
                     .font(.title2.bold())
-                    .foregroundStyle(Color("oW"))
+                    .foregroundStyle(loggingIn ? .lion : .oW)
                     .padding(.horizontal, 20)
                     .padding(.vertical, 8)
-                    .background(Color("lion"))
+                    .background(loggingIn ? .oW : .lion)
                     .cornerRadius(8)
             }
             .autocorrectionDisabled()

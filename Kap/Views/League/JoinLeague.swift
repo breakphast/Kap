@@ -132,6 +132,11 @@ struct DigitTextField: View {
                 }
                 Task {
                     homeViewModel.activeLeagueID = code.joined()
+                    if code.joined() == "5555" {
+                        leaderboardViewModel.leagueType = .season
+                    } else {
+                        leaderboardViewModel.leagueType = .weekly
+                    }
                     homeViewModel.users = try await UserViewModel().fetchAllUsers()
                     homeViewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
 
