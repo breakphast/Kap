@@ -115,7 +115,7 @@ struct Login: View {
                                 }
                             }
                             await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, week: homeViewModel.currentWeek)
-                            
+                            await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, week: 3)
                             loggedIn = true
                             return
                         }

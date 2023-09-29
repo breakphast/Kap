@@ -109,7 +109,15 @@ struct Leaderboard: View {
     }
 
     func userDetailHStack(for user: User, index: Int) -> some View {
-        HStack {
+        
+        var points: String = "0"
+        
+        if let userId = user.id {
+            let week = homeViewModel.currentWeek
+            points = leaderboardViewModel.usersPoints[userId]?[week]?.twoDecimalString ?? "0"
+        }
+        
+        return HStack {
             Image("avatar\(user.avatar ?? 0)")
                 .resizable()
                 .scaledToFill()
@@ -121,7 +129,7 @@ struct Leaderboard: View {
                     .fontWeight(.bold)
                 
                 HStack(spacing: 4) {
-                    Text("Points: \((leaderboardViewModel.usersPoints[user.id!]?[homeViewModel.currentWeek]?.twoDecimalString) ?? "0")")
+                    Text("Points: \(points)")
                         .font(.caption.bold())
                         .foregroundStyle(.secondary)
                     if missedCount[user.id ?? ""] ?? 0 > 0 {

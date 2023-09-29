@@ -64,7 +64,7 @@ struct MyBets: View {
                     }
                 }
                 .gesture(swipeGesture)
-                .padding(.horizontal, 24)
+                .padding(.horizontal, 16)
             }
         }
         .fontDesign(.rounded)

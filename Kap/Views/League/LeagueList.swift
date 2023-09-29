@@ -80,6 +80,7 @@ struct LeagueList: View {
                         homeViewModel.activeLeagueID = league.code
                         homeViewModel.users = try await UserViewModel().fetchAllUsers()
                         leagueViewModel.activeLeague = homeViewModel.leagues.first(where: {$0.code == league.code})
+                        homeViewModel.bets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
                         if let activeLeague = leagueViewModel.activeLeague {
                             leagueViewModel.points = activeLeague.points ?? [:]
                             let leaguePlayers = homeViewModel.leagues.first(where: { $0.code == league.code })?.players
@@ -87,7 +88,7 @@ struct LeagueList: View {
                                 homeViewModel.users = homeViewModel.users.filter({ leaguePlayers.contains($0.id!) })
                             }
                         }
-                        await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, week: homeViewModel.currentWeek)
+                        await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.bets.filter({$0.leagueID == league.code}), parlays: homeViewModel.parlays, week: homeViewModel.currentWeek)
                         loggedIn = true
                         if defaultLeague {
                             defaultLeagueID = league.code

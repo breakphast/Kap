@@ -133,21 +133,26 @@ struct DigitTextField: View {
                 Task {
                     homeViewModel.activeLeagueID = code.joined()
                     homeViewModel.users = try await UserViewModel().fetchAllUsers()
+                    homeViewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
+
                     leagueViewModel.activeLeague = homeViewModel.leagues.first(where: {$0.code == code.joined()})
-                    
+
                     if let activeLeague = leagueViewModel.activeLeague {
                         leagueViewModel.points = activeLeague.points ?? [:]
                         let leaguePlayers = homeViewModel.leagues.first(where: { $0.code == code.joined() })?.players
-                        if let leaguePlayers = leaguePlayers {
-                            homeViewModel.users = homeViewModel.users.filter({ leaguePlayers.contains($0.id!) })
-                        }
-                        leagueViewModel.points = activeLeague.points ?? [:]
                         if let userID = authViewModel.currentUser!.id {
                             try await LeagueViewModel().addPlayerToLeague(leagueId: activeLeague.id!, playerId: userID)
+                            homeViewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
+                            let leaguePlayers = homeViewModel.leagues.first(where: { $0.code == activeLeague.code })?.players
+                            if let leaguePlayers = leaguePlayers {
+                                homeViewModel.users = homeViewModel.users.filter({ leaguePlayers.contains($0.id!) })
+                            } else {
+                                homeViewModel.users = []
+                            }
                         }
                     }
                     
-                    await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, week: homeViewModel.currentWeek)
+                    await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.bets.filter({$0.leagueID == leagueViewModel.activeLeague?.id!}), parlays: homeViewModel.parlays, week: homeViewModel.currentWeek)
 
                     homeViewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
                     homeViewModel.userLeagues = try await LeagueViewModel().fetchLeaguesContainingID(id: authViewModel.currentUser!.id ?? "")

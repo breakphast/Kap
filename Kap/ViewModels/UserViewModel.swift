@@ -115,10 +115,7 @@ class UserViewModel: ObservableObject {
     func fetchAllMissedBets(for userID: String, startingWeek: Int) async -> Int {
         for week in (1...startingWeek).reversed() {
             if let count = await fetchMissedBetsCount(for: userID, week: week) {
-                print("Missed Bets for week\(week): \(count)")
                 return count
-            } else {
-                print("No data for week\(week)")
             }
         }
         return 0
