@@ -110,7 +110,7 @@ class BetViewModel {
     }
     
     func updateParlay(parlay: Parlay) {
-        let newParlay = db.collection("parlays1").document(parlay.id)
+        let newParlay = db.collection("parlays").document(parlay.id)
         let parlayBets = parlay.bets
         if !parlayBets.filter({ $0.game.betResult(for: $0.betOption) == .loss }).isEmpty {
             newParlay.updateData([

@@ -139,7 +139,7 @@ struct DigitTextField: View {
 
                     if let activeLeague = leagueViewModel.activeLeague {
                         leagueViewModel.points = activeLeague.points ?? [:]
-                        let leaguePlayers = homeViewModel.leagues.first(where: { $0.code == code.joined() })?.players
+                        _ = homeViewModel.leagues.first(where: { $0.code == code.joined() })?.players
                         if let userID = authViewModel.currentUser!.id {
                             try await LeagueViewModel().addPlayerToLeague(leagueId: activeLeague.id!, playerId: userID)
                             homeViewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
@@ -152,7 +152,7 @@ struct DigitTextField: View {
                         }
                     }
                     
-                    await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.bets.filter({$0.leagueID == leagueViewModel.activeLeague?.id!}), parlays: homeViewModel.parlays, week: homeViewModel.currentWeek)
+                    await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.bets.filter({$0.leagueID == leagueViewModel.activeLeague?.id!}), parlays: homeViewModel.parlays.filter({$0.leagueID == leagueViewModel.activeLeague?.id!}), week: homeViewModel.currentWeek)
 
                     homeViewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
                     homeViewModel.userLeagues = try await LeagueViewModel().fetchLeaguesContainingID(id: authViewModel.currentUser!.id ?? "")

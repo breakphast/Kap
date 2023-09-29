@@ -12,7 +12,7 @@ class ParlayViewModel {
     private let db = Firestore.firestore()
 
     func fetchParlays(games: [Game]) async throws -> [Parlay] {
-        let querySnapshot = try await db.collection("parlays1").getDocuments()
+        let querySnapshot = try await db.collection("parlays").getDocuments()
         let parlays = querySnapshot.documents.compactMap { queryDocumentSnapshot -> Parlay? in
             let data = queryDocumentSnapshot.data()
 
@@ -97,12 +97,12 @@ class ParlayViewModel {
         newParlay["betString"] = betString
 
 //        let _ = try await db.collection("parlays").addDocument(data: newParlay)
-        let _ = try await db.collection("parlays1").document(parlay.id).setData(newParlay)
+        let _ = try await db.collection("parlays").document(parlay.id).setData(newParlay)
     }
     
     func deleteParlay(parlayID: String) async throws {
         return try await withCheckedThrowingContinuation { continuation in
-            db.collection("parlays1").document(parlayID).delete() { error in
+            db.collection("parlays").document(parlayID).delete() { error in
                 if let error = error {
                     continuation.resume(throwing: error)
                 } else {
@@ -119,7 +119,7 @@ class ParlayViewModel {
     }
     
     func updateParlayLeague(parlay: Parlay, leagueID: String) {
-        let newbet = db.collection("parlays1").document(parlay.id)
+        let newbet = db.collection("parlays").document(parlay.id)
         newbet.updateData([
             "leagueID": leagueID,
         ]) { err in

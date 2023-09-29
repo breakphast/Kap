@@ -105,6 +105,11 @@ struct Login: View {
                         homeViewModel.userLeagues = try await LeagueViewModel().fetchLeaguesContainingID(id: userID!)
                         let fault = UserDefaults.standard.string(forKey: "defaultLeagueID")
                         guard fault == "" else {
+                            if fault != "2222" {
+                                leaderboardViewModel.leagueType = .season
+                            } else {
+                                leaderboardViewModel.leagueType = .weekly
+                            }
                             homeViewModel.activeLeagueID = fault
                             leagueViewModel.activeLeague = homeViewModel.leagues.first(where: {$0.code == fault})
                             if let activeLeague = leagueViewModel.activeLeague {
@@ -115,7 +120,6 @@ struct Login: View {
                                 }
                             }
                             await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, week: homeViewModel.currentWeek)
-                            await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.bets, parlays: homeViewModel.parlays, week: 3)
                             loggedIn = true
                             return
                         }
