@@ -83,7 +83,7 @@ struct Board: View {
                                 if homeViewModel.selectedBets.count > 1 {
                                     homeViewModel.activeParlays = []
                                     let parlay = ParlayViewModel().makeParlay(for: homeViewModel.selectedBets, playerID: authViewModel.currentUser?.id ?? "", week: homeViewModel.currentWeek, leagueID: homeViewModel.activeLeagueID ?? "")
-                                    if parlay.totalOdds >= 400 {
+                                    if parlay.totalOdds >= 400 && parlay.bets.count >= 3 {
                                         homeViewModel.activeParlays.append(parlay)
                                     }
                                 } else {

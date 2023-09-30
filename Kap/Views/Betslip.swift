@@ -411,6 +411,7 @@ struct ParlayView: View {
             Task {
                 try await ParlayViewModel().addParlay(parlay: placedParlay)
                 parlays.append(placedParlay)
+                ParlayViewModel().updateParlayLeague(parlay: placedParlay, leagueID: homeViewModel.activeLeagueID ?? "")
             }
             homeViewModel.activeParlays = []
         } label: {

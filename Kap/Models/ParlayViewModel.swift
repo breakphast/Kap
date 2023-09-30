@@ -71,7 +71,8 @@ class ParlayViewModel {
                     "result": bet.result?.rawValue ?? "",
                     "selectedTeam": bet.selectedTeam ?? "",
                     "week": parlay.week,
-                    "playerID": parlay.playerID
+                    "playerID": parlay.playerID,
+                    "leagueID": parlay.leagueID
                 ] as [String : Any]
             },
             "result": parlay.result.rawValue,
