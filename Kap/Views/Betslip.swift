@@ -128,11 +128,32 @@ struct BetView: View {
     
     private func fetchData() async {
         do {
+            let activeLeagueID = homeViewModel.activeLeagueID ?? ""
+            let currentWeek = homeViewModel.currentWeek
+            let currentUserID = authViewModel.currentUser?.id
+            
             let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
-            bets = fetchedBets.filter({ $0.playerID == authViewModel.currentUser?.id })
-            bets = bets.filter({ $0.week == homeViewModel.currentWeek })
+            bets = fetchedBets.filter {
+                $0.playerID == currentUserID &&
+                $0.leagueID == activeLeagueID &&
+                $0.week == currentWeek
+            }
+            
+            isValid = bets.filter {
+                $0.game.dayType! == bet.game.dayType! &&
+                $0.week == currentWeek
+            }.count < maxBets2 && !bets.contains { $0.game.id == bet.game.id }
+            
+            switch DayType(rawValue: bet.game.dayType ?? "") {
+            case .tnf, .mnf, .snf:
+                self.maxBets = 1
+            default:
+                self.maxBets = 7
+            }
             
             let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
+                .filter { $0.leagueID == activeLeagueID }
+            
         } catch {
             print("Error fetching bets: \(error)")
         }
@@ -174,18 +195,9 @@ struct BetView: View {
         .shadow(radius: 10)
         .task {
             await fetchData()
-            
-            isValid = bets.filter({ $0.game.dayType! == bet.game.dayType! && $0.week == homeViewModel.currentWeek }).count < maxBets2 && bets.filter({ $0.game.id == bet.game.id }).isEmpty
-            
-            switch DayType(rawValue: bet.game.dayType ?? "") {
-            case .tnf, .mnf, .snf:
-                self.maxBets = 1
-            default:
-                self.maxBets = 7
-            }
         }
         .onChange(of: bets.count) { newValue in
-            isValid = bets.filter({ $0.game.dayType! == bet.game.dayType! && $0.week == homeViewModel.currentWeek }).count < maxBets2 && bets.filter({ $0.game.id == bet.game.id }).isEmpty
+            isValid = bets.filter({$0.leagueID == homeViewModel.activeLeagueID ?? ""}).filter({ $0.game.dayType! == bet.game.dayType! && $0.week == homeViewModel.currentWeek }).count < maxBets2 && bets.filter({ $0.game.id == bet.game.id }).isEmpty
             
             switch DayType(rawValue: bet.game.dayType ?? "") {
             case .tnf, .mnf, .snf:
@@ -231,7 +243,7 @@ struct BetView: View {
                     .lineLimit(nil)
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer()
-                Text("(\(bet.betOption.game.dayType ?? "") \(bets.filter({ $0.betOption.game.dayType ?? "" == bet.betOption.game.dayType ?? "" && bet.week == homeViewModel.currentWeek }).count)/\(maxBets))")
+                Text("(\(bet.betOption.game.dayType ?? "") \(bets.filter({ $0.betOption.game.dayType ?? "" == bet.betOption.game.dayType ?? "" && $0.week == homeViewModel.currentWeek && $0.leagueID == homeViewModel.activeLeagueID!}).count)/\(maxBets))")
                     .font(.caption.bold())
                     .foregroundStyle(.secondary)
             }
