@@ -149,9 +149,9 @@ struct MyBets: View {
                     bets = fetchedBets.filter { $0.playerID == currentUserId && $0.week == weekNumber && $0.leagueID == homeViewModel.activeLeagueID! }
                     
                     let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
-                    parlays = fetchedParlays.filter { $0.playerID == currentUserId && $0.week == weekNumber }
+                    parlays = fetchedParlays.filter { $0.playerID == currentUserId && $0.week == weekNumber && $0.leagueID == homeViewModel.activeLeagueID! }
                     
-                    weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: currentUserId, bets: bets, parlays: homeViewModel.parlays, week: weekNumber)
+                    weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: currentUserId, bets: bets, parlays: parlays, week: weekNumber)
                 } catch {
                     print("Error fetching data for week \(weekNumber): \(error)")
                 }
@@ -177,7 +177,6 @@ struct MyBets: View {
                         .foregroundStyle(Color("lion"))
                         .font(.title2)
                 }
-                .padding(.leading, 24)
                 .padding(.vertical, 8)
                 
                 if settled {
@@ -277,7 +276,7 @@ struct MyBets: View {
                 bets = fetchedBets.filter({ $0.playerID == authViewModel.currentUser?.id && $0.week == week && $0.leagueID == homeViewModel.activeLeagueID! })
                 let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
                 parlays = fetchedParlays.filter({ $0.playerID == authViewModel.currentUser?.id && $0.week == week })
-                weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: authViewModel.currentUser?.id ?? "", bets: bets, parlays: homeViewModel.parlays, week: week)
+                weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: authViewModel.currentUser?.id ?? "", bets: bets, parlays: parlays, week: week)
             } catch {
                 print("Error fetching bets: \(error)")
             }
@@ -287,7 +286,7 @@ struct MyBets: View {
     func calculateWeeklyPoints() -> Double {
         let filteredBetsPoints = bets.filter { $0.week == week && $0.result != .push && $0.result != .pending }
             .reduce(0) { $0 + ($1.points ?? 0) }
-        let parlayPoints = parlays.reduce(0) { $0 + ($1.totalPoints) }
+        let parlayPoints = parlays.filter { $0.week == week && $0.result != .push && $0.result != .pending }.reduce(0) { $0 + ($1.totalPoints) }
         
         return filteredBetsPoints + parlayPoints
     }
