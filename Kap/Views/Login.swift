@@ -106,7 +106,6 @@ struct Login: View {
                         return
                     }
                     Task {
-                        authViewModel.currentUser?.id = userID!
                         homeViewModel.userLeagues = try await LeagueViewModel().fetchLeaguesContainingID(id: userID!)
                         let fault = UserDefaults.standard.string(forKey: "defaultLeagueID")
                         guard fault == "" else {
