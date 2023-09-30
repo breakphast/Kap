@@ -63,7 +63,7 @@ struct PlayerBetsView: View {
             
             VStack(alignment: .leading) {
                 HStack {
-                    Image("avatar\(authViewModel.currentUser?.avatar ?? 0)")
+                    Image("avatar\(homeViewModel.users.first(where: { $0.id == userID })!.avatar ?? 0)")
                         .resizable()
                         .scaledToFill()
                         .clipShape(Circle())
