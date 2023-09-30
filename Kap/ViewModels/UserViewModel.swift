@@ -15,14 +15,16 @@ class UserViewModel: ObservableObject {
     func fetchAllUsers() async throws -> [User] {
         let querySnapshot = try await db.collection("users").getDocuments()
 
-        var users: [User] = querySnapshot.documents.compactMap { document in
+        let users: [User] = querySnapshot.documents.compactMap { document in
             try? document.data(as: User.self)
         }
         
-        for index in users.indices {
-            users[index].avatar = index
+        for (index, user) in users.enumerated() {
+            if user.avatar == nil {
+                await updateAvatar(for: user.id!, avatar: index)
+            }
         }
-        
+
         return users
     }
 
@@ -81,6 +83,16 @@ class UserViewModel: ObservableObject {
         }
     }
     
+    func updateAvatar(for userID: String, avatar: Int) async {
+        let userDocument = db.collection("users").document(userID)
+        do {
+            try await userDocument.setData(["avatar": avatar], merge: true)
+            print("Successfully updated avatar")
+        } catch {
+            
+        }
+    }
+    
     func updateLeagues(for userID: String, leagueID: String) async {
         let userDocument = db.collection("users").document(userID)
         let leagueDocument = userDocument.collection("leagues").document(leagueID)
@@ -92,6 +104,8 @@ class UserViewModel: ObservableObject {
             print("Error updating missed bets count for \(leagueDocument.documentID): \(error)")
         }
     }
+    
+    
     
     func fetchUserLeagues(for userID: String, leagueID: String) async -> [String: Any]? {
         let userDocument = db.collection("users").document(userID)

@@ -141,11 +141,10 @@ struct DigitTextField: View {
                     homeViewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
 
                     leagueViewModel.activeLeague = homeViewModel.leagues.first(where: {$0.code == code.joined()})
-
                     if let activeLeague = leagueViewModel.activeLeague {
                         leagueViewModel.points = activeLeague.points ?? [:]
                         _ = homeViewModel.leagues.first(where: { $0.code == code.joined() })?.players
-                        if let userID = authViewModel.currentUser!.id {
+                        if let userID = authViewModel.currentUser?.id {
                             try await LeagueViewModel().addPlayerToLeague(leagueId: activeLeague.id!, playerId: userID)
                             homeViewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
                             let leaguePlayers = homeViewModel.leagues.first(where: { $0.code == activeLeague.code })?.players
@@ -156,11 +155,10 @@ struct DigitTextField: View {
                             }
                         }
                     }
-                    
-                    await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.bets.filter({$0.leagueID == leagueViewModel.activeLeague?.id!}), parlays: homeViewModel.parlays.filter({$0.leagueID == leagueViewModel.activeLeague?.id!}), week: homeViewModel.currentWeek)
+                    await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.bets.filter({$0.leagueID == leagueViewModel.activeLeague?.code}), parlays: homeViewModel.parlays.filter({$0.leagueID == leagueViewModel.activeLeague?.code}), week: homeViewModel.currentWeek)
 
                     homeViewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
-                    homeViewModel.userLeagues = try await LeagueViewModel().fetchLeaguesContainingID(id: authViewModel.currentUser!.id ?? "")
+                    homeViewModel.userLeagues = try await LeagueViewModel().fetchLeaguesContainingID(id: authViewModel.currentUser?.id ?? "")
                     DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                         validCode = true
                         loggedIn = true

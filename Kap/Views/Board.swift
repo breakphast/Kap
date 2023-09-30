@@ -240,7 +240,7 @@ func convertDateToDesiredFormat(_ date: Date) -> String {
     dateFormatter.timeZone = TimeZone(identifier: "America/New_York")
     dateFormatter.dateFormat = "EEE  h:mma"
     
-    var resultStr = dateFormatter.string(from: date).uppercased()
+    let resultStr = dateFormatter.string(from: date).uppercased()
     
 //        // Append 'ET' to the end
 //        resultStr += "  ET"

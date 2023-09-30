@@ -53,7 +53,7 @@ class AuthViewModel: ObservableObject {
         }
     }
     
-    func register(withEmail email: String, password: String, username: String, fullName: String) {
+    func register(withEmail email: String, password: String, username: String, fullName: String, userCount: Int) {
         auth.createUser(withEmail: email, password: password) { result, error in
             if let error = error {
                 print("Failed to register: \(error)")

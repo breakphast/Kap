@@ -14,6 +14,7 @@ struct Login: View {
     @EnvironmentObject var leaderboardViewModel: LeaderboardViewModel
     @AppStorage("email") private var emailAddy = ""
     @AppStorage("password") private var pass = ""
+    @AppStorage("defaultLeagueID") private var defaultLeagueID = ""
 
     @State private var email = UserDefaults.standard.string(forKey: "email")?.lowercased()
     @State private var password = UserDefaults.standard.string(forKey: "password")
@@ -48,7 +49,6 @@ struct Login: View {
                 .buttonStyle(.bordered)
                 .foregroundStyle(login ? Color("oW") : Color("onyx"))
                 .bold()
-                .disabled(true)
             }
             
             if login {
@@ -102,9 +102,11 @@ struct Login: View {
                     guard userID != nil else {
                         print("Login failed")
                         loginFailed = true
+                        loggingIn.toggle()
                         return
                     }
                     Task {
+                        authViewModel.currentUser?.id = userID!
                         homeViewModel.userLeagues = try await LeagueViewModel().fetchLeaguesContainingID(id: userID!)
                         let fault = UserDefaults.standard.string(forKey: "defaultLeagueID")
                         guard fault == "" else {
@@ -200,12 +202,13 @@ struct Login: View {
             }
             
             Button("Register") {
-                AuthViewModel().register(withEmail: emailAddy, password: pass, username: username, fullName: fullName)
+                defaultLeagueID = ""
+                authViewModel.register(withEmail: emailAddy, password: pass, username: username, fullName: fullName, userCount: homeViewModel.users.count)
                 login = true
             }
             .buttonStyle(.borderedProminent)
             .foregroundStyle(Color("lion"))
-            .bold()
+            .font(.title2.bold())
             .frame(width: 200)
             .tint(Color("oW"))
         }

@@ -128,6 +128,7 @@ struct Leaderboard: View {
                 .scaledToFill()
                 .clipShape(Circle())
                 .frame(width: 40)
+                .shadow(color: .oW.opacity(0.6), radius: 2)
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(user.username)
