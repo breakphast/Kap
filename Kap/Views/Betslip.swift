@@ -257,7 +257,7 @@ struct BetView: View {
                 Task {
                     let placedBet = BetViewModel().makeBet(for: bet.game, betOption: bet.betOption, playerID: authViewModel.currentUser?.id ?? "", week: homeViewModel.currentWeek, leagueID: homeViewModel.activeLeagueID ?? "")
                     
-                    if !bets.contains(where: { $0.game.documentId == placedBet.game.documentId }) {
+                    if !bets.contains(where: { $0.game.documentId == placedBet.game.documentId && $0.leagueID == homeViewModel.activeLeagueID! }) {
                         try await BetViewModel().addBet(bet: placedBet, playerID: authViewModel.currentUser?.id ?? "")
                         
                         let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)

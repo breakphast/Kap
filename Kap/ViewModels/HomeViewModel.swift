@@ -53,11 +53,15 @@ class HomeViewModel: ObservableObject {
     }()
     
     init() {
-        Task {
-            await originalFetch(updateScores: false, updateGames: false, updateLeaderboards: false)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                withAnimation(.linear) {
-                    self.showingSplashScreen = false
+        DispatchQueue.main.async {
+            Task {
+                self.currentWeek = try await self.fetchCurrentWeek() ?? 4
+                print("Week: ", self.currentWeek)
+                await self.originalFetch(updateScores: false, updateGames: false, updateLeaderboards: false)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    withAnimation(.linear) {
+                        self.showingSplashScreen = false
+                    }
                 }
             }
         }
@@ -106,6 +110,17 @@ class HomeViewModel: ObservableObject {
         let document = try await docRef.getDocument()
         if document.exists {
             return document.data()?["currentDate"] as? String
+        }
+        return nil
+    }
+    
+    func fetchCurrentWeek() async throws -> Int? {
+        let db = Firestore.firestore()
+        let docRef = db.collection("currentWeek").document("currentWeek")
+        
+        let document = try await docRef.getDocument()
+        if document.exists {
+            return document.data()?["week"] as? Int
         }
         return nil
     }
