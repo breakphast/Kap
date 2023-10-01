@@ -48,10 +48,10 @@ struct PlayerBetsView: View {
             
             if week == 0 {
                 missedBets = await UserViewModel().fetchAllMissedBets(for: userID, startingWeek: homeViewModel.currentWeek)
+                updateForWeek(0)
             } else {
                 missedBets = await UserViewModel().fetchMissedBetsCount(for: userID, week: homeViewModel.currentWeek) ?? 0
             }
-            updateForWeek(0)
         }
     }
 
@@ -158,7 +158,7 @@ struct PlayerBetsView: View {
                         .cornerRadius(4)
                     
                     ForEach(filteredBets.sorted(by: { $0.game.date < $1.game.date }), id: \.id) { bet in
-                        PlacedBetView(bet: bet, bets: $bets, week: bet.week)
+                        PlacedBetView(bet: bet, bets: bets, week: bet.week)
                     }
                 }
             )
@@ -202,7 +202,11 @@ struct PlayerBetsView: View {
             
             Task {
                 do {
-                    missedBets = await UserViewModel().fetchMissedBetsCount(for: userID, week: week) ?? 0
+                    if week == 0 {
+                        missedBets = await UserViewModel().fetchAllMissedBets(for: userID, startingWeek: homeViewModel.currentWeek)
+                    } else {
+                        missedBets = await UserViewModel().fetchMissedBetsCount(for: userID, week: week) ?? 0
+                    }
                     
                     let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
                     if week == 0 {

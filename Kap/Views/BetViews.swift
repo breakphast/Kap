@@ -14,7 +14,7 @@ struct PlacedBetView: View {
     @State private var maxBets = 0
     @Namespace var trash
     let bet: Bet
-    @Binding var bets: [Bet]
+    @State var bets: [Bet]
     let week: Int
     
     func pointsColor(for result: BetResult) -> Color {

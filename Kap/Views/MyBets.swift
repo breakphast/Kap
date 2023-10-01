@@ -193,7 +193,7 @@ struct MyBets: View {
     }
     
     func betSection(for dayType: DayType, settled: Bool) -> some View {
-        @State var liveBets = homeViewModel.bets.filter({$0.week == homeViewModel.currentWeek && Date() > $0.game.date && $0.game.completed == false})
+        let liveBets = homeViewModel.bets.filter({$0.week == homeViewModel.currentWeek && Date() > $0.game.date && $0.game.completed == false && $0.leagueID == homeViewModel.activeLeagueID!})
         
         let filteredBets = bets.filter { bet in
             (settled ? bet.result != .pending : bet.result == .pending)
@@ -224,7 +224,7 @@ struct MyBets: View {
                             .overlay(liveBets.isEmpty ? .gray.opacity(0.8) : .clear)
                             .cornerRadius(8)
                             .sheet(isPresented: $live) {
-                                LiveBetsView(bets: $liveBets, users: homeViewModel.users)
+                                LiveBetsView(bets: liveBets, users: homeViewModel.users)
                             }
                             .onTapGesture {
                                 live.toggle()
@@ -233,7 +233,7 @@ struct MyBets: View {
                     }
                     
                     ForEach(filteredBets.sorted(by: { $0.game.date < $1.game.date }), id: \.id) { bet in
-                        PlacedBetView(bet: bet, bets: $bets, week: week)
+                        PlacedBetView(bet: bet, bets: bets, week: week)
                     }
                 }
             )

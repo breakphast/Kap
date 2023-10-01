@@ -9,7 +9,7 @@ import SwiftUI
 
 struct LiveBetsView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
-    @Binding var bets: [Bet]
+    let bets: [Bet]
     let users: [User]
     
     var body: some View {
@@ -49,7 +49,7 @@ struct LiveBetsView: View {
                                 Spacer()
                             }
                             ForEach(bets.filter({ $0.playerID == user.id! }), id: \.id) { bet in
-                                PlacedBetView(bet: bet, bets: $bets, week: homeViewModel.currentWeek)
+                                PlacedBetView(bet: bet, bets: bets, week: homeViewModel.currentWeek)
                             }
                         }
                     }
