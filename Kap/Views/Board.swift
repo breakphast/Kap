@@ -35,9 +35,6 @@ struct Board: View {
                                 .onTapGesture {
                                     leagueViewModel.activeLeague = nil
                                     Task {
-//                                        BetViewModel().fetchBets(games: homeViewModel.allGames) { bets in
-//                                            homeViewModel.bets = bets
-//                                        }
                                         homeViewModel.parlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
                                     }
                                 }
