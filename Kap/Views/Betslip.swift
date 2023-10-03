@@ -259,10 +259,10 @@ struct BetView: View {
                         return
                     }
                     
-                    let placedBet = BetViewModel().makeBet(for: bet.game, betOption: betOption, playerID: authViewModel.currentUser?.id ?? "", week: homeViewModel.currentWeek, leagueID: homeViewModel.activeLeagueID ?? "")
+                    let placedBet = BetViewModel().makeBet(for: bet.game, betOption: betOption.id, playerID: authViewModel.currentUser?.id ?? "", week: homeViewModel.currentWeek, leagueID: homeViewModel.activeLeagueID ?? "")
                     
-                    if !bets.contains(where: { $0.game.documentId == placedBet.game.documentId && $0.leagueID == homeViewModel.activeLeagueID! }) {
-                        try await BetViewModel().addBet(bet: placedBet, playerID: authViewModel.currentUser?.id ?? "")
+                    if !bets.contains(where: { $0.game.documentId == placedBet?.game.documentId && $0.leagueID == homeViewModel.activeLeagueID! }) {
+                        try await BetViewModel().addBet(bet: placedBet!, playerID: authViewModel.currentUser?.id ?? "")
                         
                         let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
                         let newBets = fetchedBets.filter({ $0.playerID == authViewModel.currentUser?.id})

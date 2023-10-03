@@ -79,7 +79,7 @@ class BetViewModel: ObservableObject {
                 let foundGame = self.findBetGame(games: games, gameID: game)
                 let leagueID = data["leagueID"] as? String ?? ""
                 
-                let bet = Bet(id: id, betOption: betOption, game: game, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueID: leagueID)
+                let bet = Bet(id: id, betOption: betOption, game: foundGame!, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueID: leagueID)
                 
                 return bet
             }
@@ -120,7 +120,7 @@ class BetViewModel: ObservableObject {
             let foundGame = self.findBetGame(games: games, gameID: game)
             let leagueID = data["leagueID"] as? String ?? ""
             
-            let bet = Bet(id: id, betOption: betOption, game: foundGame, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueID: leagueID)
+            let bet = Bet(id: id, betOption: betOption, game: foundGame!, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueID: leagueID)
             
             return bet
         }
@@ -132,7 +132,7 @@ class BetViewModel: ObservableObject {
         
         let newBet: [String: Any] = [
             "id": bet.id,
-            "betOption": bet.betOption.id,
+            "betOption": bet.betOption,
             "game": bet.game.documentId,
             "type": bet.type.rawValue,
             "result": bet.result?.rawValue ?? "",
@@ -148,18 +148,21 @@ class BetViewModel: ObservableObject {
         
         let _ = try await db.collection("newBets").document(bet.id).setData(newBet)
     }
-
-    func makeBet(for game: Game, betOption: BetOption, playerID: String, week: Int, leagueID: String) -> Bet {
-        let bet = Bet(id: betOption.id + playerID, betOption: betOption, game: game, type: betOption.betType, result: .pending, odds: betOption.odds, selectedTeam: betOption.selectedTeam, playerID: playerID, week: week, leagueID: leagueID)
-        
-        return bet
+    
+    func makeBet(for game: Game, betOption: String, playerID: String, week: Int, leagueID: String) -> Bet? {
+        if let option = game.betOptions.first(where: { $0.id == betOption }) {
+            let bet = Bet(id: betOption + playerID, betOption: betOption, game: game, type: option.betType, result: .pending, odds: option.odds, selectedTeam: option.selectedTeam, playerID: playerID, week: week, leagueID: leagueID)
+            return bet
+        }
+                                           
+        return nil
     }
     
     func updateBet(bet: Bet) {
         let newbet = db.collection("newBets").document(bet.id)
         newbet.updateData([
             "betString": bet.betString,
-            "result": bet.game.betResult(for: bet.betOption).rawValue
+            "result": bet.game.betResult(for: bet).rawValue
         ]) { err in
             if let err = err {
                 print("Error updating BETTTT: \(err)", bet.id)
@@ -185,7 +188,7 @@ class BetViewModel: ObservableObject {
     func updateParlay(parlay: Parlay) {
         let newParlay = db.collection("parlays").document(parlay.id)
         let parlayBets = parlay.bets
-        if !parlayBets.filter({ $0.game.betResult(for: $0.betOption) == .loss }).isEmpty {
+        if !parlayBets.filter({ $0.game.betResult(for: $0) == .loss }).isEmpty {
             newParlay.updateData([
                 "result": BetResult.loss.rawValue
             ]) { err in
@@ -279,7 +282,7 @@ class BetViewModel: ObservableObject {
                 team = game.homeTeam
             }
             
-            let bet = Bet(id: options[i].id, betOption: options[i], game: game, type: type, result: .pending, odds: options[i].odds, selectedTeam: team, playerID: "", week: 0, leagueID: "")
+            let bet = Bet(id: options[i].id, betOption: options[i].id, game: game, type: type, result: .pending, odds: options[i].odds, selectedTeam: team, playerID: "", week: 0, leagueID: "")
             bets.append(bet)
         }
         let betss = [3, 4, 2, 0, 1, 5].compactMap { index in

@@ -238,7 +238,7 @@ class HomeViewModel: ObservableObject {
                 self.parlays = newParlays
 
                 for bet in newBets {
-                    let result = bet.game.betResult(for: bet.betOption)
+                    let result = bet.game.betResult(for: bet)
                     if result != .pending {
                         BetViewModel().updateBetResult(bet: bet, result: result)
                     } else if result == .push {
