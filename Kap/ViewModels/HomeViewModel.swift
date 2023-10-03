@@ -38,6 +38,9 @@ class HomeViewModel: ObservableObject {
     @Published var leagueIDs = [String]()
     @Published var leagueType: LeagueType = .weekly
     
+    @Published var leagueBets = [Bet]()
+    @Published var userBets = [Bet]()
+    
     static let keys = [
         "4c43e84559d63c5465e9a1d972be7d2d",
         "94d568e36a33661ecd2a6585aed7540a",
@@ -191,7 +194,10 @@ class HomeViewModel: ObservableObject {
                 GameService().addGames(games: matchingGames)
             }
             
-            let fetchedBets = try await BetViewModel().fetchBets(games: fetchedAllGames)
+            BetViewModel().fetchBets(games: fetchedAllGames) { bets in
+                self.bets = bets
+            }
+            
             let fetchedParlays = try await ParlayViewModel().fetchParlays(games: fetchedAllGames)
             
             DispatchQueue.main.async { [fetchedUsersCopy = fetchedUsers] in
@@ -200,7 +206,6 @@ class HomeViewModel: ObservableObject {
                 self.activeLeague = fetchedLeagues.first
                 self.allGames = fetchedAllGames
                 self.games = fetchedGames
-                self.bets = fetchedBets
                 self.parlays = fetchedParlays
                 self.leagueIDs = self.leagues.map { $0.code }
                 
@@ -225,7 +230,10 @@ class HomeViewModel: ObservableObject {
             for game in alteredGames {
                 try await GameService().updateGameScore(game: game)
             }
-            let newBets = try await BetViewModel().fetchBets(games: allGames)
+            var newBets = [Bet]()
+            BetViewModel().fetchBets(games: allGames) { bets in
+                newBets = bets
+            }
             let newParlays = try await ParlayViewModel().fetchParlays(games: allGames)
             DispatchQueue.main.async {
                 self.games = alteredGames

@@ -14,7 +14,7 @@ struct PlacedBetView: View {
     @State private var maxBets = 0
     @Namespace var trash
     let bet: Bet
-    @State var bets: [Bet]
+//    @State var bets: [Bet]
     let week: Int
     
     func pointsColor(for result: BetResult) -> Color {
@@ -48,7 +48,7 @@ struct PlacedBetView: View {
                                 .lineLimit(nil)
                                 .fixedSize(horizontal: false, vertical: true)
                             Spacer()
-                            Text("(\(bet.game.dayType!) \(bets.filter({ $0.game.dayType! == bet.game.dayType && $0.week == bet.week && $0.playerID == bet.playerID && $0.leagueID == homeViewModel.activeLeagueID!}).count)/\(maxBets))")
+                            Text("(\(bet.game.dayType!) \(homeViewModel.userBets.filter({ $0.game.dayType! == bet.game.dayType && $0.week == bet.week && $0.playerID == bet.playerID && $0.leagueID == homeViewModel.activeLeagueID!}).count)/\(maxBets))")
                                 .font(.caption.bold())
                                 .foregroundStyle(.secondary)
                         }
@@ -109,7 +109,7 @@ struct PlacedBetView: View {
                     deleteActive.toggle()
                     Task {
                         let _ = try await BetViewModel().deleteBet(betID: bet.id)
-                        bets.removeAll(where: { $0.id == bet.id })
+                        homeViewModel.userBets.removeAll(where: { $0.id == bet.id })
                     }
                 }
             } label: {

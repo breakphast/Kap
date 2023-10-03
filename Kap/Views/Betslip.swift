@@ -103,8 +103,7 @@ struct Betslip: View {
     
     private func fetchData() async {
         do {
-            let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
-            bets = fetchedBets.filter({ $0.playerID == authViewModel.currentUser?.id })
+            bets = homeViewModel.bets.filter({ $0.playerID == authViewModel.currentUser?.id })
             bets = bets.filter({ $0.week == homeViewModel.currentWeek })
             
             let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
@@ -132,8 +131,7 @@ struct BetView: View {
             let currentWeek = homeViewModel.currentWeek
             let currentUserID = authViewModel.currentUser?.id
             
-            let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
-            bets = fetchedBets.filter {
+            bets = homeViewModel.bets.filter {
                 $0.playerID == currentUserID &&
                 $0.leagueID == activeLeagueID &&
                 $0.week == currentWeek
@@ -264,8 +262,7 @@ struct BetView: View {
                     if !bets.contains(where: { $0.game.documentId == placedBet?.game.documentId && $0.leagueID == homeViewModel.activeLeagueID! }) {
                         try await BetViewModel().addBet(bet: placedBet!, playerID: authViewModel.currentUser?.id ?? "")
                         
-                        let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
-                        let newBets = fetchedBets.filter({ $0.playerID == authViewModel.currentUser?.id})
+                        let newBets = homeViewModel.bets.filter({ $0.playerID == authViewModel.currentUser?.id})
                         bets = newBets.filter({ $0.week == homeViewModel.currentWeek })
                         
                         isPlaced = true

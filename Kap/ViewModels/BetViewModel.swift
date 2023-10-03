@@ -12,59 +12,22 @@ import Firebase
 
 class BetViewModel: ObservableObject {
     @Published var fireBets = [Bet]()
-    private var listener: ListenerRegistration?
-//    let leagueID: String
-    
     @Published var allBets = [Bet]()
     @Published var leagueBets = [Bet]()
     
     let db = Firestore.firestore()
+    private var listener: ListenerRegistration?
     
-//    init(leagueID: String, games: [Game]) {
-//        self.leagueID = leagueID
-//        
-//        let betsCollection = db.collection("newBets")
-//        let query = betsCollection.whereField("leagueID", isEqualTo: leagueID)
-//        listener = query.addSnapshotListener { (querySnapshot, error) in
-//            guard let documents = querySnapshot?.documents else {
-//                print("No documents found: \(error!)")
-//                return
-//            }
-//            
-//            self.leagueBets = documents.map { queryDocumentSnapshot -> Bet in
-//                let data = queryDocumentSnapshot.data()
-//                
-//                let id = data["id"] as? String ?? ""
-//                let game = data["game"] as? String ?? ""
-//                let betOption = data["betOption"] as? String ?? ""
-//                let type = data["type"] as? String ?? ""
-//                let odds = data["odds"] as? Int ?? 0
-//                let result = data["result"] as? String ?? ""
-//                let selectedTeam = data["selectedTeam"] as? String ?? ""
-//                let playerID = data["playerID"] as? String ?? ""
-//                let week = data["week"] as? Int ?? 0
-////                let foundGame = self.findBetGame(games: games, gameID: game)
-//                let leagueID = data["leagueID"] as? String ?? ""
-//                
-//                let bet = Bet(id: id, betOption: betOption, game: game, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueID: leagueID)
-//                
-//                return bet
-//            }
-//
-//            for document in documents {
-//                print("Document data: \(document.data())")
-//            }
-//        }
-//    }
-    
-    func fetchFireBets(games: [Game]) {
-        listener = db.collection("newBets").addSnapshotListener { (querySnapshot, error) in
+    func fetchBets(games: [Game], completion: @escaping ([Bet]) -> Void) {
+        let db = Firestore.firestore()
+        db.collection("newBets").addSnapshotListener { (querySnapshot, error) in
             guard let documents = querySnapshot?.documents else {
                 print("No documents")
+                completion([])
                 return
             }
-
-            self.fireBets = documents.map { queryDocumentSnapshot -> Bet in
+            
+            let bets = documents.map { queryDocumentSnapshot -> Bet in
                 let data = queryDocumentSnapshot.data()
                 
                 let id = data["id"] as? String ?? ""
@@ -83,6 +46,7 @@ class BetViewModel: ObservableObject {
                 
                 return bet
             }
+            completion(bets)
         }
     }
 
@@ -101,30 +65,6 @@ class BetViewModel: ObservableObject {
     
     func stringToBetResult(_ resultString: String) -> BetResult? {
         return BetResult(rawValue: resultString)
-    }
-    
-    func fetchBets(games: [Game]) async throws -> [Bet] {
-        let querySnapshot = try await db.collection("newBets").getDocuments()
-        let bets = querySnapshot.documents.map { queryDocumentSnapshot -> Bet in
-            let data = queryDocumentSnapshot.data()
-            
-            let id = data["id"] as? String ?? ""
-            let game = data["game"] as? String ?? ""
-            let betOption = data["betOption"] as? String ?? ""
-            let type = data["type"] as? String ?? ""
-            let odds = data["odds"] as? Int ?? 0
-            let result = data["result"] as? String ?? ""
-            let selectedTeam = data["selectedTeam"] as? String ?? ""
-            let playerID = data["playerID"] as? String ?? ""
-            let week = data["week"] as? Int ?? 0
-            let foundGame = self.findBetGame(games: games, gameID: game)
-            let leagueID = data["leagueID"] as? String ?? ""
-            
-            let bet = Bet(id: id, betOption: betOption, game: foundGame!, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueID: leagueID)
-            
-            return bet
-        }
-        return bets
     }
     
     func addBet(bet: Bet, playerID: String) async throws {

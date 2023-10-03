@@ -17,11 +17,9 @@ struct Home: View {
     @State private var date: Date = Date()
     @State private var leagues = 0
     @State private var showingSplashScreen = true
-    let leagueID: String
     
-    init(leagueID: String) {
+    init() {
         UITabBar.appearance().barTintColor = UIColor(named: "onyx")
-        self.leagueID = leagueID
     }
     
     var body: some View {
@@ -36,7 +34,7 @@ struct Home: View {
                         Label("Home", systemImage: "house.fill")
                     }
                 
-                MyBets()
+                MyBets(bets: homeViewModel.bets, leagueID: leagueViewModel.activeLeague?.code ?? "", userID: authViewModel.currentUser?.id ?? "")
                     .tabItem {
                         Label("My Bets", systemImage: "checklist")
                     }

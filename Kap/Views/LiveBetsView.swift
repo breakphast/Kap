@@ -49,7 +49,7 @@ struct LiveBetsView: View {
                                 Spacer()
                             }
                             ForEach(bets.filter({ $0.playerID == user.id! }), id: \.id) { bet in
-                                PlacedBetView(bet: bet, bets: bets, week: homeViewModel.currentWeek)
+                                PlacedBetView(bet: bet, week: homeViewModel.currentWeek)
                             }
                         }
                     }

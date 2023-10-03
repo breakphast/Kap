@@ -158,7 +158,7 @@ struct PlayerBetsView: View {
                         .cornerRadius(4)
                     
                     ForEach(filteredBets.sorted(by: { $0.game.date < $1.game.date }), id: \.id) { bet in
-                        PlacedBetView(bet: bet, bets: bets, week: bet.week)
+                        PlacedBetView(bet: bet, week: bet.week)
                     }
                 }
             )
@@ -208,11 +208,11 @@ struct PlayerBetsView: View {
                         missedBets = await UserViewModel().fetchMissedBetsCount(for: userID, week: week) ?? 0
                     }
                     
-                    let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
+//                    let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
                     if week == 0 {
-                        bets = fetchedBets.filter { $0.playerID == userID && $0.leagueID == leagueViewModel.activeLeague?.code }
+                        bets = homeViewModel.bets.filter { $0.playerID == userID && $0.leagueID == leagueViewModel.activeLeague?.code }
                     } else {
-                        bets = fetchedBets.filter { $0.playerID == userID && $0.week == weekNumber && $0.leagueID == leagueViewModel.activeLeague?.code }
+                        bets = homeViewModel.bets.filter { $0.playerID == userID && $0.week == weekNumber && $0.leagueID == leagueViewModel.activeLeague?.code }
                     }
                     
                     let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
@@ -237,11 +237,10 @@ struct PlayerBetsView: View {
     private func fetchData(_ value: Int? = nil) {
         Task {
             do {
-                let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
                 if week == 0 {
-                    bets = fetchedBets.filter { $0.playerID == userID && $0.leagueID == leagueViewModel.activeLeague?.code }
+                    bets = homeViewModel.bets.filter { $0.playerID == userID && $0.leagueID == leagueViewModel.activeLeague?.code }
                 } else {
-                    bets = fetchedBets.filter { $0.playerID == userID && $0.week == week && $0.leagueID == leagueViewModel.activeLeague?.code }
+                    bets = homeViewModel.bets.filter { $0.playerID == userID && $0.week == week && $0.leagueID == leagueViewModel.activeLeague?.code }
                 }
                 let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
                 if week == 0 {

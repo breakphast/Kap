@@ -16,16 +16,32 @@ struct MyBets: View {
 
     @Environment(\.dismiss) private var dismiss
     
-    @State private var bets: [Bet] = []
+    @State private var myBets: [Bet]
     @State private var parlays: [Parlay] = []
     @State private var weeklyPoints: Double?
     
-    @State private var selectedOption = "Week 4"
+    @State private var selectedOption = "Week 5"
     @State private var week = 5
     
     @State private var selectedSegment = 0
     @State private var live = false
+    let leagueID: String
+    let userID: String
     
+    init(bets: [Bet], leagueID: String, userID: String) {
+        self.leagueID = leagueID
+        self.userID = userID
+        
+        _myBets = State(initialValue: bets)
+    }
+    
+    var filteredBets: [Bet] {
+        return myBets.filter { bet in
+            bet.leagueID == leagueID && bet.playerID == userID && bet.week == week
+        }
+    }
+
+
     let swipeThreshold: CGFloat = 50.0
     
     var body: some View {
@@ -45,12 +61,12 @@ struct MyBets: View {
                         Spacer()
                         VStack(alignment: .trailing, spacing: 4) {
                             HStack(spacing: 8) {
-                                dayTrackerElement(bets: $bets, parlays: $parlays, dayType: .tnf)
-                                dayTrackerElement(bets: $bets, parlays: $parlays, dayType: .sunday)
+                                dayTrackerElement(parlays: $parlays, dayType: .tnf, leagueID: leagueID, userID: userID, filterWeek: week)
+                                dayTrackerElement(parlays: $parlays, dayType: .sunday, leagueID: leagueID, userID: userID, filterWeek: week)
                             }
                             HStack(spacing: 8) {
-                                dayTrackerElement(bets: $bets, parlays: $parlays, dayType: .snf)
-                                dayTrackerElement(bets: $bets, parlays: $parlays, dayType: .mnf)
+                                dayTrackerElement(parlays: $parlays, dayType: .snf, leagueID: leagueID, userID: userID, filterWeek: week)
+                                dayTrackerElement(parlays: $parlays, dayType: .mnf, leagueID: leagueID, userID: userID, filterWeek: week)
                             }
                         }
                         .font(.system(.caption2, design: .rounded, weight: .bold))
@@ -68,17 +84,6 @@ struct MyBets: View {
             }
         }
         .fontDesign(.rounded)
-        .onChange(of: bets.count, perform: { _ in
-            fetchData()
-        })
-        .task {
-            fetchData()
-            for parlay in parlays {
-                if parlay.result == .pending {
-                    BetViewModel().updateParlay(parlay: parlay)
-                }
-            }
-        }
     }
     
     var settledBetsTab: some View {
@@ -116,87 +121,11 @@ struct MyBets: View {
         }
     }
     
-    var menu: some View {
-        Menu {
-            ForEach(1...homeViewModel.currentWeek, id: \.self) { weekNumber in
-                Button("Week \(weekNumber)", action: {
-                    updateForWeek(weekNumber)
-                })
-            }
-        } label: {
-            HStack(spacing: 6) {
-                Text(selectedOption.isEmpty ? (homeViewModel.activeLeague?.name ?? "") : selectedOption)
-                Image(systemName: "chevron.down")
-                    .font(.caption2.bold())
-            }
-            .font(.system(size: 14, weight: .bold, design: .rounded))
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .background(RoundedRectangle(cornerRadius: 8).fill(Color("onyxLightish")))
-        }
-        .zIndex(1000)
-    }
-
-    private func updateForWeek(_ weekNumber: Int) {
-        withAnimation {
-            selectedOption = "Week \(weekNumber)"
-            week = weekNumber
-            let currentUserId = authViewModel.currentUser?.id ?? ""
-            
-            Task {
-                do {
-                    let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
-                    bets = fetchedBets.filter { $0.playerID == currentUserId && $0.week == weekNumber && $0.leagueID == homeViewModel.activeLeagueID! }
-                    
-                    let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
-                    parlays = fetchedParlays.filter { $0.playerID == currentUserId && $0.week == weekNumber && $0.leagueID == homeViewModel.activeLeagueID! }
-                    
-                    weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: currentUserId, bets: bets, parlays: parlays, week: weekNumber)
-                } catch {
-                    print("Error fetching data for week \(weekNumber): \(error)")
-                }
-            }
-        }
-    }
-
-    func parlaySection(settled: Bool) -> some View {
-        return AnyView(
-            VStack(alignment: .leading, spacing: 16) {
-                HStack(spacing: 8) {
-                    Text("PARLAY")
-                        .font(.caption.bold())
-                        .foregroundColor(Color("oW"))
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color("lion"))
-                        .cornerRadius(8)
-                    
-                    Image(systemName: "gift.fill")
-                        .fontDesign(.rounded)
-                        .fontWeight(.black)
-                        .foregroundStyle(Color("lion"))
-                        .font(.title2)
-                }
-                .padding(.vertical, 8)
-                
-                if settled {
-                    ForEach(parlays.filter { $0.result != .pending }, id: \.id) { parlay in
-                        PlacedParlayView(parlay: parlay)
-                    }
-                } else {
-                    ForEach(parlays.filter { $0.result == .pending }, id: \.id) { parlay in
-                        PlacedParlayView(parlay: parlay)
-                    }
-                }
-            }
-        )
-    }
-    
     func betSection(for dayType: DayType, settled: Bool) -> some View {
         let liveBets = homeViewModel.bets.filter({$0.week == homeViewModel.currentWeek && Date() > $0.game.date && $0.game.completed == false && $0.leagueID == homeViewModel.activeLeagueID!})
         
-        let filteredBets = bets.filter { bet in
-            (settled ? bet.result != .pending : bet.result == .pending)
+        let filteredBets = homeViewModel.userBets.filter { bet in
+            (settled ? bet.result != .pending : bet.result == .pending) && bet.week == week
         }
         
         if !filteredBets.isEmpty {
@@ -232,8 +161,8 @@ struct MyBets: View {
                             .disabled(liveBets.isEmpty)
                     }
                     
-                    ForEach(filteredBets.sorted(by: { $0.game.date < $1.game.date }), id: \.id) { bet in
-                        PlacedBetView(bet: bet, bets: bets, week: week)
+                    ForEach(homeViewModel.userBets.filter({ $0.week == week }).sorted(by: { $0.game.date < $1.game.date }), id: \.id) { bet in
+                        PlacedBetView(bet: bet, week: week)
                     }
                 }
             )
@@ -242,8 +171,83 @@ struct MyBets: View {
         }
     }
     
+    func parlaySection(settled: Bool) -> some View {
+        return AnyView(
+            VStack(alignment: .leading, spacing: 16) {
+                HStack(spacing: 8) {
+                    Text("PARLAY")
+                        .font(.caption.bold())
+                        .foregroundColor(Color("oW"))
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(Color("lion"))
+                        .cornerRadius(8)
+                    
+                    Image(systemName: "gift.fill")
+                        .fontDesign(.rounded)
+                        .fontWeight(.black)
+                        .foregroundStyle(Color("lion"))
+                        .font(.title2)
+                }
+                .padding(.vertical, 8)
+                
+                if settled {
+                    ForEach(parlays.filter { $0.result != .pending }, id: \.id) { parlay in
+                        PlacedParlayView(parlay: parlay)
+                    }
+                } else {
+                    ForEach(parlays.filter { $0.result == .pending }, id: \.id) { parlay in
+                        PlacedParlayView(parlay: parlay)
+                    }
+                }
+            }
+        )
+    }
+    
+    var menu: some View {
+        Menu {
+            ForEach(1...homeViewModel.currentWeek, id: \.self) { weekNumber in
+                Button("Week \(weekNumber)", action: {
+                    updateForWeek(weekNumber)
+                })
+            }
+        } label: {
+            HStack(spacing: 6) {
+                Text(selectedOption.isEmpty ? (homeViewModel.activeLeague?.name ?? "") : selectedOption)
+                Image(systemName: "chevron.down")
+                    .font(.caption2.bold())
+            }
+            .font(.system(size: 14, weight: .bold, design: .rounded))
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(RoundedRectangle(cornerRadius: 8).fill(Color("onyxLightish")))
+        }
+        .zIndex(1000)
+    }
+
+    private func updateForWeek(_ weekNumber: Int) {
+        withAnimation {
+            selectedOption = "Week \(weekNumber)"
+            week = weekNumber
+            let currentUserId = authViewModel.currentUser?.id ?? ""
+            
+            Task {
+                do {
+                    myBets = homeViewModel.userBets.filter { $0.playerID == currentUserId && $0.week == weekNumber }
+                    
+                    let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
+                    parlays = fetchedParlays.filter { $0.playerID == currentUserId && $0.week == weekNumber && $0.leagueID == homeViewModel.activeLeagueID! }
+                    
+                    weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: currentUserId, bets: homeViewModel.userBets, parlays: parlays, week: weekNumber)
+                } catch {
+                    print("Error fetching data for week \(weekNumber): \(error)")
+                }
+            }
+        }
+    }
+
     func isEmptyBets(for result: BetResult) -> Bool {
-        return bets.filter { $0.result == result }.isEmpty
+        return homeViewModel.userBets.filter { $0.result == result }.isEmpty
     }
     
     private var swipeGesture: some Gesture {
@@ -269,22 +273,8 @@ struct MyBets: View {
             }
     }
     
-    private func fetchData(_ value: Int? = nil) {
-        Task {
-            do {
-                let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
-                bets = fetchedBets.filter({ $0.playerID == authViewModel.currentUser?.id && $0.week == week && $0.leagueID == homeViewModel.activeLeagueID! })
-                let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
-                parlays = fetchedParlays.filter({ $0.playerID == authViewModel.currentUser?.id && $0.week == week })
-                weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: authViewModel.currentUser?.id ?? "", bets: bets, parlays: parlays, week: week)
-            } catch {
-                print("Error fetching bets: \(error)")
-            }
-        }
-    }
-    
     func calculateWeeklyPoints() -> Double {
-        let filteredBetsPoints = bets.filter { $0.week == week && $0.result != .push && $0.result != .pending }
+        let filteredBetsPoints = homeViewModel.userBets.filter { $0.week == week && $0.result != .push && $0.result != .pending }
             .reduce(0) { $0 + ($1.points ?? 0) }
         let parlayPoints = parlays.filter { $0.week == week && $0.result != .push && $0.result != .pending }.reduce(0) { $0 + ($1.totalPoints) }
         
@@ -306,9 +296,12 @@ struct MyBets: View {
 }
 
 struct dayTrackerElement: View {
-    @Binding var bets: [Bet]
+    @EnvironmentObject var homeViewModel: HomeViewModel
     @Binding var parlays: [Parlay]
     let dayType: DayType
+    let leagueID: String
+    let userID: String
+    let filterWeek: Int
     
     var maxBets: Int {
         switch dayType {
@@ -320,8 +313,9 @@ struct dayTrackerElement: View {
     }
     
     var body: some View {
+        let newBets = homeViewModel.userBets.filter({ $0.week == filterWeek && $0.leagueID == leagueID})
         if dayType != .parlay {
-            let filteredBetsCount = bets.filter { $0.game.dayType == dayType.rawValue }.count
+            let filteredBetsCount = newBets.filter { $0.game.dayType == dayType.rawValue }.count
             Text("\(dayType.rawValue) ")
             + Text("\(filteredBetsCount)").foregroundColor(filteredBetsCount < maxBets ? .redd : .bean)
             + Text("/\(maxBets)").foregroundColor(filteredBetsCount < maxBets ? .redd : .bean)
