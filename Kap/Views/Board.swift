@@ -214,7 +214,7 @@ struct GameRow: View {
                 
                 LazyVGrid(columns: columns, spacing: 10) {
                     ForEach(bets, id: \.id) { bet in
-                        CustomButton(bet: bet, buttonText: bet.betOption.betString) {
+                        CustomButton(bet: bet, buttonText: bet.betOptionString) {
                             withAnimation {
                                 bet.week = homeViewModel.currentWeek
                                 if homeViewModel.selectedBets.contains(where: { $0.id == bet.id }) {

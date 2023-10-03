@@ -43,9 +43,9 @@ class ParlayViewModel {
                 else {
                     continue
                 }
-                let (foundGame, foundBetOption) = BetViewModel().findBetOption(games: games, gameID: gameID, betOptionID: betOptionID)
-                if let foundGame = foundGame, let foundBetOption = foundBetOption {
-                    let bet = Bet(id: foundBetOption.id + playerID, betOption: foundBetOption, game: foundGame, type: type, result: result, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueID: leagueID)
+                let foundGame = BetViewModel().findBetGame(games: games, gameID: gameID)
+                if let foundGame = foundGame {
+                    let bet = Bet(id: betOptionID + playerID, betOption: betOptionID, game: foundGame, type: type, result: result, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueID: leagueID)
                     bets.append(bet)
                 }
             }
@@ -64,7 +64,7 @@ class ParlayViewModel {
             "id": parlay.id,
             "bets": parlay.bets.map { bet in
                 [
-                    "betOption": bet.betOption.id,
+                    "betOption": bet.betOption,
                     "game": bet.game.documentId,
                     "type": bet.type.rawValue,
                     "odds": bet.odds,

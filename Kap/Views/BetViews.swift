@@ -127,8 +127,7 @@ struct PlacedBetView: View {
     
     var betText: String {
         if bet.type == .over || bet.type == .under {
-            let truncatedString = bet.betOption.betString.dropFirst(2).split(separator: "\n").first ?? ""
-            return bet.type.rawValue + " " + truncatedString
+            return bet.type.rawValue + " " + (bet.type == .over ? String(bet.game.over) : String(bet.game.under))
         } else if bet.type == .spread {
             return "Spread " + bet.betString
         } else {

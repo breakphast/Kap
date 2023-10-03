@@ -243,7 +243,7 @@ struct BetView: View {
                     .lineLimit(nil)
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer()
-                Text("(\(bet.betOption.game.dayType ?? "") \(bets.filter({ $0.betOption.game.dayType ?? "" == bet.betOption.game.dayType ?? "" && $0.week == homeViewModel.currentWeek && $0.leagueID == homeViewModel.activeLeagueID!}).count)/\(maxBets))")
+                Text("(\(bet.game.dayType ?? "") \(bets.filter({ $0.game.dayType ?? "" == bet.game.dayType ?? "" && $0.week == homeViewModel.currentWeek && $0.leagueID == homeViewModel.activeLeagueID!}).count)/\(maxBets))")
                     .font(.caption.bold())
                     .foregroundStyle(.secondary)
             }
@@ -255,7 +255,11 @@ struct BetView: View {
         HStack {
             Button {
                 Task {
-                    let placedBet = BetViewModel().makeBet(for: bet.game, betOption: bet.betOption, playerID: authViewModel.currentUser?.id ?? "", week: homeViewModel.currentWeek, leagueID: homeViewModel.activeLeagueID ?? "")
+                    guard let betOption = bet.game.betOptions.first(where: { $0.id == bet.betOption }) else {
+                        return
+                    }
+                    
+                    let placedBet = BetViewModel().makeBet(for: bet.game, betOption: betOption, playerID: authViewModel.currentUser?.id ?? "", week: homeViewModel.currentWeek, leagueID: homeViewModel.activeLeagueID ?? "")
                     
                     if !bets.contains(where: { $0.game.documentId == placedBet.game.documentId && $0.leagueID == homeViewModel.activeLeagueID! }) {
                         try await BetViewModel().addBet(bet: placedBet, playerID: authViewModel.currentUser?.id ?? "")
@@ -319,8 +323,7 @@ struct BetView: View {
     
     var betText: String {
         if bet.type == .over || bet.type == .under {
-            let truncatedString = bet.betOption.betString.dropFirst(2).split(separator: "\n").first ?? ""
-            return bet.type.rawValue + " " + truncatedString
+            return bet.type.rawValue + " " + (bet.type == .over ? String(bet.game.over) : String(bet.game.under))
         } else if bet.type == .spread {
             return "Spread " + bet.betString
         } else {

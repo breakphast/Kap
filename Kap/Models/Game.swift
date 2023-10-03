@@ -207,35 +207,33 @@ enum SportTitle: String, Codable {
 }
 
 extension Game {
-    func betResult(for option: BetOption) -> BetResult {
+    func betResult(for bet: Bet) -> BetResult {
         guard completed, let homeScore = self.homeScore, let awayScore = self.awayScore else {
             return .pending
         }
-        switch option.betType {
+        switch bet.type {
         case .moneyline:
             guard let homeIntScore = Int(homeScore), let awayIntScore = Int(awayScore) else { return .pending }
             
-            if option.selectedTeam == homeTeam {
+            if bet.selectedTeam == homeTeam {
                 return homeIntScore > awayIntScore ? .win : .loss
             } else {
                 return awayIntScore > homeIntScore ? .win : .loss
             }
             
         case .spread:
-            guard let spread = option.spread else { return .pending }
-
             guard let homeIntScore = Int(homeScore), let awayIntScore = Int(awayScore) else { return .pending }
             
             let resultScore: Int
-            if option.selectedTeam == awayTeam {
+            if bet.selectedTeam == awayTeam {
                 resultScore = homeIntScore - awayIntScore
             } else {
                 resultScore = awayIntScore - homeIntScore
             }
 
-            if Double(resultScore) < spread {
+            if Double(resultScore) < abs(self.homeSpread) {
                 return .win
-            } else if Double(resultScore) > spread {
+            } else if Double(resultScore) > abs(self.homeSpread) {
                 return .loss
             } else {
                 return .push
@@ -245,12 +243,12 @@ extension Game {
         case .over:
             guard let homeIntScore = Int(homeScore), let awayIntScore = Int(awayScore) else { return .pending }
             
-            return Double(homeIntScore + awayIntScore) > option.over ? .win : .loss
+            return Double(homeIntScore + awayIntScore) > bet.game.over ? .win : .loss
             
         case .under:
             guard let homeIntScore = Int(homeScore), let awayIntScore = Int(awayScore) else { return .pending }
             
-            return Double(homeIntScore + awayIntScore) < option.under ? .win : .loss
+            return Double(homeIntScore + awayIntScore) < bet.game.under ? .win : .loss
         }
     }
 }

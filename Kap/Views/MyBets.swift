@@ -21,7 +21,7 @@ struct MyBets: View {
     @State private var weeklyPoints: Double?
     
     @State private var selectedOption = "Week 4"
-    @State private var week = 4
+    @State private var week = 5
     
     @State private var selectedSegment = 0
     @State private var live = false

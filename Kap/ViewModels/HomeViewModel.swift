@@ -23,7 +23,7 @@ class HomeViewModel: ObservableObject {
     @Published var leaderboards: [[User]] = [[]]
     
     @Published var activePlayer: Player?
-    @Published var currentWeek = 4
+    @Published var currentWeek = 5
     @Published var activeLeague: League?
     @Published var currentDate: String = ""
     

@@ -55,7 +55,7 @@ class BetOption {
 
 class Bet {
     let id: String
-    let betOption: BetOption
+    let betOption: String
     let game: Game
     let type: BetType
     let result: BetResult?
@@ -67,8 +67,9 @@ class Bet {
     let playerID: String
     var week: Int
     let leagueID: String
+    var betOptionString = ""
     
-    init(id: String, betOption: BetOption, game: Game, type: BetType, result: BetResult?, odds: Int, selectedTeam: String?, playerID: String, week: Int, leagueID: String) {
+    init(id: String, betOption: String, game: Game, type: BetType, result: BetResult?, odds: Int, selectedTeam: String?, playerID: String, week: Int, leagueID: String) {
         self.id = id
         self.betOption = betOption
         self.game = game
@@ -80,20 +81,25 @@ class Bet {
         self.week = week
         self.leagueID = leagueID
         
+        let formattedOdds = odds > 0 ? "+\(odds)" : "\(odds)"
+        let spread = selectedTeam == game.homeTeam ? game.homeSpread : game.awaySpread
+        let formattedSpread = spread > 0 ? "+\(spread)" : "\(spread)"
+        
         switch type {
         case .spread:
-            if let spread = betOption.spread {
-                let formattedSpread = spread > 0 ? "+\(spread)" : "\(spread)"
-                betString = "\(formattedSpread)"
-            } else {
-                betString = ""
-            }
+            betString = formattedSpread
+            betOptionString = betString + "\n\(formattedOdds)"
+            
         case .moneyline:
             betString = "\(selectedTeam ?? "") ML"
+            betOptionString = formattedOdds
+
         case .over:
-            betString = "\(betOption.game.awayTeam) @ \(betOption.game.homeTeam) O\(betOption.over)"
+            betString = "O\(game.over)"
+            betOptionString = "O \(game.over)\n\(formattedOdds)"
         case .under:
-            betString = "\(betOption.game.awayTeam) @ \(betOption.game.homeTeam) U\(betOption.under)"
+            betString = "U\(game.under)"
+            betOptionString = "U \(game.under)\n\(formattedOdds)"
         }
         
         self.points = calculatePoints(bet: self)
@@ -122,7 +128,7 @@ class Bet {
             return .pending
         }
         
-        guard let betOption = bet.game.betOptions.first(where: { $0.id == betOption.id }), let selectedTeam = betOption.selectedTeam else {
+        guard let betOption = bet.game.betOptions.first(where: { $0.id == bet.betOption }), let selectedTeam = betOption.selectedTeam else {
             return .pending
         }
         
