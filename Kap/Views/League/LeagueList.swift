@@ -86,7 +86,7 @@ struct LeagueList: View {
                         homeViewModel.users = try await UserViewModel().fetchAllUsers()
                         leagueViewModel.activeLeague = homeViewModel.leagues.first(where: {$0.code == league.code})
                         BetViewModel().fetchBets(games: homeViewModel.allGames) { bets in
-//                            homeViewModel.bets = bets
+//                            homeViewModel.allBets = bets
                             homeViewModel.userBets = bets.filter({$0.playerID == authViewModel.currentUser?.id ?? "" && $0.leagueCode == leagueViewModel.activeLeague?.code})
                             homeViewModel.leagueBets = bets.filter({$0.leagueCode == leagueViewModel.activeLeague?.code})
                         }
@@ -98,7 +98,7 @@ struct LeagueList: View {
                                 homeViewModel.users = homeViewModel.users.filter({ leaguePlayers.contains($0.id!) })
                             }
                         }
-                        await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.bets.filter({$0.leagueCode == league.code}), parlays: homeViewModel.parlays.filter({$0.leagueCode == league.code}), week: homeViewModel.currentWeek)
+                        await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.allBets.filter({$0.leagueCode == league.code}), parlays: homeViewModel.parlays.filter({$0.leagueCode == league.code}), week: homeViewModel.currentWeek)
                         loggedIn = true
                         if defaultLeague {
                             defaultleagueCode = league.code

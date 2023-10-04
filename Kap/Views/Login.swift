@@ -122,11 +122,11 @@ struct Login: View {
                                 if let leaguePlayers = leaguePlayers {
                                     homeViewModel.users = homeViewModel.users.filter({ leaguePlayers.contains($0.id!) })
                                 }
-                                await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.bets.filter({$0.leagueCode == leagueViewModel.activeLeague!.code}), parlays: homeViewModel.parlays.filter({$0.leagueCode == leagueViewModel.activeLeague!.code}), week: homeViewModel.currentWeek)
+                                await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.allBets.filter({$0.leagueCode == leagueViewModel.activeLeague!.code}), parlays: homeViewModel.parlays.filter({$0.leagueCode == leagueViewModel.activeLeague!.code}), week: homeViewModel.currentWeek)
                                 
                                 BetViewModel().fetchBets(games: homeViewModel.allGames) { bets in
                                     homeViewModel.userBets = bets.filter({ $0.playerID == userID! && $0.leagueCode == activeLeague.code })
-                                    homeViewModel.leagueBets = homeViewModel.bets.filter({$0.leagueCode == activeLeague.code})
+                                    homeViewModel.leagueBets = homeViewModel.allBets.filter({$0.leagueCode == activeLeague.code})
                                 }
                             }
 

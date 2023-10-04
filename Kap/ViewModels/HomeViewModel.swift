@@ -14,7 +14,7 @@ class HomeViewModel: ObservableObject {
     @Published var leagues: [League] = []
     @Published var games: [Game] = []
     @Published var allGames: [Game] = []
-    @Published var bets: [Bet] = []
+    @Published var allBets: [Bet] = []
     @Published var generatedBets: [Bet] = []
     @Published var parlays: [Parlay] = []
     @Published var selectedBets: [Bet] = []
@@ -193,7 +193,7 @@ class HomeViewModel: ObservableObject {
             }
             
             BetViewModel().fetchBets(games: fetchedAllGames) { bets in
-                self.bets = bets
+                self.allBets = bets
             }
             
             let fetchedParlays = try await ParlayViewModel().fetchParlays(games: fetchedAllGames)
@@ -252,7 +252,7 @@ class HomeViewModel: ObservableObject {
                     }
                 }
 
-                self.bets = newBets
+                self.allBets = newBets
                 
                 Task {
                     for user in self.users {

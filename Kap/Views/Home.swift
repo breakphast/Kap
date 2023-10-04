@@ -34,7 +34,7 @@ struct Home: View {
                         Label("Home", systemImage: "house.fill")
                     }
                 
-                MyBets(bets: homeViewModel.bets, leagueCode: leagueViewModel.activeLeague?.code ?? "", userID: authViewModel.currentUser?.id ?? "")
+                MyBets(bets: homeViewModel.allBets, leagueCode: leagueViewModel.activeLeague?.code ?? "", userID: authViewModel.currentUser?.id ?? "")
                     .tabItem {
                         Label("My Bets", systemImage: "checklist")
                     }

@@ -210,9 +210,9 @@ struct PlayerBetsView: View {
                     
 //                    let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
                     if week == 0 {
-                        bets = homeViewModel.bets.filter { $0.playerID == userID && $0.leagueCode == leagueViewModel.activeLeague?.code }
+                        bets = homeViewModel.allBets.filter { $0.playerID == userID && $0.leagueCode == leagueViewModel.activeLeague?.code }
                     } else {
-                        bets = homeViewModel.bets.filter { $0.playerID == userID && $0.week == weekNumber && $0.leagueCode == leagueViewModel.activeLeague?.code }
+                        bets = homeViewModel.allBets.filter { $0.playerID == userID && $0.week == weekNumber && $0.leagueCode == leagueViewModel.activeLeague?.code }
                     }
                     
                     let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
@@ -238,9 +238,9 @@ struct PlayerBetsView: View {
         Task {
             do {
                 if week == 0 {
-                    bets = homeViewModel.bets.filter { $0.playerID == userID && $0.leagueCode == leagueViewModel.activeLeague?.code }
+                    bets = homeViewModel.allBets.filter { $0.playerID == userID && $0.leagueCode == leagueViewModel.activeLeague?.code }
                 } else {
-                    bets = homeViewModel.bets.filter { $0.playerID == userID && $0.week == week && $0.leagueCode == leagueViewModel.activeLeague?.code }
+                    bets = homeViewModel.allBets.filter { $0.playerID == userID && $0.week == week && $0.leagueCode == leagueViewModel.activeLeague?.code }
                 }
                 let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
                 if week == 0 {
