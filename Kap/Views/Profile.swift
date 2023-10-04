@@ -37,8 +37,11 @@ struct Profile: View {
                     homeViewModel.leagueBets = []
                     homeViewModel.userLeagues = []
                     homeViewModel.selectedBets = []
-                    homeViewModel.parlays = []
+                    homeViewModel.allParlays = []
                     leagueViewModel.activeLeague = nil
+                    homeViewModel.leagueParlays = []
+                    homeViewModel.userParlays = []
+                    homeViewModel.activeParlay = nil
                 }
                 .font(.title2)
                 .bold()

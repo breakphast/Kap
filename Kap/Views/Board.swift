@@ -35,13 +35,15 @@ struct Board: View {
                                 .onTapGesture {
                                     leagueViewModel.activeLeague = nil
                                     Task {
-                                        homeViewModel.parlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
+                                        ParlayViewModel().fetchParlays(games: homeViewModel.allGames) { parlays in
+                                            homeViewModel.allParlays = parlays
+                                        }
                                     }
                                 }
                             }
                             
                             ToolbarItem(placement: .navigationBarTrailing) {
-                                if homeViewModel.selectedBets.count > 1 && calculateParlayOdds(bets: homeViewModel.selectedBets) >= 400 {
+                                if homeViewModel.selectedBets.count > 2 && calculateParlayOdds(bets: homeViewModel.selectedBets) >= 400 {
                                     HStack(spacing: 2) {
                                         Image(systemName: "gift.fill")
                                         Text("+\(calculateParlayOdds(bets: homeViewModel.selectedBets))".replacingOccurrences(of: ",", with: ""))
@@ -62,7 +64,7 @@ struct Board: View {
                 
                 if homeViewModel.selectedBets.count > 0 {
                     Spacer()
-                    NavigationLink(destination: Betslip()) {
+                    NavigationLink(destination: Betslip(parlay: $homeViewModel.activeParlay)) {
                         ZStack {
                             Color("lion")
                             
@@ -80,13 +82,13 @@ struct Board: View {
                         TapGesture()
                             .onEnded { _ in
                                 if homeViewModel.selectedBets.count > 1 {
-                                    homeViewModel.activeParlays = []
+                                    homeViewModel.activeParlay = nil
                                     let parlay = ParlayViewModel().makeParlay(for: homeViewModel.selectedBets, playerID: authViewModel.currentUser?.id ?? "", week: homeViewModel.currentWeek, leagueCode: homeViewModel.activeleagueCode ?? "")
                                     if parlay.totalOdds >= 400 && parlay.bets.count >= 3 {
-                                        homeViewModel.activeParlays.append(parlay)
+                                        homeViewModel.activeParlay = parlay
                                     }
                                 } else {
-                                    homeViewModel.activeParlays = []
+                                    homeViewModel.activeParlay = nil
                                 }
                             }
                     )

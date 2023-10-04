@@ -16,9 +16,9 @@ class HomeViewModel: ObservableObject {
     @Published var allGames: [Game] = []
     @Published var allBets: [Bet] = []
     @Published var generatedBets: [Bet] = []
-    @Published var parlays: [Parlay] = []
+    @Published var allParlays: [Parlay] = []
     @Published var selectedBets: [Bet] = []
-    @Published var activeParlays: [Parlay] = []
+    @Published var activeParlay: Parlay?
     @Published var players: [Player] = []
     @Published var leaderboards: [[User]] = [[]]
     
@@ -37,6 +37,8 @@ class HomeViewModel: ObservableObject {
     
     @Published var leagueBets = [Bet]()
     @Published var userBets = [Bet]()
+    @Published var leagueParlays = [Parlay]()
+    @Published var userParlays = [Parlay]()
     
     static let keys = [
         "4c43e84559d63c5465e9a1d972be7d2d",
@@ -195,8 +197,9 @@ class HomeViewModel: ObservableObject {
             BetViewModel().fetchBets(games: fetchedAllGames) { bets in
                 self.allBets = bets
             }
-            
-            let fetchedParlays = try await ParlayViewModel().fetchParlays(games: fetchedAllGames)
+            ParlayViewModel().fetchParlays(games: fetchedAllGames) { parlays in
+                self.allParlays = parlays
+            }
             
             DispatchQueue.main.async { [fetchedUsersCopy = fetchedUsers] in
                 self.users = fetchedUsersCopy
@@ -204,7 +207,6 @@ class HomeViewModel: ObservableObject {
                 self.activeLeague = fetchedLeagues.first
                 self.allGames = fetchedAllGames
                 self.games = fetchedGames.dropLast(byeGames[self.currentWeek] ?? 0)
-                self.parlays = fetchedParlays
                 self.leagueCodes = self.leagues.map { $0.code }
                 
                 GameService().updateDayType(for: &self.games)
@@ -228,12 +230,16 @@ class HomeViewModel: ObservableObject {
             for game in alteredGames {
                 try await GameService().updateGameScore(game: game)
             }
-            var newBets = [Bet]()
-            BetViewModel().fetchBets(games: allGames) { bets in
-                newBets = bets
-            }
-            let newParlays = try await ParlayViewModel().fetchParlays(games: allGames)
             DispatchQueue.main.async {
+                var newBets = [Bet]()
+                BetViewModel().fetchBets(games: self.allGames) { bets in
+                    newBets = bets
+                }
+                var newParlays = [Parlay]()
+                ParlayViewModel().fetchParlays(games: self.allGames) { parlays in
+                    newParlays = parlays
+                }
+                
                 self.games = alteredGames
                 for parlay in newParlays {
                     if parlay.result == .pending  {
@@ -241,7 +247,7 @@ class HomeViewModel: ObservableObject {
                     }
                 }
 
-                self.parlays = newParlays
+                self.allParlays = newParlays
 
                 for bet in newBets {
                     let result = bet.game.betResult(for: bet)

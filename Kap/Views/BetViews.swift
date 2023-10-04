@@ -32,11 +32,9 @@ struct BetView: View {
                 $0.week == currentWeek
             }.count < maxBets2 && !bets.contains { $0.game.id == bet.game.id }
             
-            let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
-                .filter { $0.leagueCode == activeleagueCode }
-            
-        } catch {
-            print("Error fetching bets: \(error)")
+            ParlayViewModel().fetchParlays(games: homeViewModel.allGames) { parlays in
+                homeViewModel.allParlays = parlays
+            }
         }
     }
     
@@ -286,7 +284,7 @@ struct ParlayView: View {
                 parlays.append(placedParlay)
                 ParlayViewModel().updateParlayLeague(parlay: placedParlay, leagueCode: homeViewModel.activeleagueCode ?? "")
             }
-            homeViewModel.activeParlays = []
+            homeViewModel.activeParlay = nil
         } label: {
             ZStack {
                 Color("onyxLightish")
@@ -490,13 +488,18 @@ struct PlacedParlayView: View {
                                 .foregroundStyle(.secondary)
                         }
                         
-                        VStack(alignment: .leading) {
+                        HStack {
                             HStack(spacing: 4) {
                                 Text("Points:")
                                     .font(.headline.bold())
                                 Text("\(parlay.result == .loss ? "-" : "+")\(abs(parlay.totalPoints).twoDecimalString)")
                                     .font(.title3.bold())
                                     .foregroundStyle(pointsColor(for: parlay.result))
+                            }
+                            Spacer()
+                            
+                            if parlay.bets.contains(where: { Date() < $0.game.date && $0.result == .pending }) {
+                                menu
                             }
                         }
                         .bold()
@@ -510,59 +513,9 @@ struct PlacedParlayView: View {
             .foregroundStyle(.white)
             .multilineTextAlignment(.leading)
             
-            VStack {
-                Image(systemName: parlay.result == .win ? "checkmark.circle" : parlay.result == .loss ? "xmark.circle" : "hourglass.circle")
-                    .font(.largeTitle.bold())
-                    .foregroundColor(parlay.result == .win ? Color("bean") : parlay.result == .loss ? Color("redd") : .secondary)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-            .padding(24)
-            
             if parlay.bets.filter({ Date() > $0.game.date }).count == 0 {
                 if deleteActive {
-                    HStack(spacing: 12) {
-                        Image(systemName: "xmark")
-                            .foregroundColor(.red)
-                            .font(.title2.bold())
-                            .bold()
-                            .fontDesign(.rounded)
-                            .padding(.bottom, 12)
-                            .onTapGesture {
-                                withAnimation {
-                                    deleteActive.toggle()
-                                    Task {
-                                        let _ = try await ParlayViewModel().deleteParlay(parlayID: parlay.id)
-                                    }
-                                }
-                            }
-                        
-                        Image(systemName: "checkmark")
-                            .foregroundColor(Color("bean"))
-                            .font(.title2.bold())
-                            .fontDesign(.rounded)
-                            .padding(.bottom, 12)
-                            .onTapGesture {
-                                withAnimation {
-                                    deleteActive.toggle()
-                                }
-                            }
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                    .padding(.bottom, 12)
-                    .matchedGeometryEffect(id: "trash", in: trash)
-                } else if parlay.result == .pending {
-                    Image(systemName: "trash")
-                        .foregroundColor(.secondary)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                        .font(.title2.bold())
-                        .fontDesign(.rounded)
-                        .onTapGesture {
-                            withAnimation {
-                                deleteActive.toggle()
-                            }
-                        }
-                        .matchedGeometryEffect(id: "trash", in: trash)
-                        .padding(.bottom, 12)
+                    
                 }
             }
         }
@@ -573,5 +526,28 @@ struct PlacedParlayView: View {
             } ?? []
             legs = formattedBets.count
         }
+    }
+    
+    private var menu: some View {
+        Menu {
+            Button {
+                withAnimation {
+                    deleteActive.toggle()
+                    Task {
+                        let _ = try await ParlayViewModel().deleteParlay(parlayID: parlay.id)
+                        homeViewModel.allParlays.removeAll(where: { $0.id == parlay.id })
+                    }
+                }
+            } label: {
+                Label("Delete bet", systemImage: "trash")
+            }
+            Button("Cancel") {
+                
+            }
+        } label: {
+            Image(systemName: "ellipsis")
+                .font(.title2.bold())
+        }
+        .zIndex(1000)
     }
 }

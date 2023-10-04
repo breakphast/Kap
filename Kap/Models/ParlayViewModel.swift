@@ -11,54 +11,61 @@ import FirebaseFirestore
 class ParlayViewModel {
     private let db = Firestore.firestore()
 
-    func fetchParlays(games: [Game]) async throws -> [Parlay] {
-        let querySnapshot = try await db.collection("parlays").getDocuments()
-        let parlays = querySnapshot.documents.compactMap { queryDocumentSnapshot -> Parlay? in
-            let data = queryDocumentSnapshot.data()
-
-            guard
-                let id = data["id"] as? String,
-                let betsData = data["bets"] as? [[String: Any]],
-                let totalOdds = data["totalOdds"] as? Int,
-                let resultString = data["result"] as? String,
-                let result = BetResult(rawValue: resultString),
-                let betString = data["betString"] as? String,
-                let playerID = data["playerID"] as? String,
-                let week = data["week"] as? Int,
-                let leagueCode = data["leagueID"] as? String
-            else { return nil }
-
-            var bets = [Bet]()
-            for betData in betsData {
-                guard
-                    let gameID = betData["game"] as? String,
-                    let betOptionID = betData["betOption"] as? String,
-                    let typeString = betData["type"] as? String,
-                    let type = BetType(rawValue: typeString),
-                    let odds = betData["odds"] as? Int,
-                    let selectedTeam = betData["selectedTeam"] as? String,
-                    let playerID = betData["playerID"] as? String,
-                    let week = betData["week"] as? Int,
-                    let leagueCode = data["leagueID"] as? String
-                else {
-                    continue
-                }
-                let foundGame = BetViewModel().findBetGame(games: games, gameID: gameID)
-                if let foundGame = foundGame {
-                    let bet = Bet(id: betOptionID + playerID, betOption: betOptionID, game: foundGame, type: type, result: result, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode)
-                    bets.append(bet)
-                }
+    func fetchParlays(games: [Game], completion: @escaping ([Parlay]) -> Void) {
+        let db = Firestore.firestore()
+        db.collection("parlays").addSnapshotListener { (querySnapshot, error) in
+            guard let documents = querySnapshot?.documents else {
+                print("No documents")
+                completion([])
+                return
             }
-            let parlay = Parlay(id: id, bets: bets, totalOdds: totalOdds, result: result, playerID: playerID, week: week, leagueCode: leagueCode)
-            parlay.totalOdds = totalOdds
-            parlay.betString = betString
+            
+            let parlays = documents.compactMap { queryDocumentSnapshot -> Parlay? in
+                let data = queryDocumentSnapshot.data()
 
-            return parlay
+                guard
+                    let id = data["id"] as? String,
+                    let betsData = data["bets"] as? [[String: Any]],
+                    let totalOdds = data["totalOdds"] as? Int,
+                    let resultString = data["result"] as? String,
+                    let result = BetResult(rawValue: resultString),
+                    let betString = data["betString"] as? String,
+                    let playerID = data["playerID"] as? String,
+                    let week = data["week"] as? Int,
+                    let leagueCode = data["leagueID"] as? String
+                else { return nil }
+
+                var bets = [Bet]()
+                for betData in betsData {
+                    guard
+                        let gameID = betData["game"] as? String,
+                        let betOptionID = betData["betOption"] as? String,
+                        let typeString = betData["type"] as? String,
+                        let type = BetType(rawValue: typeString),
+                        let odds = betData["odds"] as? Int,
+                        let selectedTeam = betData["selectedTeam"] as? String,
+                        let playerID = betData["playerID"] as? String,
+                        let week = betData["week"] as? Int,
+                        let leagueCode = data["leagueID"] as? String
+                    else {
+                        continue
+                    }
+                    let foundGame = BetViewModel().findBetGame(games: games, gameID: gameID)
+                    if let foundGame = foundGame {
+                        let bet = Bet(id: betOptionID + playerID, betOption: betOptionID, game: foundGame, type: type, result: result, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode)
+                        bets.append(bet)
+                    }
+                }
+                let parlay = Parlay(id: id, bets: bets, totalOdds: totalOdds, result: result, playerID: playerID, week: week, leagueCode: leagueCode)
+                parlay.totalOdds = totalOdds
+                parlay.betString = betString
+                
+                return parlay
+            }
+            completion(parlays)
         }
-        
-        return parlays
     }
-    
+
     func addParlay(parlay: Parlay) async throws {
         var newParlay: [String: Any] = [
             "id": parlay.id,

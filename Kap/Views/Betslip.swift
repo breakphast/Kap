@@ -13,7 +13,7 @@ struct Betslip: View {
     @State private var offset: CGFloat = 0.0
     @State private var shouldDismiss = false
     @State private var parlays: [Parlay] = []
-    @State private var parlay: Parlay?
+    @Binding var parlay: Parlay?
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
@@ -47,9 +47,8 @@ struct Betslip: View {
     
     private func updateParlay() {
         self.parlay?.bets = homeViewModel.selectedBets
-        if calculateParlayOdds(bets: homeViewModel.selectedBets) < 400 {
+        if calculateParlayOdds(bets: homeViewModel.selectedBets) < 400 && homeViewModel.selectedBets.count < 3 {
             parlay = nil
-            homeViewModel.activeParlays = []
         }
     }
     
@@ -75,9 +74,8 @@ struct Betslip: View {
             ForEach(homeViewModel.selectedBets, id: \.id) { bet in
                 BetView(bet: bet)
             }
-            
-            if parlay != nil {
-                ParlayView(parlays: $parlays, parlay: parlay!)
+            if let parlay = homeViewModel.activeParlay {
+                ParlayView(parlays: $parlays, parlay: parlay)
             }
         }
         .padding(.top, 20)
