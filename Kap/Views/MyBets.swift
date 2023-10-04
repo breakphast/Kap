@@ -16,7 +16,6 @@ struct MyBets: View {
 
     @Environment(\.dismiss) private var dismiss
     
-    @State private var myBets: [Bet]
     @State private var parlays: [Parlay] = []
     @State private var weeklyPoints: Double?
     
@@ -31,16 +30,7 @@ struct MyBets: View {
     init(bets: [Bet], leagueID: String, userID: String) {
         self.leagueID = leagueID
         self.userID = userID
-        
-        _myBets = State(initialValue: bets)
     }
-    
-    var filteredBets: [Bet] {
-        return myBets.filter { bet in
-            bet.leagueID == leagueID && bet.playerID == userID && bet.week == week
-        }
-    }
-
 
     let swipeThreshold: CGFloat = 50.0
     
@@ -233,8 +223,6 @@ struct MyBets: View {
             
             Task {
                 do {
-                    myBets = homeViewModel.userBets.filter { $0.playerID == currentUserId && $0.week == weekNumber }
-                    
                     let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
                     parlays = fetchedParlays.filter { $0.playerID == currentUserId && $0.week == weekNumber && $0.leagueID == homeViewModel.activeLeagueID! }
                     

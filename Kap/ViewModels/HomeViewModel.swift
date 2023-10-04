@@ -184,6 +184,7 @@ class HomeViewModel: ObservableObject {
             let fetchedAllGames = try await GameService().fetchGamesFromFirestore()
             let fetchedGames = fetchedAllGames.chunked(into: 16)[Int(currentWeek) - 1]
             
+            
             if updateGames {
                 let updatedGames = try await GameService().getGames()
                 let matchingGames = updatedGames.filter { updatedGame in
@@ -205,7 +206,7 @@ class HomeViewModel: ObservableObject {
                 self.leagues = fetchedLeagues
                 self.activeLeague = fetchedLeagues.first
                 self.allGames = fetchedAllGames
-                self.games = fetchedGames
+                self.games = fetchedGames.dropLast(2)
                 self.parlays = fetchedParlays
                 self.leagueIDs = self.leagues.map { $0.code }
                 
