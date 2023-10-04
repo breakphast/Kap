@@ -206,7 +206,7 @@ class HomeViewModel: ObservableObject {
                 self.leagues = fetchedLeagues
                 self.activeLeague = fetchedLeagues.first
                 self.allGames = fetchedAllGames
-                self.games = fetchedGames.dropLast(2)
+                self.games = fetchedGames.dropLast(byeGames[self.currentWeek] ?? 0)
                 self.parlays = fetchedParlays
                 self.leagueIDs = self.leagues.map { $0.code }
                 
