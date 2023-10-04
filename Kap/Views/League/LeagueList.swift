@@ -98,7 +98,7 @@ struct LeagueList: View {
                                 homeViewModel.users = homeViewModel.users.filter({ leaguePlayers.contains($0.id!) })
                             }
                         }
-                        await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.allBets.filter({$0.leagueCode == league.code}), parlays: homeViewModel.parlays.filter({$0.leagueCode == league.code}), week: homeViewModel.currentWeek)
+                        await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.allBets.filter({$0.leagueCode == league.code}), parlays: homeViewModel.parlays.filter({$0.leagueCode == league.code}), week: homeViewModel.currentWeek, leagueCode: league.code)
                         loggedIn = true
                         if defaultLeague {
                             defaultleagueCode = league.code

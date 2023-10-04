@@ -69,9 +69,9 @@ struct MyBets: View {
                         settledBetsTab
                     }
                 }
-                .gesture(swipeGesture)
                 .padding(.horizontal, 16)
             }
+            .gesture(swipeGesture)
         }
         .fontDesign(.rounded)
     }
@@ -235,7 +235,7 @@ struct MyBets: View {
     }
 
     func isEmptyBets(for result: BetResult) -> Bool {
-        return homeViewModel.userBets.filter { $0.result == result }.isEmpty
+        return homeViewModel.userBets.filter { $0.result == result && $0.leagueCode == leagueCode && $0.week == week}.isEmpty
     }
     
     private var swipeGesture: some Gesture {

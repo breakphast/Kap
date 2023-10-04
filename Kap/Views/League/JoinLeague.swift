@@ -159,7 +159,7 @@ struct DigitTextField: View {
                             homeViewModel.leagueBets = bets.filter({$0.leagueCode == activeLeague.code})
                         }
                     }
-                    await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.allBets.filter({$0.leagueCode == leagueViewModel.activeLeague?.code}), parlays: homeViewModel.parlays.filter({$0.leagueCode == leagueViewModel.activeLeague?.code}), week: homeViewModel.currentWeek)
+                    await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.allBets.filter({$0.leagueCode == leagueViewModel.activeLeague?.code}), parlays: homeViewModel.parlays.filter({$0.leagueCode == leagueViewModel.activeLeague?.code}), week: homeViewModel.currentWeek, leagueCode: leagueViewModel.activeLeague?.code ?? "")
 
                     homeViewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
                     homeViewModel.userLeagues = try await LeagueViewModel().fetchLeaguesContainingID(id: authViewModel.currentUser?.id ?? "")

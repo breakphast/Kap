@@ -253,12 +253,6 @@ class HomeViewModel: ObservableObject {
                 }
 
                 self.allBets = newBets
-                
-                Task {
-                    for user in self.users {
-                        await UserViewModel().updateUserPoints(user: user, bets: newBets, parlays: self.parlays, week: self.currentWeek, missing: true)
-                    }
-                }
             }
         } catch {
             print("Failed update and fetch", error.localizedDescription)

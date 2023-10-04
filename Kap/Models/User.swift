@@ -24,4 +24,5 @@ struct User: Codable, Identifiable {
 struct MissedBet: Codable {
     var week: String
     var missedCount: Int
+    var leagueCode: String
 }

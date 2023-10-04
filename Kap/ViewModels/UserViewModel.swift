@@ -62,14 +62,16 @@ class UserViewModel: ObservableObject {
         }
     }
     
-    func fetchMissedBetsCount(for userID: String, week: Int) async -> Int? {
+    func fetchMissedBetsCount(for userID: String, week: Int, leagueCode: String) async -> Int? {
         let weekDocumentID = "week\(week)"
         let userDocument = db.collection("users").document(userID)
-        
         do {
             let document = try await userDocument.collection("missedBets").document(weekDocumentID).getDocument()
             if let missedBet = try? document.data(as: MissedBet.self) {
-                return missedBet.missedCount
+                if missedBet.leagueCode == leagueCode {
+                    return missedBet.missedCount
+                }
+                return nil
             }
         } catch {
             print("Error fetching missed bets for \(weekDocumentID): \(error)")
@@ -77,7 +79,7 @@ class UserViewModel: ObservableObject {
         return nil
     }
     
-    func updateMissedBetsCount(for userID: String, week: Int, newValue: Int) async {
+    func updateMissedBetsCount(for userID: String, week: Int, newValue: Int, leagueCode: String) async {
         let weekDocumentID = "week\(week)"
         let userDocument = db.collection("users").document(userID)
         let missedBetsDocument = userDocument.collection("missedBets").document(weekDocumentID)
@@ -112,8 +114,6 @@ class UserViewModel: ObservableObject {
         }
     }
     
-    
-    
     func fetchUserLeagues(for userID: String, leagueCode: String) async -> [String: Any]? {
         let userDocument = db.collection("users").document(userID)
         let leagueDocument = userDocument.collection("leagues").document(leagueCode)
@@ -132,47 +132,15 @@ class UserViewModel: ObservableObject {
         return nil
     }
 
-    
-    func fetchAllMissedBets(for userID: String, startingWeek: Int) async -> Int {
+    func fetchAllMissedBets(for userID: String, startingWeek: Int, leagueCode: String) async -> Int {
         for week in (1...startingWeek).reversed() {
-            if let count = await fetchMissedBetsCount(for: userID, week: week) {
+            if let count = await fetchMissedBetsCount(for: userID, week: week, leagueCode: leagueCode) {
                 return count
             }
         }
         return 0
     }
     
-    func updateUserPoints(user: User, bets: [Bet], parlays: [Parlay], week: Int, missing: Bool) async {
-        guard let userID = user.id else {
-            print("User ID is nil")
-            return
-        }
-
-        let newUser = db.collection("users").document(userID)
-        
-        var totalPoints: Double = 0
-        var totalMissedBets: Int = 0
-        
-        for currentWeek in 1...week {
-            // Filter bets for the current user and the currentWeek
-            let userBets = bets.filter { $0.playerID == userID && $0.week == currentWeek }
-            let settledBets = userBets.filter { $0.result != .pending && $0.result != .push }
-            let parlay = parlays.first(where: { $0.playerID == userID && $0.result != .pending && $0.week == currentWeek })
-
-            let points = settledBets.map { $0.points ?? 0 }.reduce(0, +) + (parlay?.totalPoints ?? 0)
-            
-            totalPoints += points
-            totalMissedBets += await fetchMissedBetsCount(for: userID, week: currentWeek) ?? 0
-        }
-        do {
-            totalPoints += Double(totalMissedBets) * -10.0
-            try await newUser.updateData(["totalPoints": totalPoints])
-            print("User successfully updated")
-        } catch {
-            print("Error updating USERRRR: \(error)")
-        }
-    }
-
     // Add a new user
     func addUser(user: User) {
         do {

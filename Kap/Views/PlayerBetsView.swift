@@ -47,10 +47,10 @@ struct PlayerBetsView: View {
             }
             
             if week == 0 {
-                missedBets = await UserViewModel().fetchAllMissedBets(for: userID, startingWeek: homeViewModel.currentWeek)
+                missedBets = await UserViewModel().fetchAllMissedBets(for: userID, startingWeek: homeViewModel.currentWeek, leagueCode: leagueViewModel.activeLeague?.code ?? "")
                 updateForWeek(0)
             } else {
-                missedBets = await UserViewModel().fetchMissedBetsCount(for: userID, week: homeViewModel.currentWeek) ?? 0
+                missedBets = await UserViewModel().fetchMissedBetsCount(for: userID, week: homeViewModel.currentWeek, leagueCode: leagueViewModel.activeLeague?.code ?? "") ?? 0
             }
         }
     }
@@ -203,9 +203,9 @@ struct PlayerBetsView: View {
             Task {
                 do {
                     if week == 0 {
-                        missedBets = await UserViewModel().fetchAllMissedBets(for: userID, startingWeek: homeViewModel.currentWeek)
+                        missedBets = await UserViewModel().fetchAllMissedBets(for: userID, startingWeek: homeViewModel.currentWeek, leagueCode: leagueViewModel.activeLeague?.code ?? "")
                     } else {
-                        missedBets = await UserViewModel().fetchMissedBetsCount(for: userID, week: week) ?? 0
+                        missedBets = await UserViewModel().fetchMissedBetsCount(for: userID, week: week, leagueCode: leagueViewModel.activeLeague?.code ?? "") ?? 0
                     }
                     
 //                    let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
@@ -222,7 +222,7 @@ struct PlayerBetsView: View {
                         parlays = fetchedParlays.filter { $0.playerID == userID && $0.week == weekNumber && $0.leagueCode == leagueViewModel.activeLeague?.code }
                     }
                     weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: userID, bets: bets, parlays: homeViewModel.parlays, week: weekNumber )
-                    totalPoints = await leaderboardViewModel.calculateTotalPointsPlayersView(userID: userID, bets: bets, parlays: parlays, week: homeViewModel.currentWeek)
+                    totalPoints = await leaderboardViewModel.calculateTotalPointsPlayersView(userID: userID, bets: bets, parlays: parlays, week: homeViewModel.currentWeek, leagueCode: leagueViewModel.activeLeague?.code ?? "")
                 } catch {
                     print("Error fetching data for week \(weekNumber): \(error)")
                 }
