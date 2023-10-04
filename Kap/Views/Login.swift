@@ -82,6 +82,7 @@ struct Login: View {
                     .font(.title.bold().width(.condensed))
                     .foregroundStyle(Color("oW"))
                     .padding()
+                    .textInputAutocapitalization(.never)
             }
             ZStack {
                 RoundedRectangle(cornerRadius: 12, style: .continuous)

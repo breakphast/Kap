@@ -10,6 +10,8 @@ import SwiftUI
 struct Profile: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
+    @EnvironmentObject var leagueViewModel: LeagueViewModel
+
     @State var user: User?
     @Binding var loggedIn: Bool
     @AppStorage("defaultleagueCode") private var defaultleagueCode = ""
@@ -31,6 +33,12 @@ struct Profile: View {
                     authViewModel.signOut()
                     loggedIn = false
                     defaultleagueCode = ""
+                    homeViewModel.userBets = []
+                    homeViewModel.leagueBets = []
+                    homeViewModel.userLeagues = []
+                    homeViewModel.selectedBets = []
+                    homeViewModel.parlays = []
+                    leagueViewModel.activeLeague = nil
                 }
                 .font(.title2)
                 .bold()
