@@ -12,7 +12,7 @@ struct Profile: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @State var user: User?
     @Binding var loggedIn: Bool
-    @AppStorage("defaultLeagueID") private var defaultLeagueID = ""
+    @AppStorage("defaultleagueCode") private var defaultleagueCode = ""
     
     var body: some View {
         ZStack {
@@ -30,7 +30,7 @@ struct Profile: View {
                 Button("Sign Out") {
                     authViewModel.signOut()
                     loggedIn = false
-                    defaultLeagueID = ""
+                    defaultleagueCode = ""
                 }
                 .font(.title2)
                 .bold()

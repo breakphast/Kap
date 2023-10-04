@@ -48,7 +48,7 @@ struct Leaderboard: View {
         }
         .refreshable {
             Task {
-                await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.bets.filter({$0.leagueID == leagueViewModel.activeLeague?.code}), parlays: homeViewModel.parlays.filter({$0.leagueID == leagueViewModel.activeLeague?.code}), week: homeViewModel.currentWeek)
+                await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.bets.filter({$0.leagueCode == leagueViewModel.activeLeague?.code}), parlays: homeViewModel.parlays.filter({$0.leagueCode == leagueViewModel.activeLeague?.code}), week: homeViewModel.currentWeek)
             }
         }
     }

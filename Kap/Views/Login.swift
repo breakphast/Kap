@@ -14,7 +14,7 @@ struct Login: View {
     @EnvironmentObject var leaderboardViewModel: LeaderboardViewModel
     @AppStorage("email") private var emailAddy = ""
     @AppStorage("password") private var pass = ""
-    @AppStorage("defaultLeagueID") private var defaultLeagueID = ""
+    @AppStorage("defaultleagueCode") private var defaultleagueCode = ""
 
     @State private var email = UserDefaults.standard.string(forKey: "email")?.lowercased()
     @State private var password = UserDefaults.standard.string(forKey: "password")
@@ -107,14 +107,14 @@ struct Login: View {
                     }
                     Task {
                         homeViewModel.userLeagues = try await LeagueViewModel().fetchLeaguesContainingID(id: userID!)
-                        let fault = UserDefaults.standard.string(forKey: "defaultLeagueID")
+                        let fault = UserDefaults.standard.string(forKey: "defaultleagueCode")
                         guard fault == "" else {
                             if fault == "5555" {
                                 leaderboardViewModel.leagueType = .season
                             } else {
                                 leaderboardViewModel.leagueType = .weekly
                             }
-                            homeViewModel.activeLeagueID = fault
+                            homeViewModel.activeleagueCode = fault
                             leagueViewModel.activeLeague = homeViewModel.leagues.first(where: {$0.code == fault})
                             if let activeLeague = leagueViewModel.activeLeague {
                                 leagueViewModel.points = activeLeague.points ?? [:]
@@ -122,11 +122,11 @@ struct Login: View {
                                 if let leaguePlayers = leaguePlayers {
                                     homeViewModel.users = homeViewModel.users.filter({ leaguePlayers.contains($0.id!) })
                                 }
-                                await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.bets.filter({$0.leagueID == leagueViewModel.activeLeague!.code}), parlays: homeViewModel.parlays.filter({$0.leagueID == leagueViewModel.activeLeague!.code}), week: homeViewModel.currentWeek)
+                                await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.bets.filter({$0.leagueCode == leagueViewModel.activeLeague!.code}), parlays: homeViewModel.parlays.filter({$0.leagueCode == leagueViewModel.activeLeague!.code}), week: homeViewModel.currentWeek)
                                 
                                 BetViewModel().fetchBets(games: homeViewModel.allGames) { bets in
-                                    homeViewModel.userBets = bets.filter({ $0.playerID == userID! && $0.leagueID == activeLeague.code })
-                                    homeViewModel.leagueBets = homeViewModel.bets.filter({$0.leagueID == activeLeague.code})
+                                    homeViewModel.userBets = bets.filter({ $0.playerID == userID! && $0.leagueCode == activeLeague.code })
+                                    homeViewModel.leagueBets = homeViewModel.bets.filter({$0.leagueCode == activeLeague.code})
                                 }
                             }
 
@@ -205,7 +205,7 @@ struct Login: View {
             }
             
             Button("Register") {
-                defaultLeagueID = ""
+                defaultleagueCode = ""
                 authViewModel.register(withEmail: emailAddy, password: pass, username: username, fullName: fullName, userCount: homeViewModel.users.count)
                 login = true
             }

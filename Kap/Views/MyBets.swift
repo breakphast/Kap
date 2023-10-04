@@ -24,11 +24,11 @@ struct MyBets: View {
     
     @State private var selectedSegment = 0
     @State private var live = false
-    let leagueID: String
+    let leagueCode: String
     let userID: String
     
-    init(bets: [Bet], leagueID: String, userID: String) {
-        self.leagueID = leagueID
+    init(bets: [Bet], leagueCode: String, userID: String) {
+        self.leagueCode = leagueCode
         self.userID = userID
     }
 
@@ -51,12 +51,12 @@ struct MyBets: View {
                         Spacer()
                         VStack(alignment: .trailing, spacing: 4) {
                             HStack(spacing: 8) {
-                                dayTrackerElement(parlays: $parlays, dayType: .tnf, leagueID: leagueID, userID: userID, filterWeek: week)
-                                dayTrackerElement(parlays: $parlays, dayType: .sunday, leagueID: leagueID, userID: userID, filterWeek: week)
+                                dayTrackerElement(parlays: $parlays, dayType: .tnf, leagueCode: leagueCode, userID: userID, filterWeek: week)
+                                dayTrackerElement(parlays: $parlays, dayType: .sunday, leagueCode: leagueCode, userID: userID, filterWeek: week)
                             }
                             HStack(spacing: 8) {
-                                dayTrackerElement(parlays: $parlays, dayType: .snf, leagueID: leagueID, userID: userID, filterWeek: week)
-                                dayTrackerElement(parlays: $parlays, dayType: .mnf, leagueID: leagueID, userID: userID, filterWeek: week)
+                                dayTrackerElement(parlays: $parlays, dayType: .snf, leagueCode: leagueCode, userID: userID, filterWeek: week)
+                                dayTrackerElement(parlays: $parlays, dayType: .mnf, leagueCode: leagueCode, userID: userID, filterWeek: week)
                             }
                         }
                         .font(.system(.caption2, design: .rounded, weight: .bold))
@@ -112,7 +112,7 @@ struct MyBets: View {
     }
     
     func betSection(for dayType: DayType, settled: Bool) -> some View {
-        let liveBets = homeViewModel.bets.filter({$0.week == homeViewModel.currentWeek && Date() > $0.game.date && $0.game.completed == false && $0.leagueID == homeViewModel.activeLeagueID!})
+        let liveBets = homeViewModel.bets.filter({$0.week == homeViewModel.currentWeek && Date() > $0.game.date && $0.game.completed == false && $0.leagueCode == homeViewModel.activeleagueCode!})
         
         let filteredBets = homeViewModel.userBets.filter { bet in
             (settled ? bet.result != .pending : bet.result == .pending) && bet.week == week
@@ -224,7 +224,7 @@ struct MyBets: View {
             Task {
                 do {
                     let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
-                    parlays = fetchedParlays.filter { $0.playerID == currentUserId && $0.week == weekNumber && $0.leagueID == homeViewModel.activeLeagueID! }
+                    parlays = fetchedParlays.filter { $0.playerID == currentUserId && $0.week == weekNumber && $0.leagueCode == homeViewModel.activeleagueCode! }
                     
                     weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: currentUserId, bets: homeViewModel.userBets, parlays: parlays, week: weekNumber)
                 } catch {
@@ -287,7 +287,7 @@ struct dayTrackerElement: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @Binding var parlays: [Parlay]
     let dayType: DayType
-    let leagueID: String
+    let leagueCode: String
     let userID: String
     let filterWeek: Int
     
@@ -301,7 +301,7 @@ struct dayTrackerElement: View {
     }
     
     var body: some View {
-        let newBets = homeViewModel.userBets.filter({ $0.week == filterWeek && $0.leagueID == leagueID})
+        let newBets = homeViewModel.userBets.filter({ $0.week == filterWeek && $0.leagueCode == leagueCode})
         if dayType != .parlay {
             let filteredBetsCount = newBets.filter { $0.game.dayType == dayType.rawValue }.count
             Text("\(dayType.rawValue) ")

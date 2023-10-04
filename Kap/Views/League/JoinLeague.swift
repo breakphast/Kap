@@ -126,12 +126,12 @@ struct DigitTextField: View {
 
     private func validateCodeWhenIndexIsThree() {
         if index == 3 {
-            if homeViewModel.leagueIDs.contains(code.joined()) {
+            if homeViewModel.leagueCodes.contains(code.joined()) {
                 withAnimation(.easeInOut) {
                     result = true
                 }
                 Task {
-                    homeViewModel.activeLeagueID = code.joined()
+                    homeViewModel.activeleagueCode = code.joined()
                     if code.joined() == "5555" {
                         leaderboardViewModel.leagueType = .season
                     } else {
@@ -145,7 +145,7 @@ struct DigitTextField: View {
                         leagueViewModel.points = activeLeague.points ?? [:]
                         _ = homeViewModel.leagues.first(where: { $0.code == code.joined() })?.players
                         if let userID = authViewModel.currentUser?.id {
-                            try await LeagueViewModel().addPlayerToLeague(leagueId: activeLeague.id!, playerId: userID)
+                            try await LeagueViewModel().addPlayerToLeague(leagueCode: activeLeague.id!, playerId: userID)
                             homeViewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
                             let leaguePlayers = homeViewModel.leagues.first(where: { $0.code == activeLeague.code })?.players
                             if let leaguePlayers = leaguePlayers {
@@ -155,11 +155,11 @@ struct DigitTextField: View {
                             }
                         }
                         BetViewModel().fetchBets(games: homeViewModel.allGames) { bets in
-                            homeViewModel.userBets = bets.filter({$0.playerID == authViewModel.currentUser?.id ?? "" && $0.leagueID == leagueViewModel.activeLeague?.code})
-                            homeViewModel.leagueBets = bets.filter({$0.leagueID == activeLeague.code})
+                            homeViewModel.userBets = bets.filter({$0.playerID == authViewModel.currentUser?.id ?? "" && $0.leagueCode == leagueViewModel.activeLeague?.code})
+                            homeViewModel.leagueBets = bets.filter({$0.leagueCode == activeLeague.code})
                         }
                     }
-                    await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.bets.filter({$0.leagueID == leagueViewModel.activeLeague?.code}), parlays: homeViewModel.parlays.filter({$0.leagueID == leagueViewModel.activeLeague?.code}), week: homeViewModel.currentWeek)
+                    await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.bets.filter({$0.leagueCode == leagueViewModel.activeLeague?.code}), parlays: homeViewModel.parlays.filter({$0.leagueCode == leagueViewModel.activeLeague?.code}), week: homeViewModel.currentWeek)
 
                     homeViewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
                     homeViewModel.userLeagues = try await LeagueViewModel().fetchLeaguesContainingID(id: authViewModel.currentUser?.id ?? "")

@@ -40,7 +40,7 @@ class PlayerViewModel {
             var playerData = [
                 "name": player.name,
                 "user": ["id": player.user.id ?? ""],
-                "league": ["id": player.leagueID]
+                "league": ["id": player.leagueCode]
             ] as [String: Any]
             
             newDocument.setData(playerData) { error in
@@ -62,7 +62,7 @@ class PlayerViewModel {
         let playerData: [String: Any] = [
             "name": player.name,
             "user": ["id": player.user.id ?? ""],
-            "league": ["id": player.leagueID]
+            "league": ["id": player.leagueCode]
         ]
         
         return try await withCheckedThrowingContinuation { continuation in
@@ -89,12 +89,12 @@ class PlayerViewModel {
         }
     }
     
-    func createPlayerFromUserId(userId: String, leagueID: String, name: String) async throws -> String {
+    func createPlayerFromUserId(userId: String, leagueCode: String, name: String) async throws -> String {
         return try await withCheckedThrowingContinuation { continuation in
             let newDocument = db.collection("players").document()
             let playerData: [String: Any] = [
                 "user": ["id": userId],
-                "league": ["id": leagueID],
+                "league": ["id": leagueCode],
                 "name": name
             ]
             
@@ -120,14 +120,14 @@ extension Player {
     init?(data: [String: Any]) {
         guard let name = data["name"] as? String,
               let userId = (data["user"] as? [String: Any])?["id"] as? String,
-              let leagueID = (data["league"] as? [String: Any])?["id"] as? String
+              let leagueCode = (data["league"] as? [String: Any])?["id"] as? String
         else {
             return nil
         }
         
         self.name = name
         self.user = User(id: userId, email: "", username: "", leagues: [], missedBets: [MissedBet(week: "2", missedCount: 0)])  // You'd likely want to fetch more user data here or adjust the structure.
-        self.leagueID = leagueID
+        self.leagueCode = leagueCode
         self.bets = []
         self.parlays = []
         self.points = [:]

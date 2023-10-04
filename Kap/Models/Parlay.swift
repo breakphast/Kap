@@ -16,9 +16,9 @@ class Parlay {
     var betString: String?
     var playerID: String
     var week: Int
-    var leagueID: String
+    var leagueCode: String
     
-    init(id: String, bets: [Bet], totalOdds: Int, result: BetResult, playerID: String, week: Int, leagueID: String) {
+    init(id: String, bets: [Bet], totalOdds: Int, result: BetResult, playerID: String, week: Int, leagueCode: String) {
         self.id = id
         self.bets = bets
         self.totalOdds = totalOdds
@@ -26,7 +26,7 @@ class Parlay {
         self.totalPoints = calculateParlayPoints(odds: totalOdds, result: result == .pending ? .win : result)
         self.playerID = playerID
         self.week = week
-        self.leagueID = leagueID
+        self.leagueCode = leagueCode
     }
 }
 

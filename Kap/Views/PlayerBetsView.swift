@@ -210,16 +210,16 @@ struct PlayerBetsView: View {
                     
 //                    let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
                     if week == 0 {
-                        bets = homeViewModel.bets.filter { $0.playerID == userID && $0.leagueID == leagueViewModel.activeLeague?.code }
+                        bets = homeViewModel.bets.filter { $0.playerID == userID && $0.leagueCode == leagueViewModel.activeLeague?.code }
                     } else {
-                        bets = homeViewModel.bets.filter { $0.playerID == userID && $0.week == weekNumber && $0.leagueID == leagueViewModel.activeLeague?.code }
+                        bets = homeViewModel.bets.filter { $0.playerID == userID && $0.week == weekNumber && $0.leagueCode == leagueViewModel.activeLeague?.code }
                     }
                     
                     let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
                     if week == 0 {
-                        parlays = fetchedParlays.filter { $0.playerID == userID && $0.leagueID == leagueViewModel.activeLeague?.code }
+                        parlays = fetchedParlays.filter { $0.playerID == userID && $0.leagueCode == leagueViewModel.activeLeague?.code }
                     } else {
-                        parlays = fetchedParlays.filter { $0.playerID == userID && $0.week == weekNumber && $0.leagueID == leagueViewModel.activeLeague?.code }
+                        parlays = fetchedParlays.filter { $0.playerID == userID && $0.week == weekNumber && $0.leagueCode == leagueViewModel.activeLeague?.code }
                     }
                     weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: userID, bets: bets, parlays: homeViewModel.parlays, week: weekNumber )
                     totalPoints = await leaderboardViewModel.calculateTotalPointsPlayersView(userID: userID, bets: bets, parlays: parlays, week: homeViewModel.currentWeek)
@@ -238,15 +238,15 @@ struct PlayerBetsView: View {
         Task {
             do {
                 if week == 0 {
-                    bets = homeViewModel.bets.filter { $0.playerID == userID && $0.leagueID == leagueViewModel.activeLeague?.code }
+                    bets = homeViewModel.bets.filter { $0.playerID == userID && $0.leagueCode == leagueViewModel.activeLeague?.code }
                 } else {
-                    bets = homeViewModel.bets.filter { $0.playerID == userID && $0.week == week && $0.leagueID == leagueViewModel.activeLeague?.code }
+                    bets = homeViewModel.bets.filter { $0.playerID == userID && $0.week == week && $0.leagueCode == leagueViewModel.activeLeague?.code }
                 }
                 let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
                 if week == 0 {
-                    parlays = fetchedParlays.filter { $0.playerID == userID && $0.leagueID == leagueViewModel.activeLeague?.code }
+                    parlays = fetchedParlays.filter { $0.playerID == userID && $0.leagueCode == leagueViewModel.activeLeague?.code }
                 } else {
-                    parlays = fetchedParlays.filter { $0.playerID == userID && $0.week == week && $0.leagueID == leagueViewModel.activeLeague?.code }
+                    parlays = fetchedParlays.filter { $0.playerID == userID && $0.week == week && $0.leagueCode == leagueViewModel.activeLeague?.code }
                 }
                 weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: userID, bets: bets, parlays: homeViewModel.parlays, week: week)
             } catch {

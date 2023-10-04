@@ -17,7 +17,7 @@ struct LeagueList: View {
     @Binding var leagues: [League]
     @Binding var loggedIn: Bool
     @State private var defaultLeague = true
-    @AppStorage("defaultLeagueID") private var defaultLeagueID = ""
+    @AppStorage("defaultleagueCode") private var defaultleagueCode = ""
     
     var body: some View {
         NavigationStack {
@@ -77,7 +77,7 @@ struct LeagueList: View {
                 .foregroundStyle(Color("onyx").opacity(0.00001))
                 .onTapGesture {
                     Task {
-                        homeViewModel.activeLeagueID = league.code
+                        homeViewModel.activeleagueCode = league.code
                         if league.code == "5555" {
                             leaderboardViewModel.leagueType = .season
                         } else {
@@ -87,8 +87,8 @@ struct LeagueList: View {
                         leagueViewModel.activeLeague = homeViewModel.leagues.first(where: {$0.code == league.code})
                         BetViewModel().fetchBets(games: homeViewModel.allGames) { bets in
 //                            homeViewModel.bets = bets
-                            homeViewModel.userBets = bets.filter({$0.playerID == authViewModel.currentUser?.id ?? "" && $0.leagueID == leagueViewModel.activeLeague?.code})
-                            homeViewModel.leagueBets = bets.filter({$0.leagueID == leagueViewModel.activeLeague?.code})
+                            homeViewModel.userBets = bets.filter({$0.playerID == authViewModel.currentUser?.id ?? "" && $0.leagueCode == leagueViewModel.activeLeague?.code})
+                            homeViewModel.leagueBets = bets.filter({$0.leagueCode == leagueViewModel.activeLeague?.code})
                         }
                         homeViewModel.parlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
                         if let activeLeague = leagueViewModel.activeLeague {
@@ -98,10 +98,10 @@ struct LeagueList: View {
                                 homeViewModel.users = homeViewModel.users.filter({ leaguePlayers.contains($0.id!) })
                             }
                         }
-                        await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.bets.filter({$0.leagueID == league.code}), parlays: homeViewModel.parlays.filter({$0.leagueID == league.code}), week: homeViewModel.currentWeek)
+                        await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.bets.filter({$0.leagueCode == league.code}), parlays: homeViewModel.parlays.filter({$0.leagueCode == league.code}), week: homeViewModel.currentWeek)
                         loggedIn = true
                         if defaultLeague {
-                            defaultLeagueID = league.code
+                            defaultleagueCode = league.code
                         }
                     }
                 }

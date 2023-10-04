@@ -30,12 +30,9 @@ class HomeViewModel: ObservableObject {
     @Published var changed: Bool = false
     @Published var showingSplashScreen = true
     
-    @Published var activeLeagueID: String?
+    @Published var activeleagueCode: String?
     @Published var leagueCodes: [String] = []
-    
     @Published var userLeagues: [League] = []
-    
-    @Published var leagueIDs = [String]()
     @Published var leagueType: LeagueType = .weekly
     
     @Published var leagueBets = [Bet]()
@@ -173,10 +170,10 @@ class HomeViewModel: ObservableObject {
         do {
             var fetchedUsers = try await UserViewModel().fetchAllUsers()
 //            for user in fetchedUsers {
-//                try await LeagueViewModel().addPlayerToLeague(leagueId: "nZeeNcgdDZWiya0QFnke", playerId: user.id!)
+//                try await LeagueViewModel().addPlayerToLeague(leagueCode: "nZeeNcgdDZWiya0QFnke", playerId: user.id!)
 //            }
             let fetchedLeagues = try await LeagueViewModel().fetchAllLeagues()
-            let leaguePlayers = fetchedLeagues.first(where: { $0.code == activeLeagueID })?.players
+            let leaguePlayers = fetchedLeagues.first(where: { $0.code == activeleagueCode })?.players
             if let leaguePlayers = leaguePlayers {
                 fetchedUsers = fetchedUsers.filter({ leaguePlayers.contains($0.id!) })
             }
@@ -208,7 +205,7 @@ class HomeViewModel: ObservableObject {
                 self.allGames = fetchedAllGames
                 self.games = fetchedGames.dropLast(byeGames[self.currentWeek] ?? 0)
                 self.parlays = fetchedParlays
-                self.leagueIDs = self.leagues.map { $0.code }
+                self.leagueCodes = self.leagues.map { $0.code }
                 
                 GameService().updateDayType(for: &self.games)
                 for game in self.games {

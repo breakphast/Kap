@@ -100,12 +100,12 @@ class UserViewModel: ObservableObject {
         }
     }
     
-    func updateLeagues(for userID: String, leagueID: String) async {
+    func updateLeagues(for userID: String, leagueCode: String) async {
         let userDocument = db.collection("users").document(userID)
-        let leagueDocument = userDocument.collection("leagues").document(leagueID)
+        let leagueDocument = userDocument.collection("leagues").document(leagueCode)
 
         do {
-            try await leagueDocument.setData(["id": leagueID], merge: true)
+            try await leagueDocument.setData(["id": leagueCode], merge: true)
             print("Successfully updated leagues")
         } catch {
             print("Error updating missed bets count for \(leagueDocument.documentID): \(error)")
@@ -114,9 +114,9 @@ class UserViewModel: ObservableObject {
     
     
     
-    func fetchUserLeagues(for userID: String, leagueID: String) async -> [String: Any]? {
+    func fetchUserLeagues(for userID: String, leagueCode: String) async -> [String: Any]? {
         let userDocument = db.collection("users").document(userID)
-        let leagueDocument = userDocument.collection("leagues").document(leagueID)
+        let leagueDocument = userDocument.collection("leagues").document(leagueCode)
         
         do {
             let document = try await leagueDocument.getDocument()

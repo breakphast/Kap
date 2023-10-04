@@ -25,7 +25,7 @@ class ParlayViewModel {
                 let betString = data["betString"] as? String,
                 let playerID = data["playerID"] as? String,
                 let week = data["week"] as? Int,
-                let leagueID = data["leagueID"] as? String
+                let leagueCode = data["leagueID"] as? String
             else { return nil }
 
             var bets = [Bet]()
@@ -39,17 +39,17 @@ class ParlayViewModel {
                     let selectedTeam = betData["selectedTeam"] as? String,
                     let playerID = betData["playerID"] as? String,
                     let week = betData["week"] as? Int,
-                    let leagueID = data["leagueID"] as? String
+                    let leagueCode = data["leagueID"] as? String
                 else {
                     continue
                 }
                 let foundGame = BetViewModel().findBetGame(games: games, gameID: gameID)
                 if let foundGame = foundGame {
-                    let bet = Bet(id: betOptionID + playerID, betOption: betOptionID, game: foundGame, type: type, result: result, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueID: leagueID)
+                    let bet = Bet(id: betOptionID + playerID, betOption: betOptionID, game: foundGame, type: type, result: result, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode)
                     bets.append(bet)
                 }
             }
-            let parlay = Parlay(id: id, bets: bets, totalOdds: totalOdds, result: result, playerID: playerID, week: week, leagueID: leagueID)
+            let parlay = Parlay(id: id, bets: bets, totalOdds: totalOdds, result: result, playerID: playerID, week: week, leagueCode: leagueCode)
             parlay.totalOdds = totalOdds
             parlay.betString = betString
 
@@ -72,7 +72,7 @@ class ParlayViewModel {
                     "selectedTeam": bet.selectedTeam ?? "",
                     "week": parlay.week,
                     "playerID": parlay.playerID,
-                    "leagueID": parlay.leagueID
+                    "leagueID": parlay.leagueCode
                 ] as [String : Any]
             },
             "result": parlay.result.rawValue,
@@ -114,15 +114,15 @@ class ParlayViewModel {
         } 
     }
     
-    func makeParlay(for bets: [Bet], playerID: String, week: Int, leagueID: String) -> Parlay {
-        let parlay = Parlay(id: playerID + String(week), bets: bets, totalOdds: calculateParlayOdds(bets: bets), result: .pending, playerID: playerID, week: week, leagueID: leagueID)
+    func makeParlay(for bets: [Bet], playerID: String, week: Int, leagueCode: String) -> Parlay {
+        let parlay = Parlay(id: playerID + String(week), bets: bets, totalOdds: calculateParlayOdds(bets: bets), result: .pending, playerID: playerID, week: week, leagueCode: leagueCode)
         return parlay
     }
     
-    func updateParlayLeague(parlay: Parlay, leagueID: String) {
+    func updateParlayLeague(parlay: Parlay, leagueCode: String) {
         let newbet = db.collection("parlays").document(parlay.id)
         newbet.updateData([
-            "leagueID": leagueID,
+            "leagueID": leagueCode,
         ]) { err in
             if let err = err {
                 print("Error updating LAYYY: \(err)", parlay.id)

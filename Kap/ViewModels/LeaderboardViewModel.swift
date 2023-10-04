@@ -69,7 +69,7 @@ class LeaderboardViewModel: ObservableObject {
     }
 }
 
-func getLeaderboardData(leagueID: String, users: [User], bets: [Bet], parlays: [Parlay]) async -> [User] {
+func getLeaderboardData(leagueCode: String, users: [User], bets: [Bet], parlays: [Parlay]) async -> [User] {
     var rankedUsers = [User]()
     
     for user in users {

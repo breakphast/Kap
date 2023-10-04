@@ -39,21 +39,21 @@ class LeagueViewModel: ObservableObject {
             ]
 
             let newLeagueDocument = db.collection("leagues").document()
-            let leagueId = newLeagueDocument.documentID
+            let leagueCode = newLeagueDocument.documentID
 
             newLeagueDocument.setData(data) { error in
                 if let error = error {
                     continuation.resume(throwing: error)
                 } else {
-                    continuation.resume(returning: leagueId) // Return the new league's ID
+                    continuation.resume(returning: leagueCode) // Return the new league's ID
                 }
             }
         }
     }
 
-    func addPlayerToLeague(leagueId: String, playerId: String) async throws {
+    func addPlayerToLeague(leagueCode: String, playerId: String) async throws {
         return try await withCheckedThrowingContinuation { continuation in
-            db.collection("leagues").document(leagueId).updateData([
+            db.collection("leagues").document(leagueCode).updateData([
                 "players": FieldValue.arrayUnion([playerId])
             ]) { error in
                 if let error = error {
@@ -65,9 +65,9 @@ class LeagueViewModel: ObservableObject {
         }
     }
     
-    func addPointsToLeague(leagueId: String, points: Double, forKey key: String) async throws {
+    func addPointsToLeague(leagueCode: String, points: Double, forKey key: String) async throws {
         return try await withCheckedThrowingContinuation { continuation in
-            let docRef = db.collection("leagues").document(leagueId)
+            let docRef = db.collection("leagues").document(leagueCode)
             
             docRef.getDocument { (document, error) in
                 if let error = error {
@@ -94,9 +94,9 @@ class LeagueViewModel: ObservableObject {
         }
     }
     
-    func deleteLeague(leagueId: String) async throws {
+    func deleteLeague(leagueCode: String) async throws {
         return try await withCheckedThrowingContinuation { continuation in
-            db.collection("leagues").document(leagueId).delete() { error in
+            db.collection("leagues").document(leagueCode).delete() { error in
                 if let error = error {
                     continuation.resume(throwing: error)
                 } else {

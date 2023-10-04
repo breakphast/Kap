@@ -17,13 +17,13 @@ struct BetView: View {
     
     private func fetchData() async {
         do {
-            let activeLeagueID = homeViewModel.activeLeagueID ?? ""
+            let activeleagueCode = homeViewModel.activeleagueCode ?? ""
             let currentWeek = homeViewModel.currentWeek
             let currentUserID = authViewModel.currentUser?.id
             
             let bets = homeViewModel.bets.filter {
                 $0.playerID == currentUserID &&
-                $0.leagueID == activeLeagueID &&
+                $0.leagueCode == activeleagueCode &&
                 $0.week == currentWeek
             }
             
@@ -33,7 +33,7 @@ struct BetView: View {
             }.count < maxBets2 && !bets.contains { $0.game.id == bet.game.id }
             
             let fetchedParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
-                .filter { $0.leagueID == activeLeagueID }
+                .filter { $0.leagueCode == activeleagueCode }
             
         } catch {
             print("Error fetching bets: \(error)")
@@ -117,7 +117,7 @@ struct BetView: View {
                     .lineLimit(nil)
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer()
-                Text("(\(bet.game.dayType ?? "") \(homeViewModel.userBets.filter({ $0.game.dayType ?? "" == bet.game.dayType ?? "" && $0.week == homeViewModel.currentWeek && $0.leagueID == homeViewModel.activeLeagueID!}).count)/\(maxBets2))")
+                Text("(\(bet.game.dayType ?? "") \(homeViewModel.userBets.filter({ $0.game.dayType ?? "" == bet.game.dayType ?? "" && $0.week == homeViewModel.currentWeek && $0.leagueCode == homeViewModel.activeleagueCode!}).count)/\(maxBets2))")
                     .font(.caption.bold())
                     .foregroundStyle(.secondary)
             }
@@ -133,9 +133,9 @@ struct BetView: View {
                         return
                     }
                     
-                    let placedBet = BetViewModel().makeBet(for: bet.game, betOption: betOption.id, playerID: authViewModel.currentUser?.id ?? "", week: homeViewModel.currentWeek, leagueID: homeViewModel.activeLeagueID ?? "")
+                    let placedBet = BetViewModel().makeBet(for: bet.game, betOption: betOption.id, playerID: authViewModel.currentUser?.id ?? "", week: homeViewModel.currentWeek, leagueCode: homeViewModel.activeleagueCode ?? "")
                     
-                    if !homeViewModel.userBets.contains(where: { $0.game.documentId == placedBet?.game.documentId && $0.leagueID == homeViewModel.activeLeagueID! }) {
+                    if !homeViewModel.userBets.contains(where: { $0.game.documentId == placedBet?.game.documentId && $0.leagueCode == homeViewModel.activeleagueCode! }) {
                         try await BetViewModel().addBet(bet: placedBet!, playerID: authViewModel.currentUser?.id ?? "")
                                                 
                         isPlaced = true
@@ -280,11 +280,11 @@ struct ParlayView: View {
     
     var buttons: some View {
         Button {
-            let placedParlay = ParlayViewModel().makeParlay(for: parlay.bets, playerID: authViewModel.currentUser?.id ?? "", week: homeViewModel.currentWeek, leagueID: homeViewModel.activeLeagueID ?? "")
+            let placedParlay = ParlayViewModel().makeParlay(for: parlay.bets, playerID: authViewModel.currentUser?.id ?? "", week: homeViewModel.currentWeek, leagueCode: homeViewModel.activeleagueCode ?? "")
             Task {
                 try await ParlayViewModel().addParlay(parlay: placedParlay)
                 parlays.append(placedParlay)
-                ParlayViewModel().updateParlayLeague(parlay: placedParlay, leagueID: homeViewModel.activeLeagueID ?? "")
+                ParlayViewModel().updateParlayLeague(parlay: placedParlay, leagueCode: homeViewModel.activeleagueCode ?? "")
             }
             homeViewModel.activeParlays = []
         } label: {
@@ -348,7 +348,7 @@ struct PlacedBetView: View {
                                 .lineLimit(nil)
                                 .fixedSize(horizontal: false, vertical: true)
                             Spacer()
-                            Text("(\(bet.game.dayType!) \(homeViewModel.bets.filter({ $0.game.dayType! == bet.game.dayType && $0.week == bet.week && $0.playerID == bet.playerID && $0.leagueID == homeViewModel.activeLeagueID!}).count)/\(maxBets))")
+                            Text("(\(bet.game.dayType!) \(homeViewModel.bets.filter({ $0.game.dayType! == bet.game.dayType && $0.week == bet.week && $0.playerID == bet.playerID && $0.leagueCode == homeViewModel.activeleagueCode!}).count)/\(maxBets))")
                                 .font(.caption.bold())
                                 .foregroundStyle(.secondary)
                         }

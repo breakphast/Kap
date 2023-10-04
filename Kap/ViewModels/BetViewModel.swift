@@ -40,9 +40,9 @@ class BetViewModel: ObservableObject {
                 let playerID = data["playerID"] as? String ?? ""
                 let week = data["week"] as? Int ?? 0
                 let foundGame = self.findBetGame(games: games, gameID: game)
-                let leagueID = data["leagueID"] as? String ?? ""
+                let leagueCode = data["leagueID"] as? String ?? ""
                 
-                let bet = Bet(id: id, betOption: betOption, game: foundGame!, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueID: leagueID)
+                let bet = Bet(id: id, betOption: betOption, game: foundGame!, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode)
                 
                 return bet
             }
@@ -83,15 +83,15 @@ class BetViewModel: ObservableObject {
             "selectedTeam": bet.selectedTeam ?? "",
             "playerID": playerID,
             "week": bet.week,
-            "leagueID": bet.leagueID
+            "leagueID": bet.leagueCode
         ]
         
         let _ = try await db.collection("newBets").document(bet.id).setData(newBet)
     }
     
-    func makeBet(for game: Game, betOption: String, playerID: String, week: Int, leagueID: String) -> Bet? {
+    func makeBet(for game: Game, betOption: String, playerID: String, week: Int, leagueCode: String) -> Bet? {
         if let option = game.betOptions.first(where: { $0.id == betOption }) {
-            let bet = Bet(id: betOption + playerID, betOption: betOption, game: game, type: option.betType, result: .pending, odds: option.odds, selectedTeam: option.selectedTeam, playerID: playerID, week: week, leagueID: leagueID)
+            let bet = Bet(id: betOption + playerID, betOption: betOption, game: game, type: option.betType, result: .pending, odds: option.odds, selectedTeam: option.selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode)
             return bet
         }
                                            
@@ -112,10 +112,10 @@ class BetViewModel: ObservableObject {
         }
     }
     
-    func updateBetLeague(bet: Bet, leagueID: String) {
+    func updateBetLeague(bet: Bet, leagueCode: String) {
         let newbet = db.collection("newBets").document(bet.id)
         newbet.updateData([
-            "leagueID": leagueID,
+            "leagueID": leagueCode,
         ]) { err in
             if let err = err {
                 print("Error updating BETTTT: \(err)", bet.id)
@@ -222,7 +222,7 @@ class BetViewModel: ObservableObject {
                 team = game.homeTeam
             }
             
-            let bet = Bet(id: options[i].id, betOption: options[i].id, game: game, type: type, result: .pending, odds: options[i].odds, selectedTeam: team, playerID: "", week: 0, leagueID: "")
+            let bet = Bet(id: options[i].id, betOption: options[i].id, game: game, type: type, result: .pending, odds: options[i].odds, selectedTeam: team, playerID: "", week: 0, leagueCode: "")
             bets.append(bet)
         }
         let betss = [3, 4, 2, 0, 1, 5].compactMap { index in
