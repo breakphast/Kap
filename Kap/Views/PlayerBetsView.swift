@@ -34,18 +34,8 @@ struct PlayerBetsView: View {
             Color("onyx").ignoresSafeArea()
             settledBetsTab
                 .fontDesign(.rounded)
-                .onChange(of: bets.count, perform: { _ in
-                    fetchData()
-                })
         }
         .task {
-            fetchData()
-            for parlay in parlays {
-                if parlay.result == .pending {
-                    BetViewModel().updateParlay(parlay: parlay)
-                }
-            }
-            
             if week == 0 {
                 missedBets = await UserViewModel().fetchAllMissedBets(for: userID, startingWeek: homeViewModel.currentWeek, leagueCode: leagueViewModel.activeLeague?.code ?? "")
                 updateForWeek(0)
@@ -208,7 +198,6 @@ struct PlayerBetsView: View {
                         missedBets = await UserViewModel().fetchMissedBetsCount(for: userID, week: week, leagueCode: leagueViewModel.activeLeague?.code ?? "") ?? 0
                     }
                     
-//                    let fetchedBets = try await BetViewModel().fetchBets(games: homeViewModel.allGames)
                     if week == 0 {
                         bets = homeViewModel.allBets.filter { $0.playerID == userID && $0.leagueCode == leagueViewModel.activeLeague?.code }
                     } else {
@@ -216,16 +205,14 @@ struct PlayerBetsView: View {
                     }
                     ParlayViewModel().fetchParlays(games: homeViewModel.allGames) { parlays in
                         self.parlays = parlays
+                        if week == 0 {
+                            self.parlays = homeViewModel.allParlays.filter { $0.playerID == userID && $0.leagueCode == leagueViewModel.activeLeague?.code }
+                        } else {
+                            self.parlays = homeViewModel.allParlays.filter { $0.playerID == userID && $0.week == weekNumber && $0.leagueCode == leagueViewModel.activeLeague?.code }
+                        }
                     }
-                    if week == 0 {
-                        parlays = parlays.filter { $0.playerID == userID && $0.leagueCode == leagueViewModel.activeLeague?.code }
-                    } else {
-                        parlays = parlays.filter { $0.playerID == userID && $0.week == weekNumber && $0.leagueCode == leagueViewModel.activeLeague?.code }
-                    }
-                    weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: userID, bets: bets, parlays: homeViewModel.allParlays, week: weekNumber )
+                    weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: userID, bets: bets, parlays: parlays, week: weekNumber )
                     totalPoints = await leaderboardViewModel.calculateTotalPointsPlayersView(userID: userID, bets: bets, parlays: parlays, week: homeViewModel.currentWeek, leagueCode: leagueViewModel.activeLeague?.code ?? "")
-                } catch {
-                    print("Error fetching data for week \(weekNumber): \(error)")
                 }
             }
         }
@@ -233,29 +220,6 @@ struct PlayerBetsView: View {
 
     func isEmptyBets(for result: BetResult) -> Bool {
         return bets.filter { $0.result == result }.isEmpty
-    }
-    
-    private func fetchData(_ value: Int? = nil) {
-        Task {
-            do {
-                if week == 0 {
-                    bets = homeViewModel.allBets.filter { $0.playerID == userID && $0.leagueCode == leagueViewModel.activeLeague?.code }
-                } else {
-                    bets = homeViewModel.allBets.filter { $0.playerID == userID && $0.week == week && $0.leagueCode == leagueViewModel.activeLeague?.code }
-                }
-                ParlayViewModel().fetchParlays(games: homeViewModel.allGames) { parlays in
-                    self.parlays = parlays
-                }
-                if week == 0 {
-                    parlays = parlays.filter { $0.playerID == userID && $0.leagueCode == leagueViewModel.activeLeague?.code }
-                } else {
-                    parlays = parlays.filter { $0.playerID == userID && $0.week == week && $0.leagueCode == leagueViewModel.activeLeague?.code }
-                }
-                weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: userID, bets: bets, parlays: homeViewModel.allParlays, week: week)
-            } catch {
-                print("Error fetching bets: \(error)")
-            }
-        }
     }
 }
 

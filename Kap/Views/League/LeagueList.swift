@@ -19,6 +19,8 @@ struct LeagueList: View {
     @State private var defaultLeague = true
     @AppStorage("defaultleagueCode") private var defaultleagueCode = ""
     
+    @State private var clickedLeague = ""
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -74,8 +76,9 @@ struct LeagueList: View {
         .frame(height: 60)
         .overlay(
             RoundedRectangle(cornerRadius: 1)
-                .foregroundStyle(Color("onyx").opacity(0.00001))
+                .foregroundStyle(.onyx.opacity(0.00001))
                 .onTapGesture {
+                    clickedLeague = league.code
                     Task {
                         homeViewModel.activeleagueCode = league.code
                         if league.code == "5555" {
@@ -85,6 +88,8 @@ struct LeagueList: View {
                         }
                         homeViewModel.users = try await UserViewModel().fetchAllUsers()
                         leagueViewModel.activeLeague = homeViewModel.leagues.first(where: {$0.code == league.code})
+                        
+                        
                         BetViewModel().fetchBets(games: homeViewModel.allGames) { bets in
 //                            homeViewModel.allBets = bets
                             homeViewModel.userBets = bets.filter({$0.playerID == authViewModel.currentUser?.id ?? "" && $0.leagueCode == leagueViewModel.activeLeague?.code})
@@ -135,6 +140,7 @@ struct LeagueList: View {
                 Text(league.name)
                     .fontWeight(.bold)
                     .font(.title2)
+                    .foregroundStyle(clickedLeague == league.code ? .lion : .oW)
             }
         }
         .padding(.horizontal)

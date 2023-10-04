@@ -83,7 +83,8 @@ class BetViewModel: ObservableObject {
             "selectedTeam": bet.selectedTeam ?? "",
             "playerID": playerID,
             "week": bet.week,
-            "leagueID": bet.leagueCode
+            "leagueID": bet.leagueCode,
+            "datePlaced": "\(Date())"
         ]
         
         let _ = try await db.collection("newBets").document(bet.id).setData(newBet)

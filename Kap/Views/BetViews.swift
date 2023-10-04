@@ -418,7 +418,7 @@ struct PlacedBetView: View {
             }
         } label: {
             Image(systemName: "ellipsis")
-                .font(.title2.bold())
+                .font(.title.bold())
         }
         .zIndex(1000)
     }
@@ -539,14 +539,14 @@ struct PlacedParlayView: View {
                     }
                 }
             } label: {
-                Label("Delete bet", systemImage: "trash")
+                Label("Delete parlay", systemImage: "trash")
             }
             Button("Cancel") {
                 
             }
         } label: {
             Image(systemName: "ellipsis")
-                .font(.title2.bold())
+                .font(.title.bold())
         }
         .zIndex(1000)
     }
