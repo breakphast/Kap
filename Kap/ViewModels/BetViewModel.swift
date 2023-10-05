@@ -92,7 +92,7 @@ class BetViewModel: ObservableObject {
     
     func makeBet(for game: Game, betOption: String, playerID: String, week: Int, leagueCode: String) -> Bet? {
         if let option = game.betOptions.first(where: { $0.id == betOption }) {
-            let bet = Bet(id: betOption + playerID, betOption: betOption, game: game, type: option.betType, result: .pending, odds: option.odds, selectedTeam: option.selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode)
+            let bet = Bet(id: betOption + playerID + leagueCode, betOption: betOption, game: game, type: option.betType, result: .pending, odds: option.odds, selectedTeam: option.selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode)
             return bet
         }
                                            
