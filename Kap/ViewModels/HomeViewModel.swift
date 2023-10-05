@@ -12,7 +12,7 @@ import FirebaseFirestore
 class HomeViewModel: ObservableObject {
     @Published var users: [User] = []
     @Published var leagues: [League] = []
-    @Published var games: [Game] = []
+    @Published var weekGames: [Game] = []
     @Published var allGames: [Game] = []
     @Published var allBets: [Bet] = []
     @Published var generatedBets: [Bet] = []
@@ -158,7 +158,7 @@ class HomeViewModel: ObservableObject {
     func updateGameDayType(game: Game) {
         let db = Firestore.firestore()
         let newGame = db.collection("nflGames").document(game.documentId)
-        GameService().updateDayType(for: &games)
+        GameService().updateDayType(for: &weekGames)
         newGame.updateData([
             "dayType": DayType(rawValue: game.dayType ?? "Nope")?.rawValue ?? ""
         ]) { err in
@@ -180,43 +180,41 @@ class HomeViewModel: ObservableObject {
                 fetchedUsers = fetchedUsers.filter({ leaguePlayers.contains($0.id!) })
             }
             
-            let fetchedAllGames = try await GameService().fetchGamesFromFirestore()
-            let fetchedGames = fetchedAllGames.chunked(into: 16)[Int(currentWeek) - 1]
-            
+            GameService().fetchGamesFromFirestore { fetchedGames in
+                self.allGames = fetchedGames
+                self.weekGames = fetchedGames.chunked(into: 16)[Int(self.currentWeek) - 1].dropLast(byeGames[self.currentWeek] ?? 0)
+                BetViewModel().fetchBets(games: self.allGames) { bets in
+                    self.allBets = bets
+                }
+                ParlayViewModel().fetchParlays(games: self.allGames) { parlays in
+                    self.allParlays = parlays
+                }
+            }
             
             if updateGames {
                 let updatedGames = try await GameService().getGames()
                 let matchingGames = updatedGames.filter { updatedGame in
-                    fetchedGames.contains { fetchedGame in
+                    weekGames.contains { fetchedGame in
                         return updatedGame.documentId == fetchedGame.documentId
                     }
                 }
                 GameService().addGames(games: matchingGames)
             }
             
-            BetViewModel().fetchBets(games: fetchedAllGames) { bets in
-                self.allBets = bets
-            }
-            ParlayViewModel().fetchParlays(games: fetchedAllGames) { parlays in
-                self.allParlays = parlays
-            }
-            
             DispatchQueue.main.async { [fetchedUsersCopy = fetchedUsers] in
                 self.users = fetchedUsersCopy
                 self.leagues = fetchedLeagues
                 self.activeLeague = fetchedLeagues.first
-                self.allGames = fetchedAllGames
-                self.games = fetchedGames.dropLast(byeGames[self.currentWeek] ?? 0)
                 self.leagueCodes = self.leagues.map { $0.code }
                 
-                GameService().updateDayType(for: &self.games)
-                for game in self.games {
-                    self.updateGameDayType(game: game)
-                }
+//                GameService().updateDayType(for: &self.weekGames)
+//                for game in self.allGames {
+//                    self.updateGameDayType(game: game)
+//                }
             }
             
             if updateScores {
-                await self.updateAndFetch(games: fetchedGames)
+                await self.updateAndFetch(games: weekGames)
             }
         } catch {
             print("Failed with error: \(error.localizedDescription)")
@@ -240,7 +238,7 @@ class HomeViewModel: ObservableObject {
                     newParlays = parlays
                 }
                 
-                self.games = alteredGames
+                self.weekGames = alteredGames
                 for parlay in newParlays {
                     if parlay.result == .pending  {
                         BetViewModel().updateParlay(parlay: parlay)

@@ -104,24 +104,24 @@ struct GameListingView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     
     private var thursdayNightGame: [Game] {
-        Array(homeViewModel.games.prefix(1))
+        Array(homeViewModel.weekGames.prefix(1))
     }
     
     private var sundayGames: [Game] {
-        Array(homeViewModel.games.dropFirst().dropLast(2))
+        Array(homeViewModel.weekGames.dropFirst().dropLast(2))
     }
     
     private var sundayNightGame: [Game] {
-        Array(homeViewModel.games.suffix(2).prefix(1))
+        Array(homeViewModel.weekGames.suffix(2).prefix(1))
     }
     
     private var mondayNightGame: [Game] {
-        Array(homeViewModel.games.suffix(1))
+        Array(homeViewModel.weekGames.suffix(1))
     }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            SectionView(title: "Thursday Night Football", games: homeViewModel.games, first: true, dayType: .tnf)
+            SectionView(title: "Thursday Night Football", games: homeViewModel.weekGames, first: true, dayType: .tnf)
         }
         .padding()
     }
