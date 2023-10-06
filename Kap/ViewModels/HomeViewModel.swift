@@ -189,6 +189,15 @@ class HomeViewModel: ObservableObject {
                 ParlayViewModel().fetchParlays(games: self.allGames) { parlays in
                     self.allParlays = parlays
                 }
+                GameService().updateDayType(for: &self.weekGames)
+                for game in self.allGames {
+                    self.updateGameDayType(game: game)
+                }
+                Task {
+                    if updateScores {
+                        await self.updateAndFetch(games: fetchedGames)
+                    }
+                }
             }
             
             if updateGames {
@@ -207,14 +216,6 @@ class HomeViewModel: ObservableObject {
                 self.activeLeague = fetchedLeagues.first
                 self.leagueCodes = self.leagues.map { $0.code }
                 
-//                GameService().updateDayType(for: &self.weekGames)
-//                for game in self.allGames {
-//                    self.updateGameDayType(game: game)
-//                }
-            }
-            
-            if updateScores {
-                await self.updateAndFetch(games: weekGames)
             }
         } catch {
             print("Failed with error: \(error.localizedDescription)")
@@ -230,11 +231,11 @@ class HomeViewModel: ObservableObject {
             }
             DispatchQueue.main.async {
                 var newBets = [Bet]()
-                BetViewModel().fetchBets(games: self.allGames) { bets in
+                BetViewModel().fetchBets(games: games) { bets in
                     newBets = bets
                 }
                 var newParlays = [Parlay]()
-                ParlayViewModel().fetchParlays(games: self.allGames) { parlays in
+                ParlayViewModel().fetchParlays(games: games) { parlays in
                     newParlays = parlays
                 }
                 

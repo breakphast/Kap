@@ -18,9 +18,9 @@ struct Leaderboard: View {
     @State private var selectedOption = "Overall"
     @State private var points: Int = 0
     @State private var weeklyPoints: [String: Double] = [:]
-    @State private var userID = ""
     @State private var missedCount = [String: Int]()
-    @State private var showUserBets = false
+    @State private var selectedUserId: IdentifiableString?
+    
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -31,6 +31,9 @@ struct Leaderboard: View {
                 menu
             }
             scrollViewContent.padding(.top, 80)
+                .sheet(item: $selectedUserId) { userId in
+                    PlayerBetsView(userID: userId.id)
+                }
         }
         .fontDesign(.rounded)
     }
@@ -74,7 +77,7 @@ struct Leaderboard: View {
                 Text("\(index + 1)")
                     .frame(width: 24)
                     .font(.title3.bold())
-
+                
                 userDetailZStack(index: index, user: user)
             }
         }
@@ -83,23 +86,21 @@ struct Leaderboard: View {
                 .foregroundStyle(Color("onyx").opacity(0.00001))
                 .onTapGesture {
                     withAnimation {
-                        userID = user.id!
-                        showUserBets.toggle()
+                        if let userID = user.id {
+                            selectedUserId = IdentifiableString(id: userID)
+                        }
                     }
-                }
-                .sheet(isPresented: $showUserBets) {
-                    PlayerBetsView(userID: $userID)
                 }
         )
     }
-
+    
     func userDetailZStack(index: Int, user: User) -> some View {
         ZStack(alignment: .leading) {
             userDetailStrokeRoundedRectangle(for: user)
             userDetailHStack(for: user, index: index)
         }
     }
-
+    
     func userDetailStrokeRoundedRectangle(for user: User) -> some View {
         RoundedRectangle(cornerRadius: 20)
             .stroke(determineColor(for: user), lineWidth: authViewModel.currentUser?.id == user.id ? 5 : 3)
@@ -109,10 +110,10 @@ struct Leaderboard: View {
         if authViewModel.currentUser?.id == user.id {
             return Color("lion")
         }
-
+        
         return Color("onyxLightish")
     }
-
+    
     func userDetailHStack(for user: User, index: Int) -> some View {
         
         var points: String = "0"
@@ -150,12 +151,8 @@ struct Leaderboard: View {
         .padding(.trailing, index == 0 ? 1 : 0)
         .padding(.vertical, 12)
     }
-    
-    private func sortUsersByPoints() {
-        homeViewModel.users.sort { user1, user2 in
-            let points1 = weeklyPoints[user1.id!] ?? 0.0
-            let points2 = weeklyPoints[user2.id!] ?? 0.0
-            return points1 > points2
-        }
-    }
+}
+
+struct IdentifiableString: Identifiable {
+    let id: String
 }

@@ -121,7 +121,7 @@ struct GameListingView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            SectionView(title: "Thursday Night Football", games: homeViewModel.weekGames, first: true, dayType: .tnf)
+            SectionView(title: "Thursday Night Football", games: homeViewModel.weekGames.sorted(by: {$0.date < $1.date}), first: true, dayType: .tnf)
         }
         .padding()
     }
