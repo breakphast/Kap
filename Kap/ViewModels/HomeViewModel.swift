@@ -41,11 +41,7 @@ class HomeViewModel: ObservableObject {
     @Published var userParlays = [Parlay]()
     
     static let keys = [
-        "4c43e84559d63c5465e9a1d972be7d2d",
-        "94d568e36a33661ecd2a6585aed7540a",
-        "7015a86284ef3ad5dab00b2bf1f15028",
-        "9cde7c14b69228fe849b0343c750622f",
-        "e7b29662e60b567df0f26156feb6da67"
+        "31a0c05953fcef15b59b2a998fadafd9"
     ]
     
     let formatter: DateFormatter = {
@@ -195,7 +191,7 @@ class HomeViewModel: ObservableObject {
                 }
                 Task {
                     if updateScores {
-                        await self.updateAndFetch(games: fetchedGames)
+                        await self.updateAndFetch(games: self.weekGames)
                     }
                 }
             }
@@ -231,8 +227,18 @@ class HomeViewModel: ObservableObject {
             }
             DispatchQueue.main.async {
                 var newBets = [Bet]()
-                BetViewModel().fetchBets(games: games) { bets in
+                BetViewModel().fetchBets(games: self.allGames) { bets in
                     newBets = bets
+                    for bet in newBets {
+                        let result = bet.game.betResult(for: bet)
+                        if result != .pending {
+                            BetViewModel().updateBetResult(bet: bet, result: result)
+                        } else if result == .push {
+                            BetViewModel().updateBetResult(bet: bet, result: result)
+                        }
+                    }
+                    self.allBets = newBets
+                    
                 }
                 var newParlays = [Parlay]()
                 ParlayViewModel().fetchParlays(games: games) { parlays in

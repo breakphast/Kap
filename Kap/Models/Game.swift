@@ -90,13 +90,6 @@ class Game {
         if let scores = gameElement.scores {
             self.homeScore = scores[0].score
             self.awayScore = scores[1].score
-//            for score in scores {
-//                if score.name == self.homeTeam {
-//                    self.homeScore = score.score
-//                } else if score.name == self.awayTeam {
-//                    self.awayScore = score.score
-//                }
-//            }
         }
         self.homeSpreadPriceTemp = homeSpreadPriceTemp
         self.awaySpreadPriceTemp = awaySpreadPriceTemp
