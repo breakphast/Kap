@@ -411,7 +411,7 @@ struct PlacedBetView: View {
                     deleteActive.toggle()
                     Task {
                         let _ = try await BetViewModel().deleteBet(betID: bet.id)
-                        homeViewModel.allBets.removeAll(where: { $0.id == bet.id })
+                        homeViewModel.userBets.removeAll(where: { $0.id == bet.id })
                     }
                 }
             } label: {
