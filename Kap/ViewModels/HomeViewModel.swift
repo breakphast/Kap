@@ -194,9 +194,10 @@ class HomeViewModel: ObservableObject {
 //            }
 
             let leagueBetsResult = try await BetViewModel().fetchBets(games: fetchedAllGames, leagueCode: league.code)
-
+            let leagueParlaysResult = try await ParlayViewModel().fetchParlays(games: fetchedAllGames).filter({ $0.leagueCode == league.code })
             DispatchQueue.main.async {
                 self.leagueBets = leagueBetsResult
+                self.leagueParlays = leagueParlaysResult
             }
 
             if updateScores {

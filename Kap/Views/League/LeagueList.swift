@@ -84,7 +84,7 @@ struct LeagueList: View {
                         await homeViewModel.fetchEssentials(updateGames: false, updateScores: false, league: league)
                         
                         homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
-                        
+                        homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == authViewModel.currentUser?.id})
                         await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets, parlays: homeViewModel.leagueParlays, week: homeViewModel.currentWeek, leagueCode: league.code)
                         
                         DispatchQueue.main.async {

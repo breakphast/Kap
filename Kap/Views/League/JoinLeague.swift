@@ -128,7 +128,7 @@ struct JoinLeague: View {
                     homeViewModel.userParlays = homeViewModel.allParlays.filter({$0.playerID == authViewModel.currentUser?.id ?? "" && $0.leagueCode == leagueViewModel.activeLeague?.code})
                     homeViewModel.leagueParlays = homeViewModel.allParlays.filter({$0.leagueCode == activeLeague.code})
                 }
-                await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.allBets.filter({$0.leagueCode == leagueViewModel.activeLeague?.code}), parlays: homeViewModel.allParlays.filter({$0.leagueCode == leagueViewModel.activeLeague?.code}), week: homeViewModel.currentWeek, leagueCode: leagueViewModel.activeLeague?.code ?? "")
+                await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets.filter({$0.leagueCode == leagueViewModel.activeLeague?.code}), parlays: homeViewModel.allParlays.filter({$0.leagueCode == leagueViewModel.activeLeague?.code}), week: homeViewModel.currentWeek, leagueCode: leagueViewModel.activeLeague?.code ?? "")
 
                 homeViewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
                 homeViewModel.userLeagues = try await LeagueViewModel().fetchLeaguesContainingID(id: authViewModel.currentUser?.id ?? "")

@@ -228,11 +228,6 @@ struct MyBets: View {
             
             Task {
                 do {
-//                    ParlayViewModel().fetchParlays(games: homeViewModel.allGames) { parlays in
-//                        self.parlays = parlays
-//                    }
-//                    parlays = parlays.filter { $0.playerID == currentUserId && $0.week == weekNumber && $0.leagueCode == homeViewModel.activeleagueCode! }
-                    
                     weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: currentUserId, bets: homeViewModel.userBets, parlays: homeViewModel.userParlays, week: weekNumber)
                 }
             }

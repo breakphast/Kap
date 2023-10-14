@@ -539,7 +539,7 @@ struct PlacedParlayView: View {
                     deleteActive.toggle()
                     Task {
                         let _ = try await ParlayViewModel().deleteParlay(parlayID: parlay.id)
-                        homeViewModel.allParlays.removeAll(where: { $0.id == parlay.id })
+                        homeViewModel.leagueParlays.removeAll(where: { $0.id == parlay.id })
                     }
                 }
             } label: {
