@@ -105,11 +105,11 @@ struct JoinLeague: View {
                 } else {
                     leaderboardViewModel.leagueType = .weekly
                 }
-                homeViewModel.users = try await UserViewModel().fetchAllUsers()
                 homeViewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
 
                 leagueViewModel.activeLeague = homeViewModel.leagues.first(where: {$0.code == code})
                 if let activeLeague = leagueViewModel.activeLeague {
+                    homeViewModel.users = try await UserViewModel().fetchAllUsers(leagueUsers: leagueViewModel.activeLeague?.players ?? [])
                     leagueViewModel.points = activeLeague.points ?? [:]
                     _ = homeViewModel.leagues.first(where: { $0.code == code })?.players
                     if let userID = authViewModel.currentUser?.id {
@@ -122,14 +122,11 @@ struct JoinLeague: View {
                             homeViewModel.users = []
                         }
                     }
-                    BetViewModel().fetchBets(games: homeViewModel.allGames) { bets in
-                        homeViewModel.userBets = bets.filter({$0.playerID == authViewModel.currentUser?.id ?? "" && $0.leagueCode == leagueViewModel.activeLeague?.code})
-                        homeViewModel.leagueBets = bets.filter({$0.leagueCode == activeLeague.code})
-                    }
-                    ParlayViewModel().fetchParlays(games: homeViewModel.allGames) { parlays in
-                        homeViewModel.userParlays = parlays.filter({$0.playerID == authViewModel.currentUser?.id ?? "" && $0.leagueCode == leagueViewModel.activeLeague?.code})
-                        homeViewModel.leagueParlays = parlays.filter({$0.leagueCode == activeLeague.code})
-                    }
+                    homeViewModel.userBets = homeViewModel.allBets.filter({$0.playerID == authViewModel.currentUser?.id ?? "" && $0.leagueCode == leagueViewModel.activeLeague?.code})
+                    homeViewModel.leagueBets = homeViewModel.allBets.filter({$0.leagueCode == activeLeague.code})
+                    
+                    homeViewModel.userParlays = homeViewModel.allParlays.filter({$0.playerID == authViewModel.currentUser?.id ?? "" && $0.leagueCode == leagueViewModel.activeLeague?.code})
+                    homeViewModel.leagueParlays = homeViewModel.allParlays.filter({$0.leagueCode == activeLeague.code})
                 }
                 await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.allBets.filter({$0.leagueCode == leagueViewModel.activeLeague?.code}), parlays: homeViewModel.allParlays.filter({$0.leagueCode == leagueViewModel.activeLeague?.code}), week: homeViewModel.currentWeek, leagueCode: leagueViewModel.activeLeague?.code ?? "")
 

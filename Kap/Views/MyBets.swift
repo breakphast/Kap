@@ -18,8 +18,8 @@ struct MyBets: View {
     
     @State private var weeklyPoints: Double?
     
-    @State private var selectedOption = "Week 5"
-    @State private var week = 5
+    @State private var selectedOption = "Week 6"
+    @State private var week = 6
     
     @State private var selectedSegment = 0
     @State private var live = false
@@ -73,6 +73,9 @@ struct MyBets: View {
             .gesture(swipeGesture)
         }
         .fontDesign(.rounded)
+        .onAppear {
+            selectedOption = "Week \(homeViewModel.currentWeek)"
+        }
     }
     
     var settledBetsTab: some View {
@@ -205,7 +208,7 @@ struct MyBets: View {
             }
         } label: {
             HStack(spacing: 6) {
-                Text(selectedOption.isEmpty ? (homeViewModel.activeLeague?.name ?? "") : selectedOption)
+                Text(selectedOption.isEmpty ? (leagueViewModel.activeLeague!.name) : selectedOption)
                 Image(systemName: "chevron.down")
                     .font(.caption2.bold())
             }

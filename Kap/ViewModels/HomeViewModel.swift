@@ -23,7 +23,7 @@ class HomeViewModel: ObservableObject {
     @Published var leaderboards: [[User]] = [[]]
     
     @Published var activePlayer: Player?
-    @Published var currentWeek = 5
+    @Published var currentWeek = 6
     @Published var activeLeague: League?
     @Published var currentDate: String = ""
     
@@ -53,14 +53,8 @@ class HomeViewModel: ObservableObject {
     init() {
         DispatchQueue.main.async {
             Task {
-                self.currentWeek = try await self.fetchCurrentWeek() ?? 4
+                self.currentWeek = try await self.fetchCurrentWeek() ?? 6
                 print("Week: ", self.currentWeek)
-                await self.originalFetch(updateScores: false, updateGames: false, updateLeaderboards: false)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    withAnimation(.linear) {
-                        self.showingSplashScreen = false
-                    }
-                }
             }
         }
     }
@@ -164,54 +158,60 @@ class HomeViewModel: ObservableObject {
         }
     }
     
-    func fetchEssentials(updateGames: Bool, updateScores: Bool) async {
+    func updateGameWeek(game: Game, week: Int) {
+        let db = Firestore.firestore()
+        let newGame = db.collection("nflGames").document(game.documentId)
+        newGame.updateData([
+            "week": week
+        ]) { err in
+            if let err = err {
+                print("Error updating document: \(err)")
+            }
+        }
+    }
+    
+    func fetchEssentials(updateGames: Bool, updateScores: Bool, league: League) async {
         do {
-            var fetchedUsers = try await UserViewModel().fetchAllUsers()
-//            for user in fetchedUsers {
-//                try await LeagueViewModel().addPlayerToLeague(leagueCode: "nZeeNcgdDZWiya0QFnke", playerId: user.id!)
+            // Safely unwrap league players
+            guard let leaguePlayers = league.players else {
+                print("Error: league players are nil.")
+                return
+            }
+
+            let fetchedUsers = try await UserViewModel().fetchAllUsers(leagueUsers: leaguePlayers)
+            let relevantUsers = fetchedUsers.filter { leaguePlayers.contains($0.id ?? "") }
+
+            let fetchedAllGames = try await GameService().fetchGamesFromFirestore()
+            
+            DispatchQueue.main.async {
+                self.allGames = fetchedAllGames
+                self.weekGames = fetchedAllGames.filter { $0.week == self.currentWeek }
+            }
+
+            // Do we really need to filter and sort for week 7 here or is it just for debugging?
+//            for game in fetchedAllGames.filter({$0.week == 7}).sorted(by: {$0.date < $1.date}) {
+//                self.updateGameDayType(game: game)
 //            }
-            let fetchedLeagues = try await LeagueViewModel().fetchAllLeagues()
-            let leaguePlayers = fetchedLeagues.first(where: { $0.code == activeleagueCode })?.players
-            if let leaguePlayers = leaguePlayers {
-                fetchedUsers = fetchedUsers.filter({ leaguePlayers.contains($0.id!) })
+
+            let leagueBetsResult = try await BetViewModel().fetchBets(games: fetchedAllGames, leagueCode: league.code)
+
+            DispatchQueue.main.async {
+                self.leagueBets = leagueBetsResult
             }
-            
-            GameService().fetchGamesFromFirestore { fetchedGames in
-                self.allGames = fetchedGames
-                self.weekGames = fetchedGames.chunked(into: 16)[Int(self.currentWeek) - 1].dropLast(byeGames[self.currentWeek] ?? 0)
-                BetViewModel().fetchBets(games: self.allGames) { bets in
-                    self.allBets = bets
-                }
-                ParlayViewModel().fetchParlays(games: self.allGames) { parlays in
-                    self.allParlays = parlays
-                }
-                GameService().updateDayType(for: &self.weekGames)
-                for game in self.allGames {
-                    self.updateGameDayType(game: game)
-                }
-                Task {
-                    if updateScores {
-                        await self.updateAndFetch(games: self.weekGames)
-                    }
-                }
+
+            if updateScores {
+                await self.updateAndFetch(games: self.weekGames, league: league)
             }
-            
+
             if updateGames {
-                let updatedGames = try await GameService().getGames()
-                let matchingGames = updatedGames.filter { updatedGame in
-                    weekGames.contains { fetchedGame in
-                        return updatedGame.documentId == fetchedGame.documentId
-                    }
+                for game in self.weekGames {
+                    updateGameWeek(game: game, week: currentWeek)
                 }
-                GameService().addGames(games: matchingGames)
             }
-            
-            DispatchQueue.main.async { [fetchedUsersCopy = fetchedUsers] in
-                self.users = fetchedUsersCopy
-                self.leagues = fetchedLeagues
-                self.activeLeague = fetchedLeagues.first
+
+            DispatchQueue.main.async {
+                self.users = relevantUsers
                 self.leagueCodes = self.leagues.map { $0.code }
-                
             }
         } catch {
             print("Failed with error: \(error.localizedDescription)")
@@ -219,32 +219,16 @@ class HomeViewModel: ObservableObject {
     }
 
     // updates bets based on new game scores and updates game scores
-    func updateAndFetch(games: [Game]) async {
+    func updateAndFetch(games: [Game], league: League) async {
         do {
             let alteredGames = games
             for game in alteredGames {
                 try await GameService().updateGameScore(game: game)
             }
+            let newBets = try await BetViewModel().fetchBets(games: allGames, leagueCode: league.code)
+            let newParlays = try await ParlayViewModel().fetchParlays(games: allGames)
+
             DispatchQueue.main.async {
-                var newBets = [Bet]()
-                BetViewModel().fetchBets(games: self.allGames) { bets in
-                    newBets = bets
-                    for bet in newBets {
-                        let result = bet.game.betResult(for: bet)
-                        if result != .pending {
-                            BetViewModel().updateBetResult(bet: bet, result: result)
-                        } else if result == .push {
-                            BetViewModel().updateBetResult(bet: bet, result: result)
-                        }
-                    }
-                    self.allBets = newBets
-                    
-                }
-                var newParlays = [Parlay]()
-                ParlayViewModel().fetchParlays(games: games) { parlays in
-                    newParlays = parlays
-                }
-                
                 self.weekGames = alteredGames
                 for parlay in newParlays {
                     if parlay.result == .pending  {
@@ -278,7 +262,7 @@ class HomeViewModel: ObservableObject {
                 self.currentDate = activeDate
             }
             
-            await self.fetchEssentials(updateGames: updateGames, updateScores: updateScores)
+//            await self.fetchEssentials(updateGames: updateGames, updateScores: updateScores, league: )
         }
     }
 

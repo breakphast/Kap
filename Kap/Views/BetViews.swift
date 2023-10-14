@@ -10,6 +10,7 @@ import SwiftUI
 struct BetView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
+    @EnvironmentObject var leagueViewModel: LeagueViewModel
     @State var isValid = false
     @State var isPlaced = false
     @Environment(\.dismiss) var dismiss
@@ -32,9 +33,11 @@ struct BetView: View {
                 $0.week == currentWeek
             }.count < maxBets2 && !bets.contains { $0.game.id == bet.game.id }
             
-            ParlayViewModel().fetchParlays(games: homeViewModel.allGames) { parlays in
-                homeViewModel.allParlays = parlays
-            }
+            homeViewModel.allParlays = try await ParlayViewModel().fetchParlays(games: homeViewModel.allGames)
+            homeViewModel.leagueParlays = homeViewModel.allParlays.filter({ $0.leagueCode == leagueViewModel.activeLeague?.code })
+            homeViewModel.userParlays = homeViewModel.allParlays.filter({$0.playerID == authViewModel.currentUser?.id ?? "" && $0.leagueCode == leagueViewModel.activeLeague?.code})
+        } catch {
+            print("Error fetching. BetViews.")
         }
     }
     
@@ -75,7 +78,7 @@ struct BetView: View {
         .task {
             await fetchData()
         }
-        .onChange(of: homeViewModel.allBets.count) { newValue in
+        .onChange(of: homeViewModel.userBets.count) { newValue in
             isValid = homeViewModel.leagueBets.filter({ $0.game.dayType! == bet.game.dayType! && $0.week == homeViewModel.currentWeek }).count < maxBets2 && homeViewModel.userBets.filter({ $0.game.id == bet.game.id }).isEmpty
         }
     }
@@ -135,6 +138,7 @@ struct BetView: View {
                     
                     if !homeViewModel.userBets.contains(where: { $0.game.documentId == placedBet?.game.documentId && $0.leagueCode == homeViewModel.activeleagueCode! }) {
                         try await BetViewModel().addBet(bet: placedBet!, playerID: authViewModel.currentUser?.id ?? "")
+                        homeViewModel.userBets.append(placedBet!)
                                                 
                         isPlaced = true
                         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
@@ -346,7 +350,7 @@ struct PlacedBetView: View {
                                 .lineLimit(nil)
                                 .fixedSize(horizontal: false, vertical: true)
                             Spacer()
-                            Text("(\(bet.game.dayType!) \(homeViewModel.allBets.filter({ $0.game.dayType! == bet.game.dayType && $0.week == bet.week && $0.playerID == bet.playerID && $0.leagueCode == homeViewModel.activeleagueCode!}).count)/\(maxBets))")
+                            Text("(\(bet.game.dayType!) \(homeViewModel.userBets.filter({ $0.game.dayType! == bet.game.dayType && $0.week == bet.week && $0.playerID == bet.playerID && $0.leagueCode == homeViewModel.activeleagueCode!}).count)/\(maxBets))")
                                 .font(.caption.bold())
                                 .foregroundStyle(.secondary)
                         }

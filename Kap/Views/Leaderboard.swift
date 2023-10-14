@@ -59,7 +59,7 @@ struct Leaderboard: View {
     var menu: some View {
         Menu { } label: {
             HStack(spacing: 4) {
-                Text(selectedOption.isEmpty ? (homeViewModel.activeLeague?.name ?? "") : selectedOption)
+                Text(selectedOption.isEmpty ? (leagueViewModel.activeLeague!.name) : selectedOption)
                 Image(systemName: "chevron.down")
                     .font(.caption2.bold())
             }

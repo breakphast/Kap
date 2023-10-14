@@ -15,7 +15,6 @@ struct Login: View {
     @AppStorage("email") private var emailAddy = ""
     @AppStorage("password") private var pass = ""
     @AppStorage("defaultleagueCode") private var defaultleagueCode = ""
-
     @State private var email = UserDefaults.standard.string(forKey: "email")?.lowercased()
     @State private var password = UserDefaults.standard.string(forKey: "password")
     @State private var username = ""
@@ -97,52 +96,54 @@ struct Login: View {
             }
             
             Button {
-                loggingIn = true
-
-                authViewModel.login(withEmail: emailAddy.lowercased(), password: pass) { userID in
-                    guard userID != nil else {
-                        print("Login failed")
-                        loginFailed = true
-                        loggingIn.toggle()
-                        return
-                    }
-                    Task {
-                        homeViewModel.userLeagues = try await LeagueViewModel().fetchLeaguesContainingID(id: userID!)
-                        let fault = UserDefaults.standard.string(forKey: "defaultleagueCode")
-                        guard fault == "" else {
-                            if fault == "5555" {
-                                leaderboardViewModel.leagueType = .season
-                            } else {
-                                leaderboardViewModel.leagueType = .weekly
-                            }
-                            homeViewModel.activeleagueCode = fault
-                            leagueViewModel.activeLeague = homeViewModel.leagues.first(where: {$0.code == fault})
-                            if let activeLeague = leagueViewModel.activeLeague {
-                                leagueViewModel.points = activeLeague.points ?? [:]
-                                let leaguePlayers = homeViewModel.leagues.first(where: { $0.code == activeLeague.code })?.players
-                                if let leaguePlayers = leaguePlayers {
-                                    homeViewModel.users = homeViewModel.users.filter({ leaguePlayers.contains($0.id!) })
-                                }
-                                await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.allBets.filter({$0.leagueCode == leagueViewModel.activeLeague!.code}), parlays: homeViewModel.allParlays.filter({$0.leagueCode == leagueViewModel.activeLeague!.code}), week: homeViewModel.currentWeek, leagueCode: activeLeague.code)
-                                
-                                BetViewModel().fetchBets(games: homeViewModel.allGames) { bets in
-                                    homeViewModel.userBets = bets.filter({ $0.playerID == userID! && $0.leagueCode == activeLeague.code })
-                                    homeViewModel.leagueBets = homeViewModel.allBets.filter({$0.leagueCode == activeLeague.code})
-                                }
-                                ParlayViewModel().fetchParlays(games: homeViewModel.allGames) { parlays in
-                                    homeViewModel.userParlays = parlays.filter({$0.playerID == authViewModel.currentUser?.id ?? "" && $0.leagueCode == leagueViewModel.activeLeague?.code})
-                                    homeViewModel.leagueParlays = parlays.filter({$0.leagueCode == activeLeague.code})
-                                }
-                            }
-
-                            loggedIn = true
+                DispatchQueue.main.async {
+                    loggingIn = true
+                    
+                    authViewModel.login(withEmail: emailAddy.lowercased(), password: pass) { userID in
+                        guard userID != nil else {
+                            print("Login failed")
+                            loginFailed = true
+                            loggingIn.toggle()
                             return
                         }
-                        
-                        if homeViewModel.userLeagues.count > 0 {
-                            showLeagueList.toggle()
-                        } else {
-                            showLeagueIntro.toggle()
+                        Task {
+                            homeViewModel.userLeagues = try await LeagueViewModel().fetchLeaguesContainingID(id: userID!)
+                            
+                            let defaultCode = UserDefaults.standard.string(forKey: "defaultleagueCode")
+                            guard defaultCode == "" else {
+                                if defaultCode == "5555" {
+                                    leaderboardViewModel.leagueType = .season
+                                } else {
+                                    leaderboardViewModel.leagueType = .weekly
+                                }
+                                homeViewModel.activeleagueCode = defaultCode
+                                leagueViewModel.activeLeague = homeViewModel.leagues.first(where: {$0.code == defaultCode})
+                                
+                                if let activeLeague = leagueViewModel.activeLeague {
+                                    await homeViewModel.fetchEssentials(updateGames: false, updateScores: false, league: activeLeague)
+                                    
+                                    leagueViewModel.points = activeLeague.points ?? [:]
+                                    let leaguePlayers = homeViewModel.leagues.first(where: { $0.code == activeLeague.code })?.players
+                                    
+                                    if let leaguePlayers = leaguePlayers {
+                                        homeViewModel.users = homeViewModel.users.filter({ leaguePlayers.contains($0.id!) })
+                                    }
+                                    await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.allBets.filter({$0.leagueCode == leagueViewModel.activeLeague!.code}), parlays: homeViewModel.allParlays.filter({$0.leagueCode == leagueViewModel.activeLeague!.code}), week: homeViewModel.currentWeek, leagueCode: activeLeague.code)
+                                    homeViewModel.userBets = homeViewModel.allBets.filter({ $0.playerID == userID! && $0.leagueCode == activeLeague.code })
+                                    homeViewModel.leagueBets = homeViewModel.allBets.filter({$0.leagueCode == activeLeague.code})
+                                    homeViewModel.userParlays = homeViewModel.allParlays.filter({$0.playerID == authViewModel.currentUser?.id ?? "" && $0.leagueCode == leagueViewModel.activeLeague?.code})
+                                    homeViewModel.leagueParlays = homeViewModel.allParlays.filter({$0.leagueCode == activeLeague.code})
+                                }
+                                
+                                loggedIn = true
+                                return
+                            }
+                            
+                            if homeViewModel.userLeagues.count > 0 {
+                                showLeagueList.toggle()
+                            } else {
+                                showLeagueIntro.toggle()
+                            }
                         }
                     }
                 }
@@ -225,5 +226,5 @@ struct Login: View {
         .autocorrectionDisabled()
         .textInputAutocapitalization(.never)
     }
-
+    
 }

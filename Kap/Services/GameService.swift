@@ -119,66 +119,72 @@ class GameService {
         return formatter.string(from: date)
     }
     
-    func fetchGamesFromFirestore(completion: @escaping ([Game]) -> Void) {
+    func fetchGamesFromFirestore() async throws -> [Game] {
         let db = Firestore.firestore()
-        db.collection("nflGames").addSnapshotListener { (querySnapshot, error) in
-            guard let documents = querySnapshot?.documents else {
-                print("No documents")
-                completion([])
-                return
-            }
+        let querySnapshot = try await db.collection("nflGames").getDocuments()
+        
+        var games = querySnapshot.documents.map { queryDocumentSnapshot -> Game in
+            let data = queryDocumentSnapshot.data()
+            let id = data["id"] as? String ?? ""
+            let homeTeam = data["homeTeam"] as? String ?? ""
+            let awayTeam = data["awayTeam"] as? String ?? ""
+            let dateString = data["date"] as? Timestamp
+            let date2 = convertTimestampToISOString(timestamp: dateString ?? Timestamp(date: Date()))
+            let date = dateFromISOString(date2 ?? "")
+            let homeSpread = data["homeSpread"] as? Double ?? 0.0
+            let awaySpread = data["awaySpread"] as? Double ?? 0.0
+            let homeMoneyLine = data["homeMoneyLine"] as? Int ?? 0
+            let awayMoneyLine = data["awayMoneyLine"] as? Int ?? 0
+            let over = data["over"] as? Double ?? 0.0
+            let under = data["under"] as? Double ?? 0.0
+            let completed = data["completed"] as? Bool ?? false
+            let homeScore = data["homeScore"] as? String
+            let awayScore = data["awayScore"] as? String
+            let homeSpreadPriceTemp = data["homeSpreadPriceTemp"] as? Double ?? 0.0
+            let awaySpreadPriceTemp = data["awaySpreadPriceTemp"] as? Double ?? 0.0
+            let overPriceTemp = data["overPriceTemp"] as? Double ?? 0.0
+            let underPriceTemp = data["underPriceTemp"] as? Double ?? 0.0
+            let dayType = data["dayType"] as? String ?? ""
+            let week = data["week"] as? Int ?? 0
 
-            let games = documents.map { queryDocumentSnapshot -> Game in
-                let data = queryDocumentSnapshot.data()
-                let id = data["id"] as? String ?? ""
-                let homeTeam = data["homeTeam"] as? String ?? ""
-                let awayTeam = data["awayTeam"] as? String ?? ""
-                let dateString = data["date"] as? Timestamp
-                let date2 = self.convertTimestampToISOString(timestamp: dateString ?? Timestamp(date: Date()))
-                let date = self.dateFromISOString(date2 ?? "")
-                let homeSpread = data["homeSpread"] as? Double ?? 0.0
-                let awaySpread = data["awaySpread"] as? Double ?? 0.0
-                let homeMoneyLine = data["homeMoneyLine"] as? Int ?? 0
-                let awayMoneyLine = data["awayMoneyLine"] as? Int ?? 0
-                let over = data["over"] as? Double ?? 0.0
-                let under = data["under"] as? Double ?? 0.0
-                let completed = data["completed"] as? Bool ?? false
-                let homeScore = data["homeScore"] as? String
-                let awayScore = data["awayScore"] as? String
-                let homeSpreadPriceTemp = data["homeSpreadPriceTemp"] as? Double ?? 0.0
-                let awaySpreadPriceTemp = data["awaySpreadPriceTemp"] as? Double ?? 0.0
-                let overPriceTemp = data["overPriceTemp"] as? Double ?? 0.0
-                let underPriceTemp = data["underPriceTemp"] as? Double ?? 0.0
-                let dayType = data["dayType"] as? String ?? ""
-                
-                let gameElement = GameElement(id: id, sportKey: .americanfootball_nfl, sportTitle: .NFL, commenceTime: date ?? Date(), completed: completed, homeTeam: homeTeam, awayTeam: awayTeam, bookmakers: nil, scores: [Score(name: homeTeam, score: homeScore ?? ""), Score(name: awayTeam, score: awayScore ?? "")])
-                
-                let game = Game(gameElement: gameElement)
-                game.homeSpread = homeSpread
-                game.awaySpread = awaySpread
-                game.homeMoneyLine = homeMoneyLine
-                game.awayMoneyLine = awayMoneyLine
-                game.over = over
-                game.under = under
-                game.homeSpreadPriceTemp = homeSpreadPriceTemp
-                game.awaySpreadPriceTemp = awaySpreadPriceTemp
-                game.overPriceTemp = overPriceTemp
-                game.underPriceTemp = underPriceTemp
-                game.completed = completed
-                game.dayType = dayType
-                
-                if let betOptionsDictionaries = data["betOptions"] as? [[String: Any]] {
-                    game.betOptions = betOptionsDictionaries.compactMap {
-                        BetOption.fromDictionary($0, game: game)
-                    }
+            let gameElement = GameElement(id: id, sportKey: .americanfootball_nfl, sportTitle: .NFL, commenceTime: date ?? Date(), completed: completed, homeTeam: homeTeam, awayTeam: awayTeam, bookmakers: nil, scores: [Score(name: homeTeam, score: homeScore ?? ""), Score(name: awayTeam, score: awayScore ?? "")])
+            
+            let game = Game(gameElement: gameElement)
+            game.homeSpread = homeSpread
+            game.awaySpread = awaySpread
+            game.homeMoneyLine = homeMoneyLine
+            game.awayMoneyLine = awayMoneyLine
+            game.over = over
+            game.under = under
+            game.homeSpreadPriceTemp = homeSpreadPriceTemp
+            game.awaySpreadPriceTemp = awaySpreadPriceTemp
+            game.overPriceTemp = overPriceTemp
+            game.underPriceTemp = underPriceTemp
+            game.completed = completed
+            game.dayType = dayType
+            game.week = week
+            
+            if let betOptionsDictionaries = data["betOptions"] as? [[String: Any]] {
+                game.betOptions = betOptionsDictionaries.compactMap {
+                    BetOption.fromDictionary($0, game: game)
                 }
-                
-                return game
             }
-            completion(games)
+            return game
         }
+        
+        games.sort(by: { $0.date < $1.date })
+//        for game in games {
+//            for (week, dateRange) in nflSeason2023 {
+//                if dateRange.contains(game.date) {
+//                    HomeViewModel().updateGameWeek(game: game, week: week)
+//                    
+//                    break  // Break out of the loop once the week is found
+//                }
+//            }
+//        }
+        
+        return games
     }
-
     
     func dateFromISOString(_ string: String) -> Date? {
         let formatter = DateFormatter()
@@ -413,4 +419,31 @@ let byeGames: [Int: Int] = [
     13: 3,
     14: 1,
     15: 0
+]
+
+func date(from string: String) -> Date {
+    let dateFormatter = DateFormatter()
+    dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+    return dateFormatter.date(from: string)!
+}
+
+let nflSeason2023: [Int: ClosedRange<Date>] = [
+    1: date(from: "2023-09-07T00:00:00Z")...date(from: "2023-09-11T23:59:59Z"),
+    2: date(from: "2023-09-14T00:00:00Z")...date(from: "2023-09-18T23:59:59Z"),
+    3: date(from: "2023-09-21T00:00:00Z")...date(from: "2023-09-25T23:59:59Z"),
+    4: date(from: "2023-09-28T00:00:00Z")...date(from: "2023-10-02T23:59:59Z"),
+    5: date(from: "2023-10-05T00:00:00Z")...date(from: "2023-10-09T23:59:59Z"),
+    6: date(from: "2023-10-12T00:00:00Z")...date(from: "2023-10-16T23:59:59Z"),
+    7: date(from: "2023-10-19T00:00:00Z")...date(from: "2023-10-23T23:59:59Z"),
+    8: date(from: "2023-10-26T00:00:00Z")...date(from: "2023-10-30T23:59:59Z"),
+    9: date(from: "2023-11-02T00:00:00Z")...date(from: "2023-11-06T23:59:59Z"),
+    10: date(from: "2023-11-09T00:00:00Z")...date(from: "2023-11-13T23:59:59Z"),
+    11: date(from: "2023-11-16T00:00:00Z")...date(from: "2023-11-20T23:59:59Z"),
+    12: date(from: "2023-11-23T00:00:00Z")...date(from: "2023-11-27T23:59:59Z"),
+    13: date(from: "2023-11-30T00:00:00Z")...date(from: "2023-12-04T23:59:59Z"),
+    14: date(from: "2023-12-07T00:00:00Z")...date(from: "2023-12-11T23:59:59Z"),
+    15: date(from: "2023-12-14T00:00:00Z")...date(from: "2023-12-18T23:59:59Z"),
+    16: date(from: "2023-12-21T00:00:00Z")...date(from: "2023-12-25T23:59:59Z"),
+    17: date(from: "2023-12-28T00:00:00Z")...date(from: "2023-12-31T23:59:59Z"),
+    18: date(from: "2024-01-06T00:00:00Z")...date(from: "2024-01-07T23:59:59Z")
 ]

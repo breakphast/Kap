@@ -12,10 +12,14 @@ class UserViewModel: ObservableObject {
     @Published var user: User?
     private var db = Firestore.firestore()
     
-    func fetchAllUsers() async throws -> [User] {
-        let querySnapshot = try await db.collection("users").getDocuments()
+    func fetchAllUsers(leagueUsers: [String]) async throws -> [User] {
+        guard leagueUsers.count <= 10 else {
+            throw CustomError.exceededLimit
+        }
 
-        var users: [User] = querySnapshot.documents.compactMap { document in
+        let querySnapshot = try await db.collection("users").whereField("id", in: leagueUsers).getDocuments()
+
+        let users: [User] = querySnapshot.documents.compactMap { document in
             try? document.data(as: User.self)
         }
         
@@ -26,17 +30,14 @@ class UserViewModel: ObservableObject {
             }
         }
 
-        // Refetch the users after updating avatars
-        let updatedQuerySnapshot = try await db.collection("users").getDocuments()
-        users = updatedQuerySnapshot.documents.compactMap { document in
-            try? document.data(as: User.self)
-        }
-
+        // No need to refetch users since we've updated the avatars in place
         return users
     }
 
+    enum CustomError: Error {
+        case exceededLimit
+    }
 
-    // Fetch user details
     func fetchUser(userId: String) {
         let docRef = db.collection("users").document(userId)
 

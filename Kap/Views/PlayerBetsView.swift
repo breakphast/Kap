@@ -31,6 +31,15 @@ struct PlayerBetsView: View {
             settledBetsTab
                 .fontDesign(.rounded)
         }
+        .task {
+            do {
+                if week == 0 {
+                    missedBets = await UserViewModel().fetchAllMissedBets(for: userID, startingWeek: homeViewModel.currentWeek, leagueCode: leagueViewModel.activeLeague?.code ?? "")
+                } else {
+                    missedBets = await UserViewModel().fetchMissedBetsCount(for: userID, week: week, leagueCode: leagueViewModel.activeLeague?.code ?? "") ?? 0
+                }
+            }
+        }
     }
 
     var settledBetsTab: some View {
@@ -57,7 +66,7 @@ struct PlayerBetsView: View {
                 HStack(alignment: .center) {
                     menu
                     VStack(alignment: .leading) {
-                        Text(week == 0 ? totalPoints.twoDecimalString : calculateWeeklyPoints(pointsWeek: week).twoDecimalString)
+                        Text((calculateWeeklyPoints(pointsWeek: week) + Double(missedBets * -10)).twoDecimalString)
                             .font(.system(.caption2, design: .rounded, weight: .bold))
                         Text("Missing Bets: \(missedBets)")
                             .font(.system(.caption2, design: .rounded, weight: .bold))
@@ -79,11 +88,23 @@ struct PlayerBetsView: View {
     }
     
     func calculateWeeklyPoints(pointsWeek: Int) -> Double {
-        let filteredBetsPoints = homeViewModel.leagueBets.filter { $0.week == pointsWeek && $0.result != .push && $0.result != .pending && $0.playerID == userID }
-            .reduce(0) { $0 + ($1.points ?? 0) }
-        let parlayPoints = homeViewModel.leagueParlays.filter({$0.playerID == userID && $0.week == pointsWeek && $0.result != .push && $0.result != .pending && $0.playerID == userID}).reduce(0) { $0 + ($1.totalPoints) }
-        
-        return filteredBetsPoints + parlayPoints
+        if pointsWeek == 0 {
+            var pts = 0.0
+            for i in 1...homeViewModel.currentWeek {
+                let filteredBetsPoints = homeViewModel.leagueBets.filter { $0.week == i && $0.result != .push && $0.result != .pending && $0.playerID == userID }
+                    .reduce(0) { $0 + ($1.points ?? 0) }
+                let parlayPoints = homeViewModel.leagueParlays.filter({$0.playerID == userID && $0.week == i && $0.result != .push && $0.result != .pending && $0.playerID == userID}).reduce(0) { $0 + ($1.totalPoints) }
+                
+                pts += (filteredBetsPoints + parlayPoints)
+            }
+            return pts
+        } else {
+            let filteredBetsPoints = homeViewModel.leagueBets.filter { $0.week == pointsWeek && $0.result != .push && $0.result != .pending && $0.playerID == userID }
+                .reduce(0) { $0 + ($1.points ?? 0) }
+            let parlayPoints = homeViewModel.leagueParlays.filter({$0.playerID == userID && $0.week == pointsWeek && $0.result != .push && $0.result != .pending && $0.playerID == userID}).reduce(0) { $0 + ($1.totalPoints) }
+            
+            return filteredBetsPoints + parlayPoints
+        }
     }
 
     func parlaySection(settled: Bool) -> some View {
@@ -158,16 +179,18 @@ struct PlayerBetsView: View {
             Button("Overall") {
                 week = homeViewModel.currentWeek
                 selectedOption = "Overall"
+                updateForWeek(week)
             }
             ForEach(1...homeViewModel.currentWeek, id: \.self) { weekNumber in
                 Button("Week \(weekNumber)", action: {
                     week = weekNumber
                     selectedOption = "Week \(weekNumber)"
+                    updateForWeek(week)
                 })
             }
         } label: {
             HStack(spacing: 6) {
-                Text(selectedOption.isEmpty ? (homeViewModel.activeLeague?.name ?? "") : selectedOption)
+                Text(selectedOption.isEmpty ? (leagueViewModel.activeLeague!.name) : selectedOption)
                 Image(systemName: "chevron.down")
                     .font(.caption2.bold())
             }
@@ -179,38 +202,17 @@ struct PlayerBetsView: View {
         .zIndex(1000)
     }
 
-//    private func updateForWeek(_ weekNumber: Int) {
-//        withAnimation {
-//            selectedOption = weekNumber == 0 ? "Overall" : "Week \(weekNumber)"
-//            week = weekNumber
-//            
-//            Task {
-//                do {
-//                    if week == 0 {
-//                        missedBets = await UserViewModel().fetchAllMissedBets(for: userID, startingWeek: homeViewModel.currentWeek, leagueCode: leagueViewModel.activeLeague?.code ?? "")
-//                    } else {
-//                        missedBets = await UserViewModel().fetchMissedBetsCount(for: userID, week: week, leagueCode: leagueViewModel.activeLeague?.code ?? "") ?? 0
-//                    }
-//                    
-//                    if week == 0 {
-//                        bets = homeViewModel.allBets.filter { $0.playerID == userID && $0.leagueCode == leagueViewModel.activeLeague?.code }
-//                    } else {
-//                        bets = homeViewModel.allBets.filter { $0.playerID == userID && $0.week == weekNumber && $0.leagueCode == leagueViewModel.activeLeague?.code }
-//                    }
-//                    ParlayViewModel().fetchParlays(games: homeViewModel.allGames) { parlays in
-//                        self.parlays = parlays
-//                        if week == 0 {
-//                            self.parlays = homeViewModel.allParlays.filter { $0.playerID == userID && $0.leagueCode == leagueViewModel.activeLeague?.code }
-//                        } else {
-//                            self.parlays = homeViewModel.allParlays.filter { $0.playerID == userID && $0.week == weekNumber && $0.leagueCode == leagueViewModel.activeLeague?.code }
-//                        }
-//                    }
-//                    weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: userID, bets: bets, parlays: parlays, week: weekNumber )
-//                    totalPoints = await leaderboardViewModel.calculateTotalPointsPlayersView(userID: userID, bets: bets, parlays: parlays, week: homeViewModel.currentWeek, leagueCode: leagueViewModel.activeLeague?.code ?? "")
-//                }
-//            }
-//        }
-//    }
+    private func updateForWeek(_ weekNumber: Int) {
+        Task {
+            do {
+                if week == 0 {
+                    missedBets = await UserViewModel().fetchAllMissedBets(for: userID, startingWeek: homeViewModel.currentWeek, leagueCode: leagueViewModel.activeLeague?.code ?? "")
+                } else {
+                    missedBets = await UserViewModel().fetchMissedBetsCount(for: userID, week: week, leagueCode: leagueViewModel.activeLeague?.code ?? "") ?? 0
+                }
+            }
+        }
+    }
 
     func isEmptyBets(for result: BetResult) -> Bool {
         return homeViewModel.leagueBets.filter { $0.result == result && $0.playerID == userID && $0.week == week }.isEmpty

@@ -34,11 +34,6 @@ struct Board: View {
                                 }
                                 .onTapGesture {
                                     leagueViewModel.activeLeague = nil
-                                    Task {
-                                        ParlayViewModel().fetchParlays(games: homeViewModel.allGames) { parlays in
-                                            homeViewModel.allParlays = parlays
-                                        }
-                                    }
                                 }
                             }
                             
