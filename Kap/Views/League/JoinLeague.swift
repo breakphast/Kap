@@ -105,37 +105,27 @@ struct JoinLeague: View {
                 } else {
                     leaderboardViewModel.leagueType = .weekly
                 }
-                homeViewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
-
-                leagueViewModel.activeLeague = homeViewModel.leagues.first(where: {$0.code == code})
-                if let activeLeague = leagueViewModel.activeLeague {
-                    homeViewModel.users = try await UserViewModel().fetchAllUsers(leagueUsers: leagueViewModel.activeLeague?.players ?? [])
-                    leagueViewModel.points = activeLeague.points ?? [:]
-                    _ = homeViewModel.leagues.first(where: { $0.code == code })?.players
-                    if let userID = authViewModel.currentUser?.id {
-                        try await LeagueViewModel().addPlayerToLeague(leagueCode: activeLeague.id!, playerId: userID)
-                        homeViewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
-                        let leaguePlayers = homeViewModel.leagues.first(where: { $0.code == activeLeague.code })?.players
-                        if let leaguePlayers = leaguePlayers {
-                            homeViewModel.users = homeViewModel.users.filter({ leaguePlayers.contains($0.id!) })
-                        } else {
-                            homeViewModel.users = []
-                        }
+                if let userID = authViewModel.currentUser?.id {
+                    homeViewModel.leagues = try await leagueViewModel.fetchAllLeagues()
+                    let league = homeViewModel.leagues.first(where: {$0.code == code})
+                    try await leagueViewModel.addPlayerToLeague(leagueCode: league?.id ?? "", playerId: userID)
+                    homeViewModel.userLeagues = try await LeagueViewModel().fetchLeaguesContainingID(id: userID)
+                    if let activeLeague = homeViewModel.userLeagues.first(where: {$0.code == code}) {
+                        await homeViewModel.fetchEssentials(updateGames: false, updateScores: false, league: activeLeague)
+                        homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
+                        homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == authViewModel.currentUser?.id})
+                        await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets, parlays: homeViewModel.leagueParlays, week: homeViewModel.currentWeek, leagueCode: code)
+                        leagueViewModel.activeLeague = activeLeague
                     }
-                    homeViewModel.userBets = homeViewModel.allBets.filter({$0.playerID == authViewModel.currentUser?.id ?? "" && $0.leagueCode == leagueViewModel.activeLeague?.code})
-                    homeViewModel.leagueBets = homeViewModel.allBets.filter({$0.leagueCode == activeLeague.code})
                     
-                    homeViewModel.userParlays = homeViewModel.allParlays.filter({$0.playerID == authViewModel.currentUser?.id ?? "" && $0.leagueCode == leagueViewModel.activeLeague?.code})
-                    homeViewModel.leagueParlays = homeViewModel.allParlays.filter({$0.leagueCode == activeLeague.code})
-                }
-                await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets.filter({$0.leagueCode == leagueViewModel.activeLeague?.code}), parlays: homeViewModel.allParlays.filter({$0.leagueCode == leagueViewModel.activeLeague?.code}), week: homeViewModel.currentWeek, leagueCode: leagueViewModel.activeLeague?.code ?? "")
-
-                homeViewModel.leagues = try await LeagueViewModel().fetchAllLeagues()
-                homeViewModel.userLeagues = try await LeagueViewModel().fetchLeaguesContainingID(id: authViewModel.currentUser?.id ?? "")
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                    validCode = true
-                    loggedIn = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        homeViewModel.activeleagueCode = code
+                        if let activeLeague = leagueViewModel.activeLeague {
+                            leagueViewModel.points = activeLeague.points ?? [:]
+                        }
+                        validCode = true
+                        loggedIn = true
+                    }
                 }
             }
         } else {

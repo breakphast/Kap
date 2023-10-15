@@ -130,10 +130,8 @@ struct Login: View {
                                     }
                                     await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets.filter({$0.leagueCode == leagueViewModel.activeLeague!.code}), parlays: homeViewModel.leagueParlays.filter({$0.leagueCode == leagueViewModel.activeLeague!.code}), week: homeViewModel.currentWeek, leagueCode: activeLeague.code)
                                     
-                                    homeViewModel.userBets = homeViewModel.allBets.filter({ $0.playerID == userID! && $0.leagueCode == activeLeague.code })
-                                    homeViewModel.leagueBets = homeViewModel.allBets.filter({$0.leagueCode == activeLeague.code})
-                                    homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == authViewModel.currentUser?.id ?? "" && $0.leagueCode == leagueViewModel.activeLeague?.code})
-                                    homeViewModel.leagueParlays = homeViewModel.allParlays.filter({$0.leagueCode == activeLeague.code})
+                                    homeViewModel.userBets = homeViewModel.leagueBets.filter({ $0.playerID == userID })
+                                    homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == userID })
                                 }
                                 
                                 loggedIn = true

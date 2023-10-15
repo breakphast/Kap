@@ -20,6 +20,7 @@ struct LeagueList: View {
     @AppStorage("defaultleagueCode") private var defaultleagueCode = ""
     
     @State private var clickedLeague = ""
+    @State private var showingSplashScreen = false
     
     var body: some View {
         NavigationStack {
@@ -67,6 +68,22 @@ struct LeagueList: View {
                 }
             }
         }
+        .overlay(
+            Group {
+                if showingSplashScreen {
+                    Color("lion")
+                        .ignoresSafeArea()
+                        .overlay(
+                            Image("loch")
+                                .resizable()
+                                .frame(width: 200, height: 200)
+                                .scaledToFit()
+                                .clipShape(RoundedRectangle(cornerRadius: 40))
+                                .shadow(radius: 4)
+                        )
+                }
+            }
+        )
     }
     
     func leagueRow(index: Int, league: League) -> some View {
@@ -79,14 +96,13 @@ struct LeagueList: View {
                 .foregroundStyle(.onyx.opacity(0.00001))
                 .onTapGesture {
                     Task {
+                        showingSplashScreen.toggle()
                         let activeLeague = homeViewModel.userLeagues.first(where: {$0.code == league.code})
                         
                         await homeViewModel.fetchEssentials(updateGames: false, updateScores: false, league: league)
                         
                         homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
                         homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == authViewModel.currentUser?.id})
-                        await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets, parlays: homeViewModel.leagueParlays, week: homeViewModel.currentWeek, leagueCode: league.code)
-                        
                         DispatchQueue.main.async {
                             leagueViewModel.activeLeague = activeLeague
                             homeViewModel.activeleagueCode = league.code
@@ -99,10 +115,13 @@ struct LeagueList: View {
                             if let activeLeague = leagueViewModel.activeLeague {
                                 leagueViewModel.points = activeLeague.points ?? [:]
                             }
+                            Task {
+                                await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets, parlays: homeViewModel.leagueParlays, week: homeViewModel.currentWeek, leagueCode: league.code)
 
-                            loggedIn = true
-                            if defaultLeague {
-                                defaultleagueCode = league.code
+                                loggedIn = true
+                                if defaultLeague {
+                                    defaultleagueCode = league.code
+                                }
                             }
                         }
                     }

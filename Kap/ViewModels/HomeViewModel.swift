@@ -55,6 +55,7 @@ class HomeViewModel: ObservableObject {
             Task {
                 self.currentWeek = try await self.fetchCurrentWeek() ?? 6
                 print("Week: ", self.currentWeek)
+                try await self.leagues = LeagueViewModel().fetchAllLeagues()
             }
         }
     }
@@ -74,99 +75,6 @@ class HomeViewModel: ObservableObject {
         static func from(dayDifference: Int) -> Week {
             let currentWeekNumber = (dayDifference / 7) + 1
             return Week(rawValue: currentWeekNumber) ?? .week1
-        }
-    }
-    
-    func setCurrentWeek() {
-        let calendar = Calendar.current
-        
-        // Finding the most recent Sunday
-        let components = calendar.dateComponents([.year, .month, .day, .weekday], from: Date())
-        let daysSinceSunday = (components.weekday! - calendar.firstWeekday + 7) % 7
-        guard let lastSunday = calendar.date(byAdding: .day, value: -daysSinceSunday, to: Date()) else {
-            return
-        }
-        
-        guard let diffDays = calendar.dateComponents([.day], from: lastSunday, to: Date()).day else {
-            return
-        }
-        
-        currentWeek = Week.from(dayDifference: diffDays).rawValue
-    }
-    
-    // Converting fetchDate to use async/await
-    func fetchDate() async throws -> String? {
-        let db = Firestore.firestore()
-        let docRef = db.collection("activeDate").document("NBpRBsY6JHSQj87MdTd5")
-        
-        let document = try await docRef.getDocument()
-        if document.exists {
-            return document.data()?["currentDate"] as? String
-        }
-        return nil
-    }
-    
-    func fetchCurrentWeek() async throws -> Int? {
-        let db = Firestore.firestore()
-        let docRef = db.collection("currentWeek").document("currentWeek")
-        
-        let document = try await docRef.getDocument()
-        if document.exists {
-            return document.data()?["week"] as? Int
-        }
-        return nil
-    }
-    
-    func deleteGame(game: Game) async throws {
-        let db = Firestore.firestore()
-        return try await withCheckedThrowingContinuation { continuation in
-            db.collection("mlbGames").document(game.documentId).delete() { error in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                } else {
-                    continuation.resume()
-                    print("Deleted bet \(game.documentId)")
-                }
-            }
-        }
-    }
-    
-    func updateDate(date: String) {
-        let db = Firestore.firestore()
-        let newbet = db.collection("activeDate").document("NBpRBsY6JHSQj87MdTd5")
-        newbet.updateData([
-            "currentDate": date
-        ]) { err in
-            if let err = err {
-                print("Error updating document: \(err)")
-            } else {
-                print("Document successfully updated")
-            }
-        }
-    }
-    
-    func updateGameDayType(game: Game) {
-        let db = Firestore.firestore()
-        let newGame = db.collection("nflGames").document(game.documentId)
-        GameService().updateDayType(for: &weekGames)
-        newGame.updateData([
-            "dayType": DayType(rawValue: game.dayType ?? "Nope")?.rawValue ?? ""
-        ]) { err in
-            if let err = err {
-                print("Error updating document: \(err)")
-            }
-        }
-    }
-    
-    func updateGameWeek(game: Game, week: Int) {
-        let db = Firestore.firestore()
-        let newGame = db.collection("nflGames").document(game.documentId)
-        newGame.updateData([
-            "week": week
-        ]) { err in
-            if let err = err {
-                print("Error updating document: \(err)")
-            }
         }
     }
     
@@ -264,6 +172,99 @@ class HomeViewModel: ObservableObject {
             }
             
 //            await self.fetchEssentials(updateGames: updateGames, updateScores: updateScores, league: )
+        }
+    }
+    
+    func setCurrentWeek() {
+        let calendar = Calendar.current
+        
+        // Finding the most recent Sunday
+        let components = calendar.dateComponents([.year, .month, .day, .weekday], from: Date())
+        let daysSinceSunday = (components.weekday! - calendar.firstWeekday + 7) % 7
+        guard let lastSunday = calendar.date(byAdding: .day, value: -daysSinceSunday, to: Date()) else {
+            return
+        }
+        
+        guard let diffDays = calendar.dateComponents([.day], from: lastSunday, to: Date()).day else {
+            return
+        }
+        
+        currentWeek = Week.from(dayDifference: diffDays).rawValue
+    }
+    
+    // Converting fetchDate to use async/await
+    func fetchDate() async throws -> String? {
+        let db = Firestore.firestore()
+        let docRef = db.collection("activeDate").document("NBpRBsY6JHSQj87MdTd5")
+        
+        let document = try await docRef.getDocument()
+        if document.exists {
+            return document.data()?["currentDate"] as? String
+        }
+        return nil
+    }
+    
+    func fetchCurrentWeek() async throws -> Int? {
+        let db = Firestore.firestore()
+        let docRef = db.collection("currentWeek").document("currentWeek")
+        
+        let document = try await docRef.getDocument()
+        if document.exists {
+            return document.data()?["week"] as? Int
+        }
+        return nil
+    }
+    
+    func deleteGame(game: Game) async throws {
+        let db = Firestore.firestore()
+        return try await withCheckedThrowingContinuation { continuation in
+            db.collection("mlbGames").document(game.documentId).delete() { error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                    print("Deleted bet \(game.documentId)")
+                }
+            }
+        }
+    }
+    
+    func updateDate(date: String) {
+        let db = Firestore.firestore()
+        let newbet = db.collection("activeDate").document("NBpRBsY6JHSQj87MdTd5")
+        newbet.updateData([
+            "currentDate": date
+        ]) { err in
+            if let err = err {
+                print("Error updating document: \(err)")
+            } else {
+                print("Document successfully updated")
+            }
+        }
+    }
+    
+    func updateGameDayType(game: Game) {
+        let db = Firestore.firestore()
+        let newGame = db.collection("nflGames").document(game.documentId)
+        GameService().updateDayType(for: &weekGames)
+        newGame.updateData([
+            "dayType": DayType(rawValue: game.dayType ?? "Nope")?.rawValue ?? ""
+        ]) { err in
+            if let err = err {
+                print("Error updating document: \(err)")
+            }
+        }
+    }
+    
+    func updateGameWeek(game: Game, week: Int) {
+        let db = Firestore.firestore()
+        let newGame = db.collection("nflGames").document(game.documentId)
+        newGame.updateData([
+            "week": week
+        ]) { err in
+            if let err = err {
+                print("Error updating document: \(err)")
+            }
         }
     }
 
