@@ -53,14 +53,13 @@ struct Leaderboard: View {
     
     var menu: some View {
         Menu {
-            Text("Overall")
-                .onTapGesture {
-                    selectedOption = "Overall"
-                    week = nil
-                    Task {
-                        await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets, parlays: homeViewModel.leagueParlays, week: homeViewModel.currentWeek, leagueCode: leagueViewModel.activeLeague?.code ?? "")
-                    }
+            Button("Overall", action: {
+                selectedOption = "Overall"
+                week = nil
+                Task {
+                    await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets, parlays: homeViewModel.leagueParlays, week: homeViewModel.currentWeek, leagueCode: leagueViewModel.activeLeague?.code ?? "")
                 }
+            })
             ForEach(1...homeViewModel.currentWeek, id: \.self) { weekNumber in
                 Button("Week \(weekNumber)", action: {
                     selectedOption = "Week \(weekNumber)"
@@ -127,12 +126,10 @@ struct Leaderboard: View {
     }
     
     func userDetailHStack(for user: User, index: Int) -> some View {
-        
         var points: String = "0"
         
         if let userId = user.id {
-            let week = homeViewModel.currentWeek
-            points = leaderboardViewModel.usersPoints[userId]?[week]?.twoDecimalString ?? "0"
+            points = leaderboardViewModel.usersPoints[userId]?[week ?? homeViewModel.currentWeek]?.twoDecimalString ?? "0"
         }
         
         return HStack {

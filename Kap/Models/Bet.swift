@@ -117,7 +117,7 @@ class Bet {
         }
         
         if bet.result == .loss {
-            points = -basePoints
+            points = -10
         }
         
         return points

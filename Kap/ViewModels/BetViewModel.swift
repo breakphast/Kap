@@ -162,7 +162,7 @@ class BetViewModel: ObservableObject {
         if let newPoints = bet.points {
             newbet.updateData([
                 "result": result.rawValue,
-                "points": result == .push ? 0 : newPoints * (result == .win ? 1 : -1)
+                "points": result == .push ? 0 : result == .loss ? -10 : newPoints
             ]) { err in
                 if let err = err {
                     print("Error updating BET RESULT: \(err)")

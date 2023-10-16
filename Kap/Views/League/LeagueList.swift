@@ -20,6 +20,7 @@ struct LeagueList: View {
     @AppStorage("defaultleagueCode") private var defaultleagueCode = ""
     
     @State private var clickedLeague = ""
+    @State private var leagueToggle = false
     @State private var showingSplashScreen = false
     
     var body: some View {
@@ -97,6 +98,9 @@ struct LeagueList: View {
                 .onTapGesture {
                     Task {
                         showingSplashScreen.toggle()
+                        withAnimation {
+                            leagueToggle.toggle()
+                        }
                         let activeLeague = homeViewModel.userLeagues.first(where: {$0.code == league.code})
                         
                         await homeViewModel.fetchEssentials(updateGames: false, updateScores: false, league: league)
@@ -132,7 +136,7 @@ struct LeagueList: View {
     func leagueDetailZStack(index: Int, league: League) -> some View {
         ZStack(alignment: .leading) {
             RoundedRectangle(cornerRadius: 20)
-                .stroke(Color.lion, lineWidth: 3)
+                .stroke(leagueToggle ? .leader : Color.lion, lineWidth: leagueToggle ? 6 : 3)
             leagueDetailHStack(for: league, index: index)
         }
     }

@@ -120,10 +120,14 @@ struct MyBets: View {
             (settled ? bet.result != .pending : bet.result == .pending) && bet.week == week
         }
         
+        Task {
+            weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: userID, bets: homeViewModel.userBets, parlays: homeViewModel.userParlays, week: week)
+        }
+        
         if !filteredBets.isEmpty {
             return AnyView(
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("POINTS: \(calculateWeeklyPoints().twoDecimalString)")
+                    Text("POINTS: \((weeklyPoints ?? 0).twoDecimalString)")
                         .font(.system(.caption, design: .rounded, weight: .bold))
                         .padding(.leading, 1)
                     
@@ -136,21 +140,22 @@ struct MyBets: View {
                             .background(Color("lion"))
                             .cornerRadius(8)
                         Spacer()
-                        Text("• LIVE")
-                            .font(.caption.bold())
-                            .foregroundColor(.oW)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 10)
-                            .background(Color.redd)
-                            .overlay(liveBets.isEmpty ? .gray.opacity(0.8) : .clear)
-                            .cornerRadius(8)
-                            .sheet(isPresented: $live) {
-                                LiveBetsView(bets: liveBets, users: homeViewModel.users)
-                            }
-                            .onTapGesture {
-                                live.toggle()
-                            }
-                            .disabled(liveBets.isEmpty)
+                        if !liveBets.isEmpty {
+                            Text("• LIVE")
+                                .font(.caption.bold())
+                                .foregroundColor(.oW)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 10)
+                                .background(Color.redd)
+                                .overlay(liveBets.isEmpty ? .gray.opacity(0.8) : .clear)
+                                .cornerRadius(8)
+                                .sheet(isPresented: $live) {
+                                    LiveBetsView(bets: liveBets, users: homeViewModel.users)
+                                }
+                                .onTapGesture {
+                                    live.toggle()
+                                }
+                        }
                     }
                     
                     ForEach(filteredBets.sorted(by: { $0.game.date < $1.game.date }), id: \.id) { bet in
