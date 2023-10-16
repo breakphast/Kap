@@ -20,7 +20,7 @@ struct Leaderboard: View {
     @State private var weeklyPoints: [String: Double] = [:]
     @State private var missedCount = [String: Int]()
     @State private var selectedUserId: IdentifiableString?
-    
+    @State private var week: Int?
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -52,7 +52,25 @@ struct Leaderboard: View {
     }
     
     var menu: some View {
-        Menu { } label: {
+        Menu {
+            Text("Overall")
+                .onTapGesture {
+                    selectedOption = "Overall"
+                    week = nil
+                    Task {
+                        await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets, parlays: homeViewModel.leagueParlays, week: homeViewModel.currentWeek, leagueCode: leagueViewModel.activeLeague?.code ?? "")
+                    }
+                }
+            ForEach(1...homeViewModel.currentWeek, id: \.self) { weekNumber in
+                Button("Week \(weekNumber)", action: {
+                    selectedOption = "Week \(weekNumber)"
+                    week = weekNumber
+                    Task {
+                        await leaderboardViewModel.generateWeeklyUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets.filter({$0.week == weekNumber}), parlays: homeViewModel.leagueParlays.filter({$0.week == weekNumber}), week: weekNumber, leagueCode: leagueViewModel.activeLeague?.code ?? "")
+                    }
+                })
+            }
+        } label: {
             HStack(spacing: 4) {
                 Text(selectedOption.isEmpty ? (leagueViewModel.activeLeague!.name) : selectedOption)
                 Image(systemName: "chevron.down")
@@ -63,7 +81,6 @@ struct Leaderboard: View {
             .padding(.vertical, 8)
             .background(RoundedRectangle(cornerRadius: 10).fill(Color.gray.opacity(0.2)))
         }
-        .disabled(true)
     }
     
     func userRow(index: Int, user: User) -> some View {

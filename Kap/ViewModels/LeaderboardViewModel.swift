@@ -49,6 +49,34 @@ class LeaderboardViewModel: ObservableObject {
             }
         }
     }
+    
+    func generateWeeklyUserPoints(users: [User], bets: [Bet], parlays: [Parlay], week: Int, leagueCode: String) async {
+        for user in users {
+            if let userID = user.id {
+                func calculateTotalPoints() async -> Double {
+                    var totalPoints = 0.0
+                    let points = await getWeeklyPoints(userID: userID, bets: bets, parlays: parlays, week: week)
+                    let missingBets = await UserViewModel().fetchMissedBetsCount(for: userID, week: week, leagueCode: leagueCode) ?? 0
+                    let pointsWithMissingBets = points + Double(missingBets) * -10.0
+                    totalPoints += pointsWithMissingBets
+                    return totalPoints
+                }
+                
+                let totalPoints = await calculateTotalPoints()
+                
+                DispatchQueue.main.async {
+                    self.usersPoints[userID] = [week: totalPoints]
+                }
+            }
+        }
+        DispatchQueue.main.async {
+            self.rankedUsers = users.sorted { user1, user2 in
+                let points1 = self.usersPoints[user1.id ?? ""]?[week] ?? 0.0
+                let points2 = self.usersPoints[user2.id ?? ""]?[week] ?? 0.0
+                return points1 > points2
+            }
+        }
+    }
 
     func getWeeklyPoints(userID: String, bets: [Bet], parlays: [Parlay], week: Int) async -> Double {
         let filteredBets = bets.filter({ $0.playerID == userID && $0.week == week && $0.result != .pending && $0.result != .push })
