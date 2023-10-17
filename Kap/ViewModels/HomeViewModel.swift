@@ -246,7 +246,7 @@ class HomeViewModel: ObservableObject {
     func updateGameDayType(game: Game) {
         let db = Firestore.firestore()
         let newGame = db.collection("nflGames").document(game.documentId)
-        GameService().updateDayType(for: &weekGames)
+//        GameService().updateDayType(for: &weekGames)
         newGame.updateData([
             "dayType": DayType(rawValue: game.dayType ?? "Nope")?.rawValue ?? ""
         ]) { err in

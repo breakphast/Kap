@@ -120,7 +120,7 @@ struct Login: View {
                                 leagueViewModel.activeLeague = homeViewModel.leagues.first(where: {$0.code == defaultCode})
                                 
                                 if let activeLeague = leagueViewModel.activeLeague {
-                                    await homeViewModel.fetchEssentials(updateGames: false, updateScores: false, league: activeLeague)
+                                    await homeViewModel.fetchEssentials(updateGames: false, updateScores: true, league: activeLeague)
                                     
                                     leagueViewModel.points = activeLeague.points ?? [:]
                                     let leaguePlayers = homeViewModel.leagues.first(where: { $0.code == activeLeague.code })?.players
