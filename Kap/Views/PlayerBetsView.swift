@@ -18,7 +18,7 @@ struct PlayerBetsView: View {
 
     @Environment(\.dismiss) private var dismiss
 
-    @State private var selectedOption = "Overall"
+    @State private var selectedOption = ""
     @State private var week = 0
     @State private var missedBets = 0
     @State private var totalPoints: Double = 0
@@ -32,13 +32,9 @@ struct PlayerBetsView: View {
                 .fontDesign(.rounded)
         }
         .task {
-            do {
-                if week == 0 {
-                    missedBets = await UserViewModel().fetchAllMissedBets(for: userID, startingWeek: homeViewModel.currentWeek, leagueCode: leagueViewModel.activeLeague?.code ?? "")
-                } else {
-                    missedBets = await UserViewModel().fetchMissedBetsCount(for: userID, week: week, leagueCode: leagueViewModel.activeLeague?.code ?? "") ?? 0
-                }
-            }
+            week = homeViewModel.currentWeek
+            selectedOption = "Week \(week)"
+            missedBets = await UserViewModel().fetchMissedBetsCount(for: userID, week: week == 0 ? homeViewModel.currentWeek : week, leagueCode: leagueViewModel.activeLeague?.code ?? "") ?? 0
         }
     }
 

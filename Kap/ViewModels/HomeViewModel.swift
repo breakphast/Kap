@@ -23,7 +23,7 @@ class HomeViewModel: ObservableObject {
     @Published var leaderboards: [[User]] = [[]]
     
     @Published var activePlayer: Player?
-    @Published var currentWeek = 6
+    @Published var currentWeek = 7
     @Published var activeLeague: League?
     @Published var currentDate: String = ""
     
@@ -41,7 +41,7 @@ class HomeViewModel: ObservableObject {
     @Published var userParlays = [Parlay]()
     
     static let keys = [
-        "31a0c05953fcef15b59b2a998fadafd9"
+        "ab5225bbaeaf25a64a6bba6340bdf2e2"
     ]
     
     let formatter: DateFormatter = {
@@ -53,7 +53,7 @@ class HomeViewModel: ObservableObject {
     init() {
         DispatchQueue.main.async {
             Task {
-                self.currentWeek = try await self.fetchCurrentWeek() ?? 6
+                self.currentWeek = try await self.fetchCurrentWeek() ?? 7
                 print("Week: ", self.currentWeek)
                 try await self.leagues = LeagueViewModel().fetchAllLeagues()
             }
@@ -113,8 +113,17 @@ class HomeViewModel: ObservableObject {
             }
 
             if updateGames {
+                let updatedGames = try await GameService().getGames()
+                let matchingGames = updatedGames.filter { updatedGame in
+                    self.weekGames.contains { fetchedGame in
+                        return updatedGame.documentId == fetchedGame.documentId
+                    }
+                }
+                
+                GameService().addGames(games: matchingGames, week: currentWeek)
+                
                 for game in self.weekGames {
-                    updateGameWeek(game: game, week: currentWeek)
+                    updateGameDayType(game: game, games: self.weekGames)
                 }
             }
 
@@ -243,15 +252,19 @@ class HomeViewModel: ObservableObject {
         }
     }
     
-    func updateGameDayType(game: Game) {
+    func updateGameDayType(game: Game, games: [Game]) {
         let db = Firestore.firestore()
-        let newGame = db.collection("nflGames").document(game.documentId)
-//        GameService().updateDayType(for: &weekGames)
-        newGame.updateData([
-            "dayType": DayType(rawValue: game.dayType ?? "Nope")?.rawValue ?? ""
-        ]) { err in
-            if let err = err {
-                print("Error updating document: \(err)")
+        var newGames = games
+        let gameDocument = db.collection("nflGames").document(game.documentId)
+        GameService().updateDayType(for: &newGames)
+        
+        if let gameType = newGames.first(where: {$0.documentId == game.documentId})?.dayType {
+            gameDocument.updateData([
+                "dayType": gameType
+            ]) { err in
+                if let err = err {
+                    print("Error updating document: \(err)")
+                }
             }
         }
     }

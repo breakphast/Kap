@@ -195,14 +195,15 @@ class GameService {
     }
     
     
-    func addGames(games: [Game]) {
+    func addGames(games: [Game], week: Int) {
         let db = Firestore.firestore()
         let ref = db.collection("nflGames")
         
-        let sortedGames = games.sorted { $0.date < $1.date }
+        var sortedGames = games.sorted { $0.date < $1.date }
         
         for game in sortedGames {
             let gameId = game.documentId
+            game.week = week
             ref.document(gameId).setData(game.dictionary) { error in
                 if let error = error {
                     print("Error adding game: \(error.localizedDescription)")
@@ -280,7 +281,7 @@ class GameService {
     func updateDayType(for games: inout [Game]) {
         for game in games.prefix(1) {
             game.betOptions = game.betOptions.map { bet in
-                game.dayType = bet.dayType?.rawValue ?? "NAHHH"
+                game.dayType = bet.dayType?.rawValue
                 let mutableBet = bet
                 mutableBet.dayType = .tnf
                 mutableBet.maxBets = 1
@@ -291,7 +292,7 @@ class GameService {
         let sundayAfternoonGamesCount = games.count - 3
         for game in games.dropFirst().prefix(sundayAfternoonGamesCount) {
             game.betOptions = game.betOptions.map { bet in
-                game.dayType = bet.dayType?.rawValue ?? "NAHHH"
+                game.dayType = bet.dayType?.rawValue
                 let mutableBet = bet
                 mutableBet.dayType = .sunday
                 mutableBet.maxBets = 7
@@ -301,7 +302,7 @@ class GameService {
         
         for game in games.dropFirst(sundayAfternoonGamesCount + 1).prefix(1) {
             game.betOptions = game.betOptions.map { bet in
-                game.dayType = bet.dayType?.rawValue ?? "NAHHH"
+                game.dayType = bet.dayType?.rawValue
                 let mutableBet = bet
                 mutableBet.dayType = .snf
                 mutableBet.maxBets = 1
@@ -311,7 +312,7 @@ class GameService {
         
         for game in games.suffix(1) {
             game.betOptions = game.betOptions.map { bet in
-                game.dayType = bet.dayType?.rawValue ?? "NAHHH"
+                game.dayType = bet.dayType?.rawValue
                 let mutableBet = bet
                 mutableBet.dayType = .mnf
                 mutableBet.maxBets = 1
@@ -402,7 +403,9 @@ extension Game {
             "homeSpreadPriceTemp": homeSpreadPriceTemp,
             "awaySpreadPriceTemp": awaySpreadPriceTemp,
             "overPriceTemp": overPriceTemp,
-            "underPriceTemp": underPriceTemp
+            "underPriceTemp": underPriceTemp,
+            "week": week ?? 0,
+            "dayType": dayType ?? ""
         ]
     }
 }

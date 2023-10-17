@@ -18,8 +18,8 @@ struct MyBets: View {
     
     @State private var weeklyPoints: Double?
     
-    @State private var selectedOption = "Week 6"
-    @State private var week = 6
+    @State private var selectedOption = "Week 7"
+    @State private var week = 7
     
     @State private var selectedSegment = 0
     @State private var live = false
@@ -75,6 +75,7 @@ struct MyBets: View {
         .fontDesign(.rounded)
         .onAppear {
             selectedOption = "Week \(homeViewModel.currentWeek)"
+            week = homeViewModel.currentWeek
         }
     }
     

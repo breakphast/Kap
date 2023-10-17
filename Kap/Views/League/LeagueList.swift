@@ -103,7 +103,7 @@ struct LeagueList: View {
                         }
                         let activeLeague = homeViewModel.userLeagues.first(where: {$0.code == league.code})
                         
-                        await homeViewModel.fetchEssentials(updateGames: false, updateScores: true, league: league)
+                        await homeViewModel.fetchEssentials(updateGames: false, updateScores: false, league: league)
                         
                         homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
                         homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == authViewModel.currentUser?.id})
