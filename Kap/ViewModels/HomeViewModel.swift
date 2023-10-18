@@ -94,12 +94,19 @@ class HomeViewModel: ObservableObject {
             DispatchQueue.main.async {
                 self.allGames = fetchedAllGames
                 self.weekGames = fetchedAllGames.filter { $0.week == self.currentWeek }
+//                
+//                for i in 7...16 {
+//                    print("Starting...")
+//                    var weekGamess = fetchedAllGames.filter { $0.week == i }.sorted(by: {$0.date < $1.date})
+//                    GameService().updateDayType(for: &weekGamess)
+//                    for game in weekGamess {
+//                        if let dayType = game.dayType {
+//                            self.updateGameDayType(game: game)
+//                            print(game.documentId, "should have updated")
+//                        }
+//                    }
+//                }
             }
-
-            // Do we really need to filter and sort for week 7 here or is it just for debugging?
-//            for game in fetchedAllGames.filter({$0.week == 7}).sorted(by: {$0.date < $1.date}) {
-//                self.updateGameDayType(game: game)
-//            }
 
             let leagueBetsResult = try await BetViewModel().fetchBets(games: fetchedAllGames, leagueCode: league.code)
             let leagueParlaysResult = try await ParlayViewModel().fetchParlays(games: fetchedAllGames).filter({ $0.leagueCode == league.code })
@@ -122,9 +129,9 @@ class HomeViewModel: ObservableObject {
                 
                 GameService().addGames(games: matchingGames, week: currentWeek)
                 
-                for game in self.weekGames {
-                    updateGameDayType(game: game, games: self.weekGames)
-                }
+//                for game in self.weekGames {
+//                    updateGameDayType(game: game)
+//                }
             }
 
             DispatchQueue.main.async {
@@ -252,22 +259,20 @@ class HomeViewModel: ObservableObject {
         }
     }
     
-    func updateGameDayType(game: Game, games: [Game]) {
-        let db = Firestore.firestore()
-        var newGames = games
-        let gameDocument = db.collection("nflGames").document(game.documentId)
-        GameService().updateDayType(for: &newGames)
-        
-        if let gameType = newGames.first(where: {$0.documentId == game.documentId})?.dayType {
-            gameDocument.updateData([
-                "dayType": gameType
-            ]) { err in
-                if let err = err {
-                    print("Error updating document: \(err)")
-                }
-            }
-        }
-    }
+//    func updateGameDayType(game: Game) {
+//        let db = Firestore.firestore()
+//        let gameDocument = db.collection("nflGames").document(game.documentId)
+//
+//        if let gameDayType = game.dayType {
+//            gameDocument.updateData([
+//                "dayType": gameDayType
+//            ]) { err in
+//                if let err = err {
+//                    print("Error updating document: \(err)")
+//                }
+//            }
+//        }
+//    }
     
     func updateGameWeek(game: Game, week: Int) {
         let db = Firestore.firestore()

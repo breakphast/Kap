@@ -199,7 +199,7 @@ class GameService {
         let db = Firestore.firestore()
         let ref = db.collection("nflGames")
         
-        var sortedGames = games.sorted { $0.date < $1.date }
+        let sortedGames = games.sorted { $0.date < $1.date }
         
         for game in sortedGames {
             let gameId = game.documentId
@@ -278,48 +278,50 @@ class GameService {
         return data
     }
     
-    func updateDayType(for games: inout [Game]) {
-        for game in games.prefix(1) {
-            game.betOptions = game.betOptions.map { bet in
-                game.dayType = bet.dayType?.rawValue
-                let mutableBet = bet
-                mutableBet.dayType = .tnf
-                mutableBet.maxBets = 1
-                return mutableBet
-            }
-        }
-        
-        let sundayAfternoonGamesCount = games.count - 3
-        for game in games.dropFirst().prefix(sundayAfternoonGamesCount) {
-            game.betOptions = game.betOptions.map { bet in
-                game.dayType = bet.dayType?.rawValue
-                let mutableBet = bet
-                mutableBet.dayType = .sunday
-                mutableBet.maxBets = 7
-                return mutableBet
-            }
-        }
-        
-        for game in games.dropFirst(sundayAfternoonGamesCount + 1).prefix(1) {
-            game.betOptions = game.betOptions.map { bet in
-                game.dayType = bet.dayType?.rawValue
-                let mutableBet = bet
-                mutableBet.dayType = .snf
-                mutableBet.maxBets = 1
-                return mutableBet
-            }
-        }
-        
-        for game in games.suffix(1) {
-            game.betOptions = game.betOptions.map { bet in
-                game.dayType = bet.dayType?.rawValue
-                let mutableBet = bet
-                mutableBet.dayType = .mnf
-                mutableBet.maxBets = 1
-                return mutableBet
-            }
-        }
-    }
+//    func updateDayType(for games: inout [Game]) {
+//        for game in games.prefix(1) {
+//            print(game.awayTeam)
+//            
+//            game.betOptions = game.betOptions.map { bet in
+//                game.dayType = DayType.tnf.rawValue
+//                let mutableBet = bet
+//                mutableBet.dayType = .tnf
+//                mutableBet.maxBets = 1
+//                return mutableBet
+//            }
+//        }
+//        
+//        let sundayAfternoonGamesCount = games.count - 3
+//        for game in games.dropFirst().prefix(sundayAfternoonGamesCount) {
+//            game.betOptions = game.betOptions.map { bet in
+//                game.dayType = DayType.sunday.rawValue
+//                let mutableBet = bet
+//                mutableBet.dayType = .sunday
+//                mutableBet.maxBets = 7
+//                return mutableBet
+//            }
+//        }
+//        
+//        for game in games.dropFirst(sundayAfternoonGamesCount + 1).prefix(1) {
+//            game.betOptions = game.betOptions.map { bet in
+//                game.dayType = DayType.snf.rawValue
+//                let mutableBet = bet
+//                mutableBet.dayType = .snf
+//                mutableBet.maxBets = 1
+//                return mutableBet
+//            }
+//        }
+//        
+//        for game in games.suffix(1) {
+//            game.betOptions = game.betOptions.map { bet in
+//                game.dayType = DayType.mnf.rawValue
+//                let mutableBet = bet
+//                mutableBet.dayType = .mnf
+//                mutableBet.maxBets = 1
+//                return mutableBet
+//            }
+//        }
+//    }
     
     func deleteCollection(collectionName: String, batchSize: Int = 100, completion: @escaping (Error?) -> Void) {
         // Get a reference to the collection
