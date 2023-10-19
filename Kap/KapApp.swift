@@ -14,6 +14,7 @@ struct KapApp: App {
     @StateObject private var authViewModel = AuthViewModel()
     @StateObject private var leagueViewModel = LeagueViewModel()
     @StateObject private var leaderboardViewModel = LeaderboardViewModel()
+    let persistenceController = PersistenceController.shared
 
     init() {
         FirebaseApp.configure()
@@ -26,6 +27,7 @@ struct KapApp: App {
                 .environmentObject(authViewModel)
                 .environmentObject(leagueViewModel)
                 .environmentObject(leaderboardViewModel)
+                .environment(\.managedObjectContext, persistenceController.container.viewContext)
         }
     }
 }

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import CoreData
 
 struct Login: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
@@ -25,6 +26,30 @@ struct Login: View {
     @State private var showLeagueIntro = false
     @State var loggingIn = false
     @Binding var loggedIn: Bool
+    @Environment(\.managedObjectContext) private var viewContext
+    
+    @FetchRequest(
+            entity: BetModel.entity(), // Replace 'YourEntity' with your actual entity class
+            sortDescriptors: [
+                NSSortDescriptor(keyPath: \BetModel.name, ascending: true) // Assume 'name' is a field of your entity
+            ]
+        ) var entities: FetchedResults<BetModel>
+    
+    func addEntity() {
+        // Create a new instance of the CoreData entity
+        let newEntity = BetModel(context: viewContext) // replace 'YourEntity' with your entity's class name
+        
+        // Set the attributes of your entity
+        newEntity.name = "Example Name" // and other necessary attributes
+        
+        // Save the context
+        do {
+            try viewContext.save()
+        } catch {
+            // Handle the error appropriately
+            print("Error saving entity: \(error)")
+        }
+    }
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -158,6 +183,17 @@ struct Login: View {
             .autocorrectionDisabled()
             .autocapitalization(.none)
             .textInputAutocapitalization(.never)
+            
+            Button(action: addEntity) {
+                Text("Add Entity")
+                    .foregroundColor(.white) // style as needed
+                    .padding() // and other view modifiers as needed
+            }
+            
+            if let ok = entities.first {
+                Text(ok.name ?? "")
+            }
+
         }
         .frame(maxHeight: .infinity, alignment: .center)
         .padding(.horizontal)

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import CoreData
 
 struct Board: View {
     let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 3)
@@ -13,6 +14,14 @@ struct Board: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var leagueViewModel: LeagueViewModel
     @Environment(\.dismiss) var dismiss
+    @Environment(\.managedObjectContext) private var viewContext
+    
+    @FetchRequest(
+            entity: GameModel.entity(), // Replace 'YourEntity' with your actual entity class
+            sortDescriptors: [
+                NSSortDescriptor(keyPath: \GameModel.homeTeam, ascending: true) // Assume 'name' is a field of your entity
+            ]
+        ) var entities: FetchedResults<GameModel>
     
     var body: some View {
         NavigationStack {
@@ -90,7 +99,103 @@ struct Board: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
+            .task {
+//                doThis(games: homeViewModel.weekGames, in: viewContext)
+            }
+        }
+    }
+    func deleteAllData(ofEntity entityName: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        let managedObjectContext = PersistenceController.shared.container.viewContext
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
+        let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
 
+        do {
+            try managedObjectContext.execute(batchDeleteRequest)
+            try managedObjectContext.save()
+            completion(.success(()))
+        } catch {
+            completion(.failure(error))
+        }
+    }
+    func doThis(games: [Game], in context: NSManagedObjectContext) {
+        for game in games {
+            let gameModel = GameModel(context: context) // Now we are using the passed-in context
+            
+            // Set the attributes on the GameModel from the Game
+            gameModel.id = game.id
+            gameModel.homeTeam = game.homeTeam
+            gameModel.awayTeam = game.awayTeam
+            gameModel.date = game.date
+            gameModel.homeSpread = game.homeSpread
+            gameModel.awaySpread = game.awaySpread
+            gameModel.homeMoneyLine = Int16(game.homeMoneyLine)
+            gameModel.awayMoneyLine = Int16(game.awayMoneyLine)
+            gameModel.over = game.over
+            gameModel.under = game.under
+            gameModel.completed = game.completed
+            gameModel.homeScore = game.homeScore
+            gameModel.awayScore = game.awayScore
+            gameModel.homeSpreadPriceTemp = game.homeSpreadPriceTemp
+            gameModel.awaySpreadPriceTemp = game.awaySpreadPriceTemp
+            gameModel.overPriceTemp = game.overPriceTemp
+            gameModel.underPriceTemp = game.underPriceTemp
+            gameModel.dayType = game.dayType
+            gameModel.week = Int16(game.week ?? 0)
+            
+            
+            for betOption in game.betOptions {
+                let betOptionModel = BetOptionModel(context: context)
+                betOptionModel.id = betOption.id
+                betOptionModel.odds = Int16(betOption.odds)
+                betOptionModel.spread = betOption.spread ?? 0
+                betOptionModel.over = betOption.over
+                betOptionModel.under = betOption.under
+                betOptionModel.betType = betOption.betType.rawValue
+                betOptionModel.selectedTeam = betOption.selectedTeam
+                betOptionModel.confirmBet = betOption.confirmBet
+                betOptionModel.maxBets = Int16(betOption.maxBets ?? 0)
+                betOptionModel.game = gameModel
+                
+//                let formattedOdds = betOption.odds > 0 ? "+\(betOption.odds)" : "\(betOption.odds)"
+//                switch betOption.dayType?.rawValue {
+//                case "Spread":
+//                    if let spread = betOption.spread {
+//                        let formattedSpread = spread > 0 ? "+\(spread)" : "\(spread)"
+//                        betOptionModel.betString = "\(formattedSpread)\n\(formattedOdds)"
+//                    } else {
+//                        betOptionModel.betString = ""
+//                    }
+//                case "Moneyline":
+//                    betOptionModel.betString = formattedOdds
+//                case "Over":
+//                    betOptionModel.betString = "O \(betOption.over)\n\(formattedOdds)"
+//                case "Under":
+//                    betOptionModel.betString = "U \(betOption.under)\n\(formattedOdds)"
+//                default:
+//                    print("Nothing")
+//                }
+                
+                betOptionModel.betString = betOption.betString
+                
+                gameModel.addToBetOptions(betOptionModel)
+                do {
+                    try context.save()
+                    print("saved", entities.count)
+                } catch {
+                    // Handle the error appropriately
+                    print("Error saving context: \(error)")
+                }
+                
+            }
+            print(gameModel)
+            
+            // Save the context after adding new objects or making changes
+            do {
+                try context.save()
+            } catch {
+                // Handle the error appropriately
+                print("Error saving context: \(error)")
+            }
         }
     }
 }
@@ -177,6 +282,9 @@ struct GameRow: View {
     let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 3)
     @EnvironmentObject var homeViewModel: HomeViewModel
     
+    @State private var newGame: GameModel? // Use @State to manage the property
+    @Environment(\.managedObjectContext) private var viewContext
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(convertDateToDesiredFormat(game.date))
@@ -193,11 +301,11 @@ struct GameRow: View {
                     }
                     Text("@")
                     HStack {
-                        Image("\(nflLogos[game.homeTeam] ?? "")")
+                        Image("\(nflLogos[newGame?.homeTeam ?? "lollllll"] ?? "")")
                             .resizable()
                             .scaledToFit()
                             .frame(width: 30)
-                        Text(nflTeams[game.homeTeam] ?? "")
+                        Text(nflTeams[newGame?.homeTeam ?? "lollllll"] ?? "")
                     }
                 }
                 .font(.caption.bold())
@@ -225,6 +333,13 @@ struct GameRow: View {
                 .frame(maxWidth: UIScreen.main.bounds.width / 1.75)
             }
         }
+        .onAppear {
+            // The onAppear is called when the view is about to show, and here you can safely access @Environment properties
+            if newGame == nil { // Check to prevent redundant work
+                newGame = DataManager(context: viewContext).convertToGameModel(games: [game], in: viewContext).first
+            }
+        }
+        
 //        .padding(.bottom, 20)
     }
 }

@@ -9,6 +9,7 @@ import SwiftUI
 import Firebase
 import FirebaseFirestore
 import FirebaseFirestoreSwift
+import CoreData
 
 struct ScoreElement: Codable {
     let id: String
@@ -46,7 +47,8 @@ class GameService {
     var games: [Game] = []
     private var db = Firestore.firestore()
     let mock = false
-    
+    @Environment(\.managedObjectContext) private var viewContext
+
     func updateGameScore(game: Game) async throws {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
