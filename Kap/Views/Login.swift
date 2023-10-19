@@ -29,11 +29,11 @@ struct Login: View {
     @Environment(\.managedObjectContext) private var viewContext
     
     @FetchRequest(
-            entity: BetModel.entity(), // Replace 'YourEntity' with your actual entity class
+            entity: GameModel.entity(), // Replace 'YourEntity' with your actual entity class
             sortDescriptors: [
-                NSSortDescriptor(keyPath: \BetModel.name, ascending: true) // Assume 'name' is a field of your entity
+                NSSortDescriptor(keyPath: \GameModel.homeTeam, ascending: true) // Assume 'name' is a field of your entity
             ]
-        ) var entities: FetchedResults<BetModel>
+        ) var entities: FetchedResults<GameModel>
     
     func addEntity() {
         // Create a new instance of the CoreData entity
@@ -133,7 +133,6 @@ struct Login: View {
                         }
                         Task {
                             homeViewModel.userLeagues = try await LeagueViewModel().fetchLeaguesContainingID(id: userID!)
-                            
                             let defaultCode = UserDefaults.standard.string(forKey: "defaultleagueCode")
                             guard defaultCode == "" else {
                                 if defaultCode == "5555" {
@@ -145,6 +144,7 @@ struct Login: View {
                                 leagueViewModel.activeLeague = homeViewModel.leagues.first(where: {$0.code == defaultCode})
                                 
                                 if let activeLeague = leagueViewModel.activeLeague {
+                                    homeViewModel.entities = self.entities
                                     await homeViewModel.fetchEssentials(updateGames: false, updateScores: false, league: activeLeague)
                                     
                                     leagueViewModel.points = activeLeague.points ?? [:]
@@ -189,11 +189,6 @@ struct Login: View {
                     .foregroundColor(.white) // style as needed
                     .padding() // and other view modifiers as needed
             }
-            
-            if let ok = entities.first {
-                Text(ok.name ?? "")
-            }
-
         }
         .frame(maxHeight: .infinity, alignment: .center)
         .padding(.horizontal)

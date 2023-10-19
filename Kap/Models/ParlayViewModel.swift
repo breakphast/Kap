@@ -11,7 +11,7 @@ import FirebaseFirestore
 class ParlayViewModel {
     private let db = Firestore.firestore()
     
-    func fetchParlays(games: [Game]) async throws -> [Parlay] {
+    func fetchParlays(games: [GameModel]) async throws -> [Parlay] {
         let querySnapshot = try await db.collection("parlays").getDocuments()
         let parlays = querySnapshot.documents.compactMap { queryDocumentSnapshot -> Parlay? in
             let data = queryDocumentSnapshot.data()
@@ -62,7 +62,7 @@ class ParlayViewModel {
             "bets": parlay.bets.map { bet in
                 [
                     "betOption": bet.betOption,
-                    "game": bet.game.documentId,
+                    "game": bet.game.documentID ?? "",
                     "type": bet.type.rawValue,
                     "odds": bet.odds,
                     "result": bet.result?.rawValue ?? "",

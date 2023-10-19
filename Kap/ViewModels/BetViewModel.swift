@@ -17,8 +17,8 @@ class BetViewModel: ObservableObject {
     
     let db = Firestore.firestore()
     
-    func fetchBets(games: [Game], leagueCode: String) async throws -> [Bet] {
-        let querySnapshot = try await db.collection("newBets").whereField("leagueID", isEqualTo: leagueCode)  .getDocuments()
+    func fetchBets(games: [GameModel], leagueCode: String) async throws -> [Bet] {
+        let querySnapshot = try await db.collection("newBets").whereField("leagueID", isEqualTo: leagueCode).getDocuments()
         let bets = querySnapshot.documents.map { queryDocumentSnapshot -> Bet in
             let data = queryDocumentSnapshot.data()
             
@@ -42,12 +42,13 @@ class BetViewModel: ObservableObject {
     }
 
 
-    func findBetGame(games: [Game], gameID: String) -> Game? {
-        guard let game = games.first(where: { $0.documentId == gameID }) else {
-            print("No game")
-            return nil }
-        
-        return game
+    func findBetGame(games: [GameModel], gameID: String) -> GameModel? {
+        if let game = games.first(where: { $0.documentID == gameID }) {
+            return game
+        } else {
+            print("No game found with ID: \(gameID)")
+            return nil
+        }
     }
     
     func stringToBetType(_ typeString: String) -> BetType? {
@@ -64,7 +65,7 @@ class BetViewModel: ObservableObject {
         let newBet: [String: Any] = [
             "id": bet.id,
             "betOption": bet.betOption,
-            "game": bet.game.documentId,
+            "game": bet.game.documentID ?? "",
             "type": bet.type.rawValue,
             "result": bet.result?.rawValue ?? "",
             "odds": bet.odds,
@@ -81,13 +82,29 @@ class BetViewModel: ObservableObject {
         let _ = try await db.collection("newBets").document(bet.id).setData(newBet)
     }
     
-    func makeBet(for game: Game, betOption: String, playerID: String, week: Int, leagueCode: String) -> Bet? {
-        if let option = game.betOptions.first(where: { $0.id == betOption }) {
-            let bet = Bet(id: betOption + playerID + leagueCode, betOption: betOption, game: game, type: option.betType, result: .pending, odds: option.odds, selectedTeam: option.selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode)
-            return bet
+    func makeBet(for game: GameModel, betOption: String, playerID: String, week: Int, leagueCode: String) -> Bet? {
+        guard let betOptionsSet = game.betOptions,
+              let betOptionsArray = betOptionsSet.allObjects as? [BetOption] else {
+            print("Error: Unable to process bet options.")
+            return nil
         }
-                                           
-        return nil
+        
+        if let option = betOptionsArray.first(where: { $0.id == betOption }) {
+            let bet = Bet(id: betOption + playerID + leagueCode,
+                          betOption: betOption,
+                          game: game,
+                          type: option.betType,
+                          result: .pending,
+                          odds: option.odds,
+                          selectedTeam: option.selectedTeam,
+                          playerID: playerID,
+                          week: week,
+                          leagueCode: leagueCode)
+            return bet
+        } else {
+            print("Error: Bet option not found.")
+            return nil
+        }
     }
     
     func updateBet(bet: Bet) {
@@ -187,39 +204,34 @@ class BetViewModel: ObservableObject {
         }
     }
     
-    func generateBetsForGame(_ game: Game) -> [Bet] {
+    func generateBetsForGame(_ game: GameModel) -> [Bet] {
         var bets = [Bet]()
-        let options = [0, 2, 4, 1, 3, 5].compactMap { index in
-            game.betOptions.indices.contains(index) ? game.betOptions[index] : nil
+        guard let betOptionsArray = game.betOptions?.allObjects as? [BetOptionModel] else {
+            return []
         }
-        for i in 0..<6 {
-            var type = BetType.moneyline
-            switch i {
-            case 0, 3:
-                type = .spread
-            case 1, 4:
-                type = .moneyline
-            case 2:
-                type = .over
-            case 5:
-                type = .under
-            default:
-                type = .moneyline
-            }
-            var team = ""
-            switch i {
-            case 3, 2, 4:
-                team = game.awayTeam
-            default:
-                team = game.homeTeam
-            }
-            
-            let bet = Bet(id: options[i].id, betOption: options[i].id, game: game, type: type, result: .pending, odds: options[i].odds, selectedTeam: team, playerID: "", week: 0, leagueCode: "")
+        
+        for option in betOptionsArray {
+            let bet = Bet(id: option.id ?? "", betOption: option.id ?? "", game: game, type: BetType(rawValue: option.betType!) ?? .moneyline, result: .pending, odds: Int(option.odds), selectedTeam: option.id?.last == "1" ? game.homeTeam : game.awayTeam, playerID: "", week: 0, leagueCode: "")
             bets.append(bet)
         }
-        let betss = [3, 4, 2, 0, 1, 5].compactMap { index in
-            bets.indices.contains(index) ? bets[index] : nil
+
+        bets.sort { a, b in
+            let orderA = sortOrder(for: a.id)
+            let orderB = sortOrder(for: b.id)
+            return orderA < orderB
         }
-        return betss
+        return bets
+    }
+    
+    func sortOrder(for id: String) -> Int {
+        let order = ["spread2", "ml2", "over", "spread1", "ml1", "under"]
+        
+        for (index, element) in order.enumerated() {
+            if id.hasSuffix(element) {
+                return index
+            }
+        }
+        
+        return order.count
     }
 }

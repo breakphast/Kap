@@ -181,6 +181,7 @@ class DataManager {
             gameModel.underPriceTemp = game.underPriceTemp
             gameModel.dayType = game.dayType
             gameModel.week = Int16(game.week ?? 0)
+            gameModel.documentID = game.documentId
             
             // Convert BetOptions from Game to BetOptionModel and add them to the GameModel
             for betOption in game.betOptions {

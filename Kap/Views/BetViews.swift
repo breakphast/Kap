@@ -18,10 +18,7 @@ struct BetView: View {
     
     private func fetchData() async {
         do {
-            let activeleagueCode = homeViewModel.activeleagueCode ?? ""
             let currentWeek = homeViewModel.currentWeek
-            let currentUserID = authViewModel.currentUser?.id
-            
             let bets = homeViewModel.userBets.filter {
                 $0.week == currentWeek
             }
@@ -30,16 +27,6 @@ struct BetView: View {
                 $0.game.dayType! == bet.game.dayType! &&
                 $0.week == currentWeek
             }.count < maxBets2 && !bets.contains { $0.game.id == bet.game.id }
-            
-        }
-    }
-    
-    var maxBets2: Int {
-        switch bet.game.dayType {
-        case "SUN":
-            7
-        default:
-            1
         }
     }
     
@@ -76,6 +63,15 @@ struct BetView: View {
         }
     }
     
+    var maxBets2: Int {
+        switch bet.game.dayType {
+        case "SUN":
+            7
+        default:
+            1
+        }
+    }
+    
     var pointsAndButtons: some View {
         VStack(alignment: .leading, spacing: 20) {
             VStack(alignment: .leading) {
@@ -94,7 +90,7 @@ struct BetView: View {
     var teamAndType: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text(bet.type == .over || bet.type == .under ? "\(bet.game.awayTeam) @ \(bet.game.homeTeam)" : bet.selectedTeam ?? "")
+                Text(bet.type == .over || bet.type == .under ? "\(bet.game.awayTeam ?? "") @ \(bet.game.homeTeam ?? "")" : bet.selectedTeam ?? "")
                     .font(bet.type == .over || bet.type == .under ? .caption2.bold() : .subheadline.bold())
                     .frame(maxWidth: UIScreen.main.bounds.width / 1.5, alignment: .leading)
                 
@@ -123,13 +119,20 @@ struct BetView: View {
         HStack {
             Button {
                 Task {
-                    guard let betOption = bet.game.betOptions.first(where: { $0.id == bet.betOption }) else {
+                    guard let betOptionsSet = bet.game.betOptions as? Set<BetOption> else {
+                        print("Failed to retrieve bet options.")
+                        return
+                    }
+
+                    let betOptionsArray = Array(betOptionsSet)
+                    guard let betOption = betOptionsArray.first(where: { $0.id == bet.betOption }) else {
+                        print("Bet option not found.")
                         return
                     }
                     
                     let placedBet = BetViewModel().makeBet(for: bet.game, betOption: betOption.id, playerID: authViewModel.currentUser?.id ?? "", week: homeViewModel.currentWeek, leagueCode: homeViewModel.activeleagueCode ?? "")
                     
-                    if !homeViewModel.userBets.contains(where: { $0.game.documentId == placedBet?.game.documentId && $0.leagueCode == homeViewModel.activeleagueCode! }) {
+                    if !homeViewModel.userBets.contains(where: { $0.game.documentID == placedBet?.game.documentID && $0.leagueCode == homeViewModel.activeleagueCode! }) {
                         try await BetViewModel().addBet(bet: placedBet!, playerID: authViewModel.currentUser?.id ?? "")
                         homeViewModel.userBets.append(placedBet!)
                                                 
@@ -330,7 +333,7 @@ struct PlacedBetView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     VStack(alignment: .leading, spacing: 4) {
                         HStack {
-                            Text(bet.type == .over || bet.type == .under ? "\(bet.game.awayTeam) @ \(bet.game.homeTeam)" : bet.selectedTeam ?? "")
+                            Text(bet.type == .over || bet.type == .under ? "\(bet.game.awayTeam ?? "") @ \(bet.game.homeTeam ?? "")" : bet.selectedTeam ?? "")
                                 .font(bet.type == .over || bet.type == .under ? .caption2.bold() : .subheadline.bold())
                             Spacer()
                             Text("\(bet.odds > 0 ? "+": "")\(bet.odds)")
@@ -351,7 +354,7 @@ struct PlacedBetView: View {
                     
                     
                     HStack {
-                        Text("\(bet.game.awayTeam) @ \(bet.game.homeTeam)")
+                        Text("\(bet.game.awayTeam ?? "") @ \(bet.game.homeTeam ?? "")")
                         Spacer()
                         Text(convertDateForBetCard(bet.game.date))
                     }
@@ -546,5 +549,15 @@ struct PlacedParlayView: View {
                 .font(.title.bold())
         }
         .zIndex(1000)
+    }
+}
+
+extension BetOption: Hashable {
+    public static func == (lhs: BetOption, rhs: BetOption) -> Bool {
+        return lhs.id == rhs.id // Assuming 'id' is a property of 'BetOption' and is unique.
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id) // This also assumes 'id' is a property of 'BetOption'.
     }
 }

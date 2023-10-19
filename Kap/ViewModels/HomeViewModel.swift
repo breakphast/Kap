@@ -40,6 +40,8 @@ class HomeViewModel: ObservableObject {
     @Published var leagueParlays = [Parlay]()
     @Published var userParlays = [Parlay]()
     
+    @Published var entities: FetchedResults<GameModel>?
+    
     static let keys = [
         "ab5225bbaeaf25a64a6bba6340bdf2e2"
     ]
@@ -94,25 +96,15 @@ class HomeViewModel: ObservableObject {
             DispatchQueue.main.async {
                 self.allGames = fetchedAllGames
                 self.weekGames = fetchedAllGames.filter { $0.week == self.currentWeek }
-//                
-//                for i in 7...16 {
-//                    print("Starting...")
-//                    var weekGamess = fetchedAllGames.filter { $0.week == i }.sorted(by: {$0.date < $1.date})
-//                    GameService().updateDayType(for: &weekGamess)
-//                    for game in weekGamess {
-//                        if let dayType = game.dayType {
-//                            self.updateGameDayType(game: game)
-//                            print(game.documentId, "should have updated")
-//                        }
-//                    }
-//                }
             }
-
-            let leagueBetsResult = try await BetViewModel().fetchBets(games: fetchedAllGames, leagueCode: league.code)
-            let leagueParlaysResult = try await ParlayViewModel().fetchParlays(games: fetchedAllGames).filter({ $0.leagueCode == league.code })
-            DispatchQueue.main.async {
-                self.leagueBets = leagueBetsResult
-                self.leagueParlays = leagueParlaysResult
+            
+            if let entities = entities {
+                let leagueBetsResult = try await BetViewModel().fetchBets(games: Array(entities), leagueCode: league.code)
+                let leagueParlaysResult = try await ParlayViewModel().fetchParlays(games: Array(entities)).filter({ $0.leagueCode == league.code })
+                DispatchQueue.main.async {
+                    self.leagueBets = leagueBetsResult
+                    self.leagueParlays = leagueParlaysResult
+                }
             }
 
             if updateScores {
@@ -128,10 +120,6 @@ class HomeViewModel: ObservableObject {
                 }
                 
                 GameService().addGames(games: matchingGames, week: currentWeek)
-                
-//                for game in self.weekGames {
-//                    updateGameDayType(game: game)
-//                }
             }
 
             DispatchQueue.main.async {
@@ -150,30 +138,32 @@ class HomeViewModel: ObservableObject {
             for game in alteredGames {
                 try await GameService().updateGameScore(game: game)
             }
-            let newBets = try await BetViewModel().fetchBets(games: allGames, leagueCode: league.code)
-            let newParlays = try await ParlayViewModel().fetchParlays(games: allGames)
-
-            DispatchQueue.main.async {
-                self.weekGames = alteredGames
-                for parlay in newParlays {
-                    if parlay.result == .pending  {
-                        BetViewModel().updateParlay(parlay: parlay)
+            if let entities = entities {
+                let newBets = try await BetViewModel().fetchBets(games: Array(entities), leagueCode: league.code)
+                let newParlays = try await ParlayViewModel().fetchParlays(games: Array(entities))
+                DispatchQueue.main.async {
+                    self.weekGames = alteredGames
+                    for parlay in newParlays {
+                        if parlay.result == .pending  {
+                            BetViewModel().updateParlay(parlay: parlay)
+                        }
                     }
-                }
 
-                self.allParlays = newParlays
+                    self.allParlays = newParlays
 
-                for bet in newBets {
-                    let result = bet.game.betResult(for: bet)
-                    if result != .pending {
-                        BetViewModel().updateBetResult(bet: bet, result: result)
-                    } else if result == .push {
-                        BetViewModel().updateBetResult(bet: bet, result: result)
+                    for bet in newBets {
+                        let result = bet.game.betResult(for: bet)
+                        if result != .pending {
+                            BetViewModel().updateBetResult(bet: bet, result: result)
+                        } else if result == .push {
+                            BetViewModel().updateBetResult(bet: bet, result: result)
+                        }
                     }
-                }
 
-                self.allBets = newBets
+                    self.allBets = newBets
+                }
             }
+
         } catch {
             print("Failed update and fetch", error.localizedDescription)
         }

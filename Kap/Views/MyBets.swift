@@ -115,7 +115,7 @@ struct MyBets: View {
     }
     
     func betSection(for dayType: DayType, settled: Bool) -> some View {
-        let liveBets = homeViewModel.leagueBets.filter({$0.week == homeViewModel.currentWeek && Date() > $0.game.date && $0.game.completed == false})
+        let liveBets = homeViewModel.leagueBets.filter({$0.week == homeViewModel.currentWeek && Date() > $0.game.date ?? Date() && $0.game.completed == false})
         
         let filteredBets = homeViewModel.userBets.filter { bet in
             (settled ? bet.result != .pending : bet.result == .pending) && bet.week == week

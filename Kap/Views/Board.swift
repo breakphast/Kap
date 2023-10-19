@@ -29,7 +29,7 @@ struct Board: View {
                 Color("onyx").ignoresSafeArea()
                 
                 ScrollView(showsIndicators: false) {
-                    GameListingView()
+                    GameListingView(entities: Array(entities).filter({$0.week == homeViewModel.currentWeek}))
                         .navigationBarBackButtonHidden()
                         .toolbar {
                             ToolbarItem(placement: .navigationBarLeading) {
@@ -99,9 +99,22 @@ struct Board: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
-            .task {
-//                doThis(games: homeViewModel.weekGames, in: viewContext)
-            }
+//            .task {
+//                print(entities.count)
+//                deleteAllData(ofEntity: "GameModel") { result in
+//                    switch result {
+//                    case .success(let success):
+//                        print("YAY")
+//                    case .failure(let failure):
+//                        print("NAY")
+//                    }
+//                }
+//                deleteAllData(ofEntity: "BetOptionModel") { result in
+//                    
+//                }
+                
+//                doThis(games: homeViewModel.allGames, in: viewContext)
+//            }
         }
     }
     func deleteAllData(ofEntity entityName: String, completion: @escaping (Result<Void, Error>) -> Void) {
@@ -142,6 +155,18 @@ struct Board: View {
             gameModel.dayType = game.dayType
             gameModel.week = Int16(game.week ?? 0)
             
+            var documentId: String {
+                let formatter = DateFormatter()
+                formatter.dateFormat = "yyyy-MM-dd"
+                let datePart = formatter.string(from: gameModel.date)
+                
+                // Converting team names to a URL-safe format
+                let safeHomeTeam = (gameModel.homeTeam ?? "").replacingOccurrences(of: " ", with: "-")
+                let safeAwayTeam = (gameModel.awayTeam ?? "").replacingOccurrences(of: " ", with: "-")
+                
+                return "\(datePart)-\(safeHomeTeam)-vs-\(safeAwayTeam)"
+            }
+            gameModel.documentID = documentId
             
             for betOption in game.betOptions {
                 let betOptionModel = BetOptionModel(context: context)
@@ -155,45 +180,24 @@ struct Board: View {
                 betOptionModel.confirmBet = betOption.confirmBet
                 betOptionModel.maxBets = Int16(betOption.maxBets ?? 0)
                 betOptionModel.game = gameModel
-                
-//                let formattedOdds = betOption.odds > 0 ? "+\(betOption.odds)" : "\(betOption.odds)"
-//                switch betOption.dayType?.rawValue {
-//                case "Spread":
-//                    if let spread = betOption.spread {
-//                        let formattedSpread = spread > 0 ? "+\(spread)" : "\(spread)"
-//                        betOptionModel.betString = "\(formattedSpread)\n\(formattedOdds)"
-//                    } else {
-//                        betOptionModel.betString = ""
-//                    }
-//                case "Moneyline":
-//                    betOptionModel.betString = formattedOdds
-//                case "Over":
-//                    betOptionModel.betString = "O \(betOption.over)\n\(formattedOdds)"
-//                case "Under":
-//                    betOptionModel.betString = "U \(betOption.under)\n\(formattedOdds)"
-//                default:
-//                    print("Nothing")
-//                }
+                if gameModel.documentID == "2023-10-22-New-England-Patriots-vs-Buffalo-Bills" {
+                    print(betOption.betString)
+                    
+                }
                 
                 betOptionModel.betString = betOption.betString
                 
                 gameModel.addToBetOptions(betOptionModel)
                 do {
                     try context.save()
-                    print("saved", entities.count)
                 } catch {
-                    // Handle the error appropriately
                     print("Error saving context: \(error)")
                 }
                 
             }
-            print(gameModel)
-            
-            // Save the context after adding new objects or making changes
             do {
                 try context.save()
             } catch {
-                // Handle the error appropriately
                 print("Error saving context: \(error)")
             }
         }
@@ -202,6 +206,7 @@ struct Board: View {
 
 struct GameListingView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
+    let entities: [GameModel]
     
     private var thursdayNightGame: [Game] {
         Array(homeViewModel.weekGames.prefix(1))
@@ -221,7 +226,7 @@ struct GameListingView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            SectionView(title: "Thursday Night Football", games: homeViewModel.weekGames.sorted(by: {$0.date < $1.date}), first: true, dayType: .tnf)
+            SectionView(title: "Thursday Night Football", games: entities.sorted(by: {$0.date < $1.date}), first: true, dayType: .tnf)
         }
         .padding()
     }
@@ -230,7 +235,7 @@ struct GameListingView: View {
 struct SectionView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     var title: String
-    var games: [Game]
+    var games: [GameModel]
     var first: Bool?
     let dayType: DayType
     
@@ -261,7 +266,6 @@ struct SectionView: View {
                     }
                     .frame(maxWidth: UIScreen.main.bounds.width / 1.75)
                     .font(.caption.bold())
-
                     .padding(.bottom)
                 }
             }
@@ -278,12 +282,17 @@ struct SectionView: View {
 
 
 struct GameRow: View {
-    var game: Game
+    var game: GameModel
     let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 3)
     @EnvironmentObject var homeViewModel: HomeViewModel
-    
     @State private var newGame: GameModel? // Use @State to manage the property
     @Environment(\.managedObjectContext) private var viewContext
+    @FetchRequest(
+            entity: GameModel.entity(), // Replace 'YourEntity' with your actual entity class
+            sortDescriptors: [
+                NSSortDescriptor(keyPath: \GameModel.date, ascending: true) // Assume 'name' is a field of your entity
+            ]
+        ) var entities: FetchedResults<GameModel>
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -293,19 +302,19 @@ struct GameRow: View {
             HStack(alignment: .center) {
                 VStack(alignment: .leading, spacing: 6) {
                     HStack {
-                        Image("\(nflLogos[game.awayTeam] ?? "")")
+                        Image("\(nflLogos[game.awayTeam ?? ""] ?? "")")
                             .resizable()
                             .scaledToFit()
                             .frame(width: 30)
-                        Text(nflTeams[game.awayTeam] ?? "")
+                        Text(nflTeams[game.awayTeam ?? ""] ?? "")
                     }
                     Text("@")
                     HStack {
-                        Image("\(nflLogos[newGame?.homeTeam ?? "lollllll"] ?? "")")
+                        Image("\(nflLogos[game.homeTeam ?? "lollllll"] ?? "")")
                             .resizable()
                             .scaledToFit()
                             .frame(width: 30)
-                        Text(nflTeams[newGame?.homeTeam ?? "lollllll"] ?? "")
+                        Text(nflTeams[game.homeTeam ?? "lollllll"] ?? "")
                     }
                 }
                 .font(.caption.bold())
@@ -333,13 +342,6 @@ struct GameRow: View {
                 .frame(maxWidth: UIScreen.main.bounds.width / 1.75)
             }
         }
-        .onAppear {
-            // The onAppear is called when the view is about to show, and here you can safely access @Environment properties
-            if newGame == nil { // Check to prevent redundant work
-                newGame = DataManager(context: viewContext).convertToGameModel(games: [game], in: viewContext).first
-            }
-        }
-        
 //        .padding(.bottom, 20)
     }
 }

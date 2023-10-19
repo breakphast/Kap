@@ -56,7 +56,7 @@ class BetOption {
 class Bet {
     let id: String
     let betOption: String
-    let game: Game
+    let game: GameModel
     let type: BetType
     let result: BetResult?
     let odds: Int
@@ -69,7 +69,7 @@ class Bet {
     let leagueCode: String
     var betOptionString = ""
     
-    init(id: String, betOption: String, game: Game, type: BetType, result: BetResult?, odds: Int, selectedTeam: String?, playerID: String, week: Int, leagueCode: String) {
+    init(id: String, betOption: String, game: GameModel, type: BetType, result: BetResult?, odds: Int, selectedTeam: String?, playerID: String, week: Int, leagueCode: String) {
         self.id = id
         self.betOption = betOption
         self.game = game
@@ -128,7 +128,10 @@ class Bet {
             return .pending
         }
         
-        guard let betOption = bet.game.betOptions.first(where: { $0.id == bet.betOption }), let selectedTeam = betOption.selectedTeam else {
+        guard let betOptionsSet = bet.game.betOptions,
+              let betOptionsArray = betOptionsSet.allObjects as? [BetOption],
+              let betOption = betOptionsArray.first(where: { $0.id == bet.betOption }),
+              let selectedTeam = betOption.selectedTeam else {
             return .pending
         }
         
@@ -139,20 +142,23 @@ class Bet {
             if selectedTeam == bet.game.homeTeam {
                 return homeScore > awayScore ? .win : .loss
             } else if selectedTeam == bet.game.awayTeam {
-                return homeScore < awayScore ? .win : .loss
+                return awayScore > homeScore ? .win : .loss
             }
+            
         case .spread:
-            let spread = bet.game.betOptions.first(where: { $0.id == betOption.id })?.spread ?? 0.0
+            let spread = betOption.spread ?? 0.0
             if selectedTeam == bet.game.homeTeam {
                 return Double(homeScore) + spread > Double(awayScore) ? .win : .loss
             } else if selectedTeam == bet.game.awayTeam {
                 return Double(awayScore) + spread > Double(homeScore) ? .win : .loss
             }
+            
         case .over:
-            let over = bet.game.betOptions.first(where: { $0.id == betOption.id })?.over ?? 0.0
+            let over = betOption.over
             return Double(homeScore + awayScore) > over ? .win : .loss
+            
         case .under:
-            let under = bet.game.betOptions.first(where: { $0.id == betOption.id })?.under ?? 0.0
+            let under = betOption.under
             return Double(homeScore + awayScore) < under ? .win : .loss
         }
         
@@ -193,7 +199,6 @@ extension BetOption {
         let spread = dictionary["spread"] as? Double
         let selectedTeam = dictionary["selectedTeam"] as? String
         let confirmBet = dictionary["confirmBet"] as? Bool ?? false
-        let dayTypeString = dictionary["dayType"] as? String
         
         let betOption = BetOption(id: id, game: game, betType: betType, odds: odds, spread: spread, over: over, under: under, selectedTeam: selectedTeam, confirmBet: confirmBet)
         return betOption
