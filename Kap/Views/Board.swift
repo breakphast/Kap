@@ -208,19 +208,19 @@ struct GameListingView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     let entities: [GameModel]
     
-    private var thursdayNightGame: [Game] {
+    private var thursdayNightGame: [GameModel] {
         Array(homeViewModel.weekGames.prefix(1))
     }
     
-    private var sundayGames: [Game] {
+    private var sundayGames: [GameModel] {
         Array(homeViewModel.weekGames.dropFirst().dropLast(2))
     }
     
-    private var sundayNightGame: [Game] {
+    private var sundayNightGame: [GameModel] {
         Array(homeViewModel.weekGames.suffix(2).prefix(1))
     }
     
-    private var mondayNightGame: [Game] {
+    private var mondayNightGame: [GameModel] {
         Array(homeViewModel.weekGames.suffix(1))
     }
     

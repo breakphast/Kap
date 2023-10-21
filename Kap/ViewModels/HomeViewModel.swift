@@ -12,8 +12,8 @@ import FirebaseFirestore
 class HomeViewModel: ObservableObject {
     @Published var users: [User] = []
     @Published var leagues: [League] = []
-    @Published var weekGames: [Game] = []
-    @Published var allGames: [Game] = []
+    @Published var weekGames: [GameModel] = []
+    @Published var allGames: [GameModel] = []
     @Published var allBets: [Bet] = []
     @Published var generatedBets: [Bet] = []
     @Published var allParlays: [Parlay] = []
@@ -82,7 +82,6 @@ class HomeViewModel: ObservableObject {
     
     func fetchEssentials(updateGames: Bool, updateScores: Bool, league: League) async {
         do {
-            // Safely unwrap league players
             guard let leaguePlayers = league.players else {
                 print("Error: league players are nil.")
                 return
@@ -94,33 +93,35 @@ class HomeViewModel: ObservableObject {
             let fetchedAllGames = try await GameService().fetchGamesFromFirestore()
             
             DispatchQueue.main.async {
-                self.allGames = fetchedAllGames
-                self.weekGames = fetchedAllGames.filter { $0.week == self.currentWeek }
+                if let entities = self.entities {
+                    self.allGames = Array(entities)
+                    self.weekGames = Array(entities).filter { $0.week == self.currentWeek }
+                }
             }
             
-            if let entities = entities {
-                let leagueBetsResult = try await BetViewModel().fetchBets(games: Array(entities), leagueCode: league.code)
-                let leagueParlaysResult = try await ParlayViewModel().fetchParlays(games: Array(entities)).filter({ $0.leagueCode == league.code })
-                DispatchQueue.main.async {
-                    self.leagueBets = leagueBetsResult
-                    self.leagueParlays = leagueParlaysResult
-                }
-            }
+//            if let entities = entities {
+//                let leagueBetsResult = try await BetViewModel().fetchBets(games: Array(entities), leagueCode: league.code)
+//                let leagueParlaysResult = try await ParlayViewModel().fetchParlays(games: Array(entities)).filter({ $0.leagueCode == league.code })
+//                DispatchQueue.main.async {
+//                    self.leagueBets = leagueBetsResult
+//                    self.leagueParlays = leagueParlaysResult
+//                }
+//            }
 
-            if updateScores {
-                await self.updateAndFetch(games: self.weekGames, league: league)
-            }
-
-            if updateGames {
-                let updatedGames = try await GameService().getGames()
-                let matchingGames = updatedGames.filter { updatedGame in
-                    self.weekGames.contains { fetchedGame in
-                        return updatedGame.documentId == fetchedGame.documentId
-                    }
-                }
-                
-                GameService().addGames(games: matchingGames, week: currentWeek)
-            }
+//            if updateScores {
+//                await self.updateAndFetch(games: self.weekGames, league: league)
+//            }
+//
+//            if updateGames {
+//                let updatedGames = try await GameService().getGames()
+//                let matchingGames = updatedGames.filter { updatedGame in
+//                    self.weekGames.contains { fetchedGame in
+//                        return updatedGame.documentId == fetchedGame.documentId
+//                    }
+//                }
+//                
+//                GameService().addGames(games: matchingGames, week: currentWeek)
+//            }
 
             DispatchQueue.main.async {
                 self.users = relevantUsers
@@ -142,7 +143,7 @@ class HomeViewModel: ObservableObject {
                 let newBets = try await BetViewModel().fetchBets(games: Array(entities), leagueCode: league.code)
                 let newParlays = try await ParlayViewModel().fetchParlays(games: Array(entities))
                 DispatchQueue.main.async {
-                    self.weekGames = alteredGames
+//                    self.weekGames = alteredGames
                     for parlay in newParlays {
                         if parlay.result == .pending  {
                             BetViewModel().updateParlay(parlay: parlay)

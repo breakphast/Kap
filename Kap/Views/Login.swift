@@ -183,12 +183,6 @@ struct Login: View {
             .autocorrectionDisabled()
             .autocapitalization(.none)
             .textInputAutocapitalization(.never)
-            
-            Button(action: addEntity) {
-                Text("Add Entity")
-                    .foregroundColor(.white) // style as needed
-                    .padding() // and other view modifiers as needed
-            }
         }
         .frame(maxHeight: .infinity, alignment: .center)
         .padding(.horizontal)

@@ -25,11 +25,12 @@ struct Home: View {
     var body: some View {
         if authViewModel.currentUser == nil || loggedIn == false {
             Login(loggedIn: $loggedIn)
+//            ContestView()
         } else if leagueViewModel.activeLeague == nil {
             LeagueList(leagues: $homeViewModel.userLeagues, loggedIn: $loggedIn)
         } else {
             TabView {
-                Board()
+                ContestView()
                     .tabItem {
                         Label("Home", systemImage: "house.fill")
                     }

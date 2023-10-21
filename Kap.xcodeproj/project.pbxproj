@@ -33,6 +33,8 @@
 		3EA650482A5F7568007CA5ED /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3EA650472A5F7568007CA5ED /* Preview Assets.xcassets */; };
 		3EA874DA2ABE9800009F4ED2 /* LiveBetsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EA874D92ABE9800009F4ED2 /* LiveBetsView.swift */; };
 		3EAA28A42AA4FA81003AB5EC /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3EAA28A32AA4FA81003AB5EC /* GoogleService-Info.plist */; };
+		3ECDB7152AE2CD4700DF1BF5 /* ContestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ECDB7142AE2CD4700DF1BF5 /* ContestView.swift */; };
+		3ECDB7172AE35B5000DF1BF5 /* ContestDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ECDB7162AE35B5000DF1BF5 /* ContestDetails.swift */; };
 		3ED8EC3B2A65F47400E05FF2 /* Betslip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ED8EC3A2A65F47400E05FF2 /* Betslip.swift */; };
 		3EDBFCD22A8E901B00EB8628 /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EDBFCD12A8E901B00EB8628 /* AuthViewModel.swift */; };
 		3EDBFCD42A8E907500EB8628 /* UserService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EDBFCD32A8E907500EB8628 /* UserService.swift */; };
@@ -87,6 +89,8 @@
 		3EA650472A5F7568007CA5ED /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		3EA874D92ABE9800009F4ED2 /* LiveBetsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveBetsView.swift; sourceTree = "<group>"; };
 		3EAA28A32AA4FA81003AB5EC /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		3ECDB7142AE2CD4700DF1BF5 /* ContestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContestView.swift; sourceTree = "<group>"; };
+		3ECDB7162AE35B5000DF1BF5 /* ContestDetails.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContestDetails.swift; sourceTree = "<group>"; };
 		3ED8EC3A2A65F47400E05FF2 /* Betslip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Betslip.swift; sourceTree = "<group>"; };
 		3EDBFCD12A8E901B00EB8628 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
 		3EDBFCD32A8E907500EB8628 /* UserService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserService.swift; sourceTree = "<group>"; };
@@ -151,6 +155,8 @@
 		3EA650342A5F7565007CA5ED = {
 			isa = PBXGroup;
 			children = (
+				3ECDB7162AE35B5000DF1BF5 /* ContestDetails.swift */,
+				3ECDB7142AE2CD4700DF1BF5 /* ContestView.swift */,
 				3E72A8DF2AE1765D00642328 /* BetOptionModel+CoreDataClass.swift */,
 				3E72A8E02AE1765D00642328 /* BetOptionModel+CoreDataProperties.swift */,
 				3E72A8E12AE1765D00642328 /* GameModel+CoreDataClass.swift */,
@@ -357,8 +363,10 @@
 				3E3451882AC2250C00332133 /* LeagueIntro.swift in Sources */,
 				3EDBFCDC2A8FC03000EB8628 /* LiveScore.swift in Sources */,
 				3EE35E6A2A61C8C00026F952 /* Leaderboard.swift in Sources */,
+				3ECDB7152AE2CD4700DF1BF5 /* ContestView.swift in Sources */,
 				3EE35E5D2A60D7FB0026F952 /* Game.swift in Sources */,
 				3E72A8E42AE1765D00642328 /* BetOptionModel+CoreDataProperties.swift in Sources */,
+				3ECDB7172AE35B5000DF1BF5 /* ContestDetails.swift in Sources */,
 				3EA874DA2ABE9800009F4ED2 /* LiveBetsView.swift in Sources */,
 				3E5D8D252A63A4F100634DBE /* CustomButton.swift in Sources */,
 				3E5D8D272A64718C00634DBE /* MyBets.swift in Sources */,
