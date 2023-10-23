@@ -167,8 +167,6 @@ class HomeViewModel: ObservableObject {
                     let result = bet.game.betResult(for: bet)
                     if result != .pending {
                         BetViewModel().updateBetResult(bet: bet, result: result)
-                    } else if result == .push {
-                        BetViewModel().updateBetResult(bet: bet, result: result)
                     }
                 }
 
