@@ -87,16 +87,16 @@ struct PlayerBetsView: View {
         if pointsWeek == 0 {
             var pts = 0.0
             for i in 1...homeViewModel.currentWeek {
-                let filteredBetsPoints = homeViewModel.leagueBets.filter { $0.week == i && $0.result != .push && $0.result != .pending && $0.playerID == userID }
-                    .reduce(0) { $0 + ($1.points ?? 0) }
+                let filteredBetsPoints = homeViewModel.leagueBets.filter { $0.week == i && $0.result != "Push" && $0.result != "Pending" && $0.playerID == userID }
+                    .reduce(0) { $0 + ($1.points) }
                 let parlayPoints = homeViewModel.leagueParlays.filter({$0.playerID == userID && $0.week == i && $0.result != .push && $0.result != .pending && $0.playerID == userID}).reduce(0) { $0 + ($1.totalPoints) }
                 
                 pts += (filteredBetsPoints + parlayPoints)
             }
             return pts
         } else {
-            let filteredBetsPoints = homeViewModel.leagueBets.filter { $0.week == pointsWeek && $0.result != .push && $0.result != .pending && $0.playerID == userID }
-                .reduce(0) { $0 + ($1.points ?? 0) }
+            let filteredBetsPoints = homeViewModel.leagueBets.filter { $0.week == pointsWeek && $0.result != "Push" && $0.result != "Pending" && $0.playerID == userID }
+                .reduce(0) { $0 + ($1.points) }
             let parlayPoints = homeViewModel.leagueParlays.filter({$0.playerID == userID && $0.week == pointsWeek && $0.result != .push && $0.result != .pending && $0.playerID == userID}).reduce(0) { $0 + ($1.totalPoints) }
             
             return filteredBetsPoints + parlayPoints
@@ -139,9 +139,9 @@ struct PlayerBetsView: View {
     func betSection(for dayType: DayType, settled: Bool) -> some View {
         let filteredBets = homeViewModel.leagueBets.filter { bet in
             if selectedOption != "Overall" {
-                (bet.result != .pending && bet.playerID == userID && bet.week == week)
+                (bet.result != "Pending" && bet.playerID == userID && bet.week == week)
             } else {
-                (bet.result != .pending && bet.playerID == userID)
+                (bet.result != "Pending" && bet.playerID == userID)
             }
         }
         
@@ -211,7 +211,7 @@ struct PlayerBetsView: View {
     }
 
     func isEmptyBets(for result: BetResult) -> Bool {
-        return homeViewModel.leagueBets.filter { $0.result == result && $0.playerID == userID && $0.week == week }.isEmpty
+        return homeViewModel.leagueBets.filter { $0.result == result.rawValue && $0.playerID == userID && $0.week == week }.isEmpty
     }
 }
 

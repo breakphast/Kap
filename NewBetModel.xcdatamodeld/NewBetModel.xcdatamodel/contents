@@ -1,7 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="22222" systemVersion="23A344" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="22225" systemVersion="23A344" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
     <entity name="BetModel" representedClassName="BetModel" syncable="YES">
-        <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="betOption" optional="YES" attributeType="String"/>
+        <attribute name="betOptionString" optional="YES" attributeType="String"/>
+        <attribute name="betString" optional="YES" attributeType="String"/>
+        <attribute name="id" optional="YES" attributeType="String"/>
+        <attribute name="leagueCode" optional="YES" attributeType="String"/>
+        <attribute name="odds" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="playerID" optional="YES" attributeType="String"/>
+        <attribute name="points" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="result" optional="YES" attributeType="String"/>
+        <attribute name="selectedTeam" optional="YES" attributeType="String"/>
+        <attribute name="stake" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="type" optional="YES" attributeType="String"/>
+        <attribute name="week" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="game" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="GameModel" inverseName="bets" inverseEntity="GameModel"/>
     </entity>
     <entity name="BetOptionModel" representedClassName="BetOptionModel" syncable="YES">
         <attribute name="betString" optional="YES" attributeType="String"/>
@@ -39,5 +52,6 @@
         <attribute name="underPriceTemp" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="week" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="betOptions" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="BetOptionModel" inverseName="game" inverseEntity="BetOptionModel"/>
+        <relationship name="bets" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="BetModel" inverseName="game" inverseEntity="BetModel"/>
     </entity>
 </model>

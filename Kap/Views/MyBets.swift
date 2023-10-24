@@ -26,7 +26,7 @@ struct MyBets: View {
     let leagueCode: String
     let userID: String
     
-    init(bets: [Bet], leagueCode: String, userID: String) {
+    init(bets: [BetModel], leagueCode: String, userID: String) {
         self.leagueCode = leagueCode
         self.userID = userID
     }
@@ -118,7 +118,7 @@ struct MyBets: View {
         let liveBets = homeViewModel.leagueBets.filter({$0.week == homeViewModel.currentWeek && Date() > $0.game.date ?? Date() && $0.game.completed == false})
         
         let filteredBets = homeViewModel.userBets.filter { bet in
-            (settled ? bet.result != .pending : bet.result == .pending) && bet.week == week
+            (settled ? bet.result != "Pending" : bet.result == "Pending") && bet.week == week
         }
         
         Task {
@@ -160,7 +160,7 @@ struct MyBets: View {
                     }
                     
                     ForEach(filteredBets.sorted(by: { $0.game.date < $1.game.date }), id: \.id) { bet in
-                        PlacedBetView(bet: bet, week: week)
+                        PlacedBetView(bet: bet, week: Int16(week))
                     }
                 }
             )
@@ -241,7 +241,7 @@ struct MyBets: View {
     }
 
     func isEmptyBets(for result: BetResult) -> Bool {
-        return homeViewModel.userBets.filter { $0.result == result && $0.leagueCode == leagueCode && $0.week == week}.isEmpty
+        return homeViewModel.userBets.filter { $0.result == result.rawValue && $0.leagueCode == leagueCode && $0.week == week}.isEmpty
     }
     
     private var swipeGesture: some Gesture {
@@ -268,8 +268,8 @@ struct MyBets: View {
     }
     
     func calculateWeeklyPoints() -> Double {
-        let filteredBetsPoints = homeViewModel.userBets.filter { $0.week == week && $0.result != .push && $0.result != .pending }
-            .reduce(0) { $0 + ($1.points ?? 0) }
+        let filteredBetsPoints = homeViewModel.userBets.filter { $0.week == week && $0.result != "Push" && $0.result != "Pending" }
+            .reduce(0) { $0 + ($1.points) }
         let parlayPoints = homeViewModel.userParlays.filter { $0.week == week && $0.result != .push && $0.result != .pending }.reduce(0) { $0 + ($1.totalPoints) }
         
         return filteredBetsPoints + parlayPoints

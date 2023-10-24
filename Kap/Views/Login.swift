@@ -29,27 +29,18 @@ struct Login: View {
     @Environment(\.managedObjectContext) private var viewContext
     
     @FetchRequest(
-            entity: GameModel.entity(), // Replace 'YourEntity' with your actual entity class
+            entity: GameModel.entity(),
             sortDescriptors: [
-                NSSortDescriptor(keyPath: \GameModel.homeTeam, ascending: true) // Assume 'name' is a field of your entity
+                NSSortDescriptor(keyPath: \GameModel.date, ascending: true)
             ]
-        ) var entities: FetchedResults<GameModel>
+        ) var allGameModels: FetchedResults<GameModel>
     
-    func addEntity() {
-        // Create a new instance of the CoreData entity
-        let newEntity = BetModel(context: viewContext) // replace 'YourEntity' with your entity's class name
-        
-        // Set the attributes of your entity
-        newEntity.name = "Example Name" // and other necessary attributes
-        
-        // Save the context
-        do {
-            try viewContext.save()
-        } catch {
-            // Handle the error appropriately
-            print("Error saving entity: \(error)")
-        }
-    }
+    @FetchRequest(
+        entity: BetModel.entity(),
+        sortDescriptors: [
+            NSSortDescriptor(keyPath: \BetModel.id, ascending: true)
+        ]
+    ) var allBetModels: FetchedResults<BetModel>
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -144,7 +135,9 @@ struct Login: View {
                                 leagueViewModel.activeLeague = homeViewModel.leagues.first(where: {$0.code == defaultCode})
                                 
                                 if let activeLeague = leagueViewModel.activeLeague {
-                                    homeViewModel.entities = self.entities
+                                    homeViewModel.allGameModels = self.allGameModels
+                                    homeViewModel.allBetModels = self.allBetModels
+
                                     await homeViewModel.fetchEssentials(updateGames: false, updateScores: false, league: activeLeague)
                                     
                                     leagueViewModel.points = activeLeague.points ?? [:]

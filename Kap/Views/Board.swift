@@ -17,11 +17,18 @@ struct Board: View {
     @Environment(\.managedObjectContext) private var viewContext
     
     @FetchRequest(
-            entity: GameModel.entity(), // Replace 'YourEntity' with your actual entity class
-            sortDescriptors: [
-                NSSortDescriptor(keyPath: \GameModel.homeTeam, ascending: true) // Assume 'name' is a field of your entity
-            ]
-        ) var entities: FetchedResults<GameModel>
+        entity: GameModel.entity(),
+        sortDescriptors: [
+            NSSortDescriptor(keyPath: \GameModel.homeTeam, ascending: true)
+        ]
+    ) var allGameModels: FetchedResults<GameModel>
+    
+    @FetchRequest(
+        entity: BetModel.entity(),
+        sortDescriptors: [
+            NSSortDescriptor(keyPath: \BetModel.id, ascending: true)
+        ]
+    ) var allBetModels: FetchedResults<BetModel>
     
     var body: some View {
         NavigationStack {
@@ -29,7 +36,7 @@ struct Board: View {
                 Color("onyx").ignoresSafeArea()
                 
                 ScrollView(showsIndicators: false) {
-                    GameListingView(entities: Array(entities).filter({$0.week == homeViewModel.currentWeek}))
+                    GameListingView(allGameModels: Array(allGameModels).filter({$0.week == homeViewModel.currentWeek}))
                         .navigationBarBackButtonHidden()
                         .toolbar {
                             ToolbarItem(placement: .navigationBarLeading) {
@@ -99,13 +106,20 @@ struct Board: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
-//            .task {
-//                print(entities.count)
-//                deleteAllData(ofEntity: "GameModel") { result in
+            .task {
+//                do {
+//                    try await GameService().updateDayType(for: homeViewModel.weekGames, in: viewContext)
+//                } catch {
+//                    
+//                }
+//                updateGameAttribute(games: homeViewModel.allGames, in: viewContext)
+                
+//                updateGameOdds(games: homeViewModel.weekGames, in: viewContext)
+//                deleteAllData(ofEntity: "BetModel") { result in
 //                    switch result {
-//                    case .success(let success):
+//                    case .success(_):
 //                        print("YAY")
-//                    case .failure(let failure):
+//                    case .failure(_):
 //                        print("NAY")
 //                    }
 //                }
@@ -113,24 +127,105 @@ struct Board: View {
 //                    
 //                }
                 
-//                doThis(games: homeViewModel.allGames, in: viewContext)
-//            }
+//                doThisForBets(bets: homeViewModel.leagueBets, in: viewContext)
+                
+//                do {
+//                    let fetchedAllGames = try await GameService().fetchGamesFromFirestore()
+//                    doThis(games: fetchedAllGames, in: viewContext)
+//                    
+//                } catch {
+//                    
+//                }
+            }
         }
     }
-    func deleteAllData(ofEntity entityName: String, completion: @escaping (Result<Void, Error>) -> Void) {
-        let managedObjectContext = PersistenceController.shared.container.viewContext
-        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
-        let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-
+    func doThisForBets(bets: [Bet], in context: NSManagedObjectContext) {
+        for bet in bets {
+            let betModel = BetModel(context: context)
+            
+            // Set the attributes on the GameModel from the Game
+            betModel.id = bet.id
+            betModel.betOption = bet.betOption
+            betModel.game = bet.game
+            betModel.type = bet.type.rawValue
+            betModel.result = bet.result?.rawValue ?? "Pending"
+            betModel.odds = Int16(bet.odds)
+            betModel.selectedTeam = bet.selectedTeam
+            betModel.playerID = bet.playerID
+            betModel.week = Int16(bet.week)
+            betModel.leagueCode = bet.leagueCode
+            betModel.stake = 100.0
+            betModel.betString = bet.betString
+            betModel.points = bet.points ?? 0
+            betModel.betOptionString = bet.betOptionString
+            do {
+                try context.save()
+            } catch {
+                print("Error saving context: \(error)")
+            }
+        }
+    }
+    
+    func updateGameOdds(games: [GameModel], in context: NSManagedObjectContext) async throws {
+        let updatedGames = try await GameService().getGames()
+        for game in games {
+            if let newGame = updatedGames.first(where: {$0.documentId == game.documentID}) {
+                
+                game.homeSpread = newGame.homeSpread
+                game.awaySpread = newGame.awaySpread
+                game.homeMoneyLine = Int16(newGame.homeMoneyLine)
+                game.awayMoneyLine = Int16(newGame.awayMoneyLine)
+                game.over = newGame.over
+                game.under = newGame.under
+                game.homeSpreadPriceTemp = newGame.homeSpreadPriceTemp
+                game.awaySpreadPriceTemp = newGame.awaySpreadPriceTemp
+                game.overPriceTemp = newGame.overPriceTemp
+                game.underPriceTemp = newGame.underPriceTemp
+                
+                for betOption in newGame.betOptions {
+                    let betOptionModel = BetOptionModel(context: context)
+                    betOptionModel.id = betOption.id
+                    betOptionModel.odds = Int16(betOption.odds)
+                    betOptionModel.spread = betOption.spread ?? 0
+                    betOptionModel.over = betOption.over
+                    betOptionModel.under = betOption.under
+                    betOptionModel.betType = betOption.betType.rawValue
+                    betOptionModel.selectedTeam = betOption.selectedTeam
+                    betOptionModel.confirmBet = betOption.confirmBet
+                    betOptionModel.maxBets = Int16(betOption.maxBets ?? 0)
+                    betOptionModel.game = game
+                    betOptionModel.betString = betOption.betString
+                    
+                    game.addToBetOptions(betOptionModel)
+                    do {
+                        try context.save()
+                    } catch {
+                        print("Error saving context: \(error)")
+                    }
+                    
+                }
+            }
+        }
         do {
-            try managedObjectContext.execute(batchDeleteRequest)
-            try managedObjectContext.save()
-            completion(.success(()))
+            try context.save()
         } catch {
-            completion(.failure(error))
+            print("Error saving context: \(error)")
         }
     }
-    func doThis(games: [Game], in context: NSManagedObjectContext) {
+    
+    func updateGameAttribute(games: [GameModel], in context: NSManagedObjectContext) {
+        if let game = games.first(where: {$0.documentID == "2023-10-30-Detroit-Lions-vs-Las-Vegas-Raiders"}) {
+            game.dayType = "MNF"
+            game.week = 8
+            do {
+                try context.save()
+            } catch {
+                print("Error saving context: \(error)")
+            }
+        }
+    }
+
+    static func doThis(games: [Game], in context: NSManagedObjectContext) {
         for game in games {
             let gameModel = GameModel(context: context) // Now we are using the passed-in context
             
@@ -180,11 +275,6 @@ struct Board: View {
                 betOptionModel.confirmBet = betOption.confirmBet
                 betOptionModel.maxBets = Int16(betOption.maxBets ?? 0)
                 betOptionModel.game = gameModel
-                if gameModel.documentID == "2023-10-22-New-England-Patriots-vs-Buffalo-Bills" {
-                    print(betOption.betString)
-                    
-                }
-                
                 betOptionModel.betString = betOption.betString
                 
                 gameModel.addToBetOptions(betOptionModel)
@@ -202,11 +292,46 @@ struct Board: View {
             }
         }
     }
+
+    func deleteAllData(ofEntity entityName: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        let managedObjectContext = PersistenceController.shared.container.viewContext
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
+        let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+
+        do {
+            try managedObjectContext.execute(batchDeleteRequest)
+            try managedObjectContext.save()
+            completion(.success(()))
+        } catch {
+            completion(.failure(error))
+        }
+    }
+    func deleteFirstOption() {
+        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: "BetModel")
+        fetchRequest.fetchLimit = 1
+        
+        do {
+            let fetchedResults = try viewContext.fetch(fetchRequest) as? [NSManagedObject]
+            if let objectToDelete = fetchedResults?.first {
+                viewContext.delete(objectToDelete)
+                
+                do {
+                    try viewContext.save()
+                } catch {
+                    print("Error saving context after deletion: \(error)")
+                }
+            } else {
+                print("No object to delete")
+            }
+        } catch {
+            print("Error fetching objects: \(error)")
+        }
+    }
 }
 
 struct GameListingView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
-    let entities: [GameModel]
+    let allGameModels: [GameModel]
     
     private var thursdayNightGame: [GameModel] {
         Array(homeViewModel.weekGames.prefix(1))
@@ -226,7 +351,7 @@ struct GameListingView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            SectionView(title: "Thursday Night Football", games: entities.sorted(by: {$0.date < $1.date}), first: true, dayType: .tnf)
+            SectionView(title: "Thursday Night Football", games: allGameModels.sorted(by: {$0.date < $1.date}), first: true, dayType: .tnf)
         }
         .padding()
     }
@@ -292,7 +417,7 @@ struct GameRow: View {
             sortDescriptors: [
                 NSSortDescriptor(keyPath: \GameModel.date, ascending: true) // Assume 'name' is a field of your entity
             ]
-        ) var entities: FetchedResults<GameModel>
+        ) var allGameModels: FetchedResults<GameModel>
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {

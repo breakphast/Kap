@@ -365,6 +365,29 @@ class GameService {
             }
         }
     }
+    func updateDayType(for games: [GameModel], in context: NSManagedObjectContext) async throws {
+        for game in games.prefix(1) {
+            game.dayType = DayType.tnf.rawValue
+        }
+        
+        let sundayAfternoonGamesCount = games.count - 3
+        for game in games.dropFirst().prefix(sundayAfternoonGamesCount) {
+            game.dayType = DayType.sunday.rawValue
+        }
+        
+        for game in games.dropFirst(sundayAfternoonGamesCount + 1).prefix(1) {
+            game.dayType = DayType.snf.rawValue
+        }
+        
+        for game in games.suffix(1) {
+            game.dayType = DayType.mnf.rawValue
+        }
+        do {
+            try context.save()
+        } catch {
+            print("Error saving context: \(error)")
+        }
+    }
 }
 
 extension Array {

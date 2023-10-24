@@ -8,13 +8,14 @@
 import SwiftUI
 import Firebase
 import FirebaseFirestore
+import FirebaseFirestoreSwift
 
 class HomeViewModel: ObservableObject {
     @Published var users: [User] = []
     @Published var leagues: [League] = []
     @Published var weekGames: [GameModel] = []
     @Published var allGames: [GameModel] = []
-    @Published var allBets: [Bet] = []
+    @Published var allBets: [BetModel] = []
     @Published var generatedBets: [Bet] = []
     @Published var allParlays: [Parlay] = []
     @Published var selectedBets: [Bet] = []
@@ -35,12 +36,16 @@ class HomeViewModel: ObservableObject {
     @Published var userLeagues: [League] = []
     @Published var leagueType: LeagueType = .weekly
     
-    @Published var leagueBets = [Bet]()
-    @Published var userBets = [Bet]()
+    @Published var leagueBets = [BetModel]()
+    @Published var userBets = [BetModel]()
     @Published var leagueParlays = [Parlay]()
     @Published var userParlays = [Parlay]()
     
-    @Published var entities: FetchedResults<GameModel>?
+    @Published var allGameModels: FetchedResults<GameModel>?
+    @Published var allBetModels: FetchedResults<BetModel>?
+    @Published var betCount = 0
+    
+    let db = Firestore.firestore()
     
     static let keys = [
         "ab5225bbaeaf25a64a6bba6340bdf2e2"
@@ -80,6 +85,20 @@ class HomeViewModel: ObservableObject {
         }
     }
     
+    func fetchCounter() async throws -> Int {
+        let docRef = db.collection("helpers").document("betCount")
+        do {
+            let document = try await docRef.getDocument()
+            if let fieldValue = document.get("totalBets") as? Int {
+                return fieldValue
+            } else {
+                throw NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey : "Field not found or not an integer"])
+            }
+        } catch {
+            throw error
+        }
+    }
+    
     func fetchEssentials(updateGames: Bool, updateScores: Bool, league: League) async {
         do {
             guard let leaguePlayers = league.players else {
@@ -90,23 +109,33 @@ class HomeViewModel: ObservableObject {
             let fetchedUsers = try await UserViewModel().fetchAllUsers(leagueUsers: leaguePlayers)
             let relevantUsers = fetchedUsers.filter { leaguePlayers.contains($0.id ?? "") }
 
-            let fetchedAllGames = try await GameService().fetchGamesFromFirestore()
+//            let fetchedAllGames = try await GameService().fetchGamesFromFirestore()
             
             DispatchQueue.main.async {
-                if let entities = self.entities {
-                    self.allGames = Array(entities)
-                    self.weekGames = Array(entities).filter { $0.week == self.currentWeek }
+                Task {
+                    do {
+                        self.betCount = try await self.fetchCounter()
+                        if let allGameModels = self.allGameModels {
+                            self.allGames = Array(allGameModels)
+                            self.weekGames = Array(allGameModels).filter { $0.week == self.currentWeek }
+                        }
+                        if let allBetModels = self.allBetModels {
+                            self.leagueBets = Array(allBetModels)
+                        }
+                    } catch {
+                        
+                    }
                 }
             }
             
-//            if let entities = entities {
-//                let leagueBetsResult = try await BetViewModel().fetchBets(games: Array(entities), leagueCode: league.code)
-//                let leagueParlaysResult = try await ParlayViewModel().fetchParlays(games: Array(entities)).filter({ $0.leagueCode == league.code })
-//                DispatchQueue.main.async {
+            if let allGameModels = allGameModels {
+//                let leagueBetsResult = try await BetViewModel().fetchBets(games: Array(allGameModels), leagueCode: league.code)
+                let leagueParlaysResult = try await ParlayViewModel().fetchParlays(games: Array(allGameModels)).filter({ $0.leagueCode == league.code })
+                DispatchQueue.main.async {
 //                    self.leagueBets = leagueBetsResult
-//                    self.leagueParlays = leagueParlaysResult
-//                }
-//            }
+                    self.leagueParlays = leagueParlaysResult
+                }
+            }
 
 //            if updateScores {
 //                await self.updateAndFetch(games: self.weekGames, league: league)
@@ -139,9 +168,9 @@ class HomeViewModel: ObservableObject {
             for game in alteredGames {
                 try await GameService().updateGameScore(game: game)
             }
-            if let entities = entities {
-                let newBets = try await BetViewModel().fetchBets(games: Array(entities), leagueCode: league.code)
-                let newParlays = try await ParlayViewModel().fetchParlays(games: Array(entities))
+            if let allGameModels = allGameModels {
+                let newBets = try await BetViewModel().fetchBets(games: Array(allGameModels), leagueCode: league.code)
+                let newParlays = try await ParlayViewModel().fetchParlays(games: Array(allGameModels))
                 DispatchQueue.main.async {
 //                    self.weekGames = alteredGames
                     for parlay in newParlays {
@@ -161,7 +190,7 @@ class HomeViewModel: ObservableObject {
                         }
                     }
 
-                    self.allBets = newBets
+//                    self.allBets = newBets
                 }
             }
 
@@ -177,15 +206,12 @@ class HomeViewModel: ObservableObject {
             DispatchQueue.main.async {
                 self.currentDate = activeDate
             }
-            
-//            await self.fetchEssentials(updateGames: updateGames, updateScores: updateScores, league: )
         }
     }
     
     func setCurrentWeek() {
         let calendar = Calendar.current
         
-        // Finding the most recent Sunday
         let components = calendar.dateComponents([.year, .month, .day, .weekday], from: Date())
         let daysSinceSunday = (components.weekday! - calendar.firstWeekday + 7) % 7
         guard let lastSunday = calendar.date(byAdding: .day, value: -daysSinceSunday, to: Date()) else {
@@ -199,7 +225,6 @@ class HomeViewModel: ObservableObject {
         currentWeek = Week.from(dayDifference: diffDays).rawValue
     }
     
-    // Converting fetchDate to use async/await
     func fetchDate() async throws -> String? {
         let db = Firestore.firestore()
         let docRef = db.collection("activeDate").document("NBpRBsY6JHSQj87MdTd5")
@@ -249,21 +274,6 @@ class HomeViewModel: ObservableObject {
             }
         }
     }
-    
-//    func updateGameDayType(game: Game) {
-//        let db = Firestore.firestore()
-//        let gameDocument = db.collection("nflGames").document(game.documentId)
-//
-//        if let gameDayType = game.dayType {
-//            gameDocument.updateData([
-//                "dayType": gameDayType
-//            ]) { err in
-//                if let err = err {
-//                    print("Error updating document: \(err)")
-//                }
-//            }
-//        }
-//    }
     
     func updateGameWeek(game: Game, week: Int) {
         let db = Firestore.firestore()

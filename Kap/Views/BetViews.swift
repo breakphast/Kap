@@ -311,9 +311,9 @@ struct PlacedBetView: View {
     @State var deleteActive = false
     @State private var maxBets = 0
     @Namespace var trash
-    let bet: Bet
+    let bet: BetModel
 //    @State var bets: [Bet]
-    let week: Int
+    let week: Int16
     
     func pointsColor(for result: BetResult) -> Color {
         switch result {
@@ -333,8 +333,8 @@ struct PlacedBetView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     VStack(alignment: .leading, spacing: 4) {
                         HStack {
-                            Text(bet.type == .over || bet.type == .under ? "\(bet.game.awayTeam ?? "") @ \(bet.game.homeTeam ?? "")" : bet.selectedTeam ?? "")
-                                .font(bet.type == .over || bet.type == .under ? .caption2.bold() : .subheadline.bold())
+                            Text(bet.type == "Over" || bet.type == "Under" ? "\(bet.game.awayTeam ?? "") @ \(bet.game.homeTeam ?? "")" : bet.selectedTeam ?? "")
+                                .font(bet.type == "Over" || bet.type == "Under" ? .caption2.bold() : .subheadline.bold())
                             Spacer()
                             Text("\(bet.odds > 0 ? "+": "")\(bet.odds)")
                                 .font(.subheadline.bold())
@@ -365,20 +365,20 @@ struct PlacedBetView: View {
                         HStack(spacing: 4) {
                             Text("Points:")
                                 .font(.headline.bold())
-                            Text("\(bet.result != .pending ? bet.points! < 0 ? "-" : "+" : "")\(abs(bet.result == .push ? 0 : bet.points!).twoDecimalString)")
+                            Text("\(bet.result != "Pending" ? bet.points < 0 ? "-" : "+" : "")\(abs(bet.result == "Push" ? 0 : bet.points).twoDecimalString)")
                                 .font(.title2.bold())
-                                .foregroundStyle(pointsColor(for: bet.result ?? .pending))
+                                .foregroundStyle(pointsColor(for: BetResult(rawValue: bet.result) ?? .pending))
                         }
                         Spacer()
                         
-                        if Date() < bet.game.date && bet.result == .pending {
+                        if Date() < bet.game.date && bet.result == "Pending" {
                             menu
                         }
                         
-                        if bet.result != .pending {
-                            Image(systemName: bet.result == .win ? "checkmark.circle" : "xmark.circle")
+                        if bet.result != "Pending" {
+                            Image(systemName: bet.result == "Win" ? "checkmark.circle" : "xmark.circle")
                                 .font(.title3.bold())
-                                .foregroundColor(bet.result == .win ? Color("bean") : bet.result == .loss ? Color("redd") : .secondary)
+                                .foregroundColor(bet.result == "Win" ? Color("bean") : bet.result == "Loss" ? Color("redd") : .secondary)
                         }
                     }
                 }
@@ -424,12 +424,12 @@ struct PlacedBetView: View {
     }
     
     var betText: String {
-        if bet.type == .over || bet.type == .under {
-            return bet.type.rawValue + " " + (bet.type == .over ? String(bet.game.over) : String(bet.game.under))
-        } else if bet.type == .spread {
+        if bet.type == "Over" || bet.type == "Under" {
+            return bet.type + " " + (bet.type == "Over" ? String(bet.game.over) : String(bet.game.under))
+        } else if bet.type == "Spread" {
             return "Spread " + bet.betString
         } else {
-            return bet.type.rawValue
+            return bet.type
         }
     }
 }

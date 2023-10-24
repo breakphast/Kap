@@ -30,7 +30,7 @@ struct Home: View {
             LeagueList(leagues: $homeViewModel.userLeagues, loggedIn: $loggedIn)
         } else {
             TabView {
-                ContestView()
+                Board()
                     .tabItem {
                         Label("Home", systemImage: "house.fill")
                     }
