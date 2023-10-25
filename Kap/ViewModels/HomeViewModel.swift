@@ -46,10 +46,17 @@ class HomeViewModel: ObservableObject {
     @Published var allBetModels: FetchedResults<BetModel>?
     @Published var counter: Counter?
     
+    @FetchRequest(
+        entity: GameModel.entity(),
+        sortDescriptors: [
+            NSSortDescriptor(keyPath: \GameModel.homeTeam, ascending: true)
+        ]
+    ) var localGameModels: FetchedResults<GameModel>
+    
     let db = Firestore.firestore()
     
     static let keys = [
-        "ab5225bbaeaf25a64a6bba6340bdf2e2"
+        "31a0c05953fcef15b59b2a998fadafd9"
     ]
     
     let formatter: DateFormatter = {
@@ -198,6 +205,15 @@ class HomeViewModel: ObservableObject {
 
         } catch {
             print("Failed update and fetch", error.localizedDescription)
+        }
+    }
+    
+    func addInitialGames(in context: NSManagedObjectContext) async throws {
+        do {
+            let fetchedAllGames = try await GameService().fetchGamesFromFirestore()
+            await Board().doThis(games: fetchedAllGames, in: context)
+        } catch {
+            
         }
     }
     

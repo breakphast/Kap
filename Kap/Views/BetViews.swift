@@ -373,7 +373,7 @@ struct PlacedBetView: View {
                     HStack {
                         Text("\(bet.game.awayTeam ?? "") @ \(bet.game.homeTeam ?? "")")
                         Spacer()
-                        Text(convertDateForBetCard(bet.game.date))
+                        Text(convertDateForBetCard(bet.game.date ?? Date()))
                     }
                     .font(.caption2.bold())
                     .lineLimit(1)

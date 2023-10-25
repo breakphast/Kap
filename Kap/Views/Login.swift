@@ -123,6 +123,23 @@ struct Login: View {
                             return
                         }
                         Task {
+                            if allGameModels.isEmpty {
+                                print("No games. Adding now...")
+                                do {
+                                    try await homeViewModel.addInitialGames(in: viewContext)
+                                    homeViewModel.allGameModels = self.allGameModels
+                                    if let allGames = homeViewModel.allGameModels {
+                                        do {
+                                            try await Board().updateGameOdds(games: Array(allGames).filter({$0.week == homeViewModel.currentWeek}), in: viewContext)
+                                            print("Done adding games.")
+                                        } catch {
+                                            
+                                        }
+                                    }
+                                } catch {
+                                    
+                                }
+                            }
                             homeViewModel.userLeagues = try await LeagueViewModel().fetchLeaguesContainingID(id: userID!)
                             let defaultCode = UserDefaults.standard.string(forKey: "defaultleagueCode")
                             guard defaultCode == "" else {

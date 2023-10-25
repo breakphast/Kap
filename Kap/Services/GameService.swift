@@ -175,15 +175,6 @@ class GameService {
         }
         
         games.sort(by: { $0.date < $1.date })
-//        for game in games {
-//            for (week, dateRange) in nflSeason2023 {
-//                if dateRange.contains(game.date) {
-//                    HomeViewModel().updateGameWeek(game: game, week: week)
-//                    
-//                    break  // Break out of the loop once the week is found
-//                }
-//            }
-//        }
         
         return games
     }

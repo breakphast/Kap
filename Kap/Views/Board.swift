@@ -72,6 +72,15 @@ struct Board: View {
                         .foregroundStyle(.clear)
                 }
                 .fontDesign(.rounded)
+                .refreshable {
+                    Task {
+                        do {
+                            try await updateGameOdds(games: homeViewModel.weekGames, in: viewContext)
+                        } catch {
+                            
+                        }
+                    }
+                }
                 
                 if homeViewModel.selectedBets.count > 0 {
                     Spacer()
@@ -107,57 +116,88 @@ struct Board: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .task {
-                do {
-                    try await fetchCloudTimestamp()
-                    
-                    if let timestamp = homeViewModel.counter?.timestamp {
-                        var stampedBets = try await BetViewModel().fetchStampedBets(games: homeViewModel.weekGames, leagueCode: "2222", timeStamp: timestamp)
-                        if !stampedBets.isEmpty {
-                            let localBetIDs = Set(allBetModels.map {$0.id})
-                            stampedBets = stampedBets.filter { !localBetIDs.contains($0.id) }
-                            print("New bets detected:", stampedBets.count)
-                            print(stampedBets.map {$0.betString})
-                            convertToBetModels(bets: stampedBets, in: viewContext)
-                        }
-                    }
-                } catch {
-                    
-                }
-//                updateEntity(in: viewContext)
-//                do {
-//                    try await BetViewModel().updateEntity()
-//                } catch {
-//                    
-//                }
-//                updateGameAttribute(games: homeViewModel.allGames, in: viewContext)
-                
-//                updateGameOdds(games: homeViewModel.weekGames, in: viewContext)
-//                deleteAllData(ofEntity: "BetModel") { result in
-//                    switch result {
-//                    case .success(_):
-//                        print("YAY")
-//                    case .failure(_):
-//                        print("NAY")
+//                if let allGames = homeViewModel.allGameModels {
+//                    do {
+////                        print(Array(allGames).filter({$0.week == 8}))
+//                        try await updateGameOdds(games: Array(allGames).filter({$0.week == 8}), in: viewContext)
+//                    } catch {
+//                        
 //                    }
 //                }
-//                deleteAllData(ofEntity: "BetOptionModel") { result in
-//                    
-//                }
-                
-//                doThisForBets(bets: homeViewModel.leagueBets, in: viewContext)
-                
 //                do {
-//                    let fetchedAllGames = try await GameService().fetchGamesFromFirestore()
-//                    doThis(games: fetchedAllGames, in: viewContext)
-//                    
+////                    try await checkForNewBets()
+//                    try await addInitialGames()
 //                } catch {
 //                    
 //                }
+//                deleteAllData(ofEntity: "GameModel") { result in }
+//                deleteAllData(ofEntity: "BetOptionModel") { result in }
             }
         }
     }
     
-    private func fetchCloudTimestamp() async throws {
+    func updateGameOdds(games: [GameModel], in context: NSManagedObjectContext) async throws {
+        let updatedGames = try await GameService().getGames()
+        for game in games {
+            if let newGame = updatedGames.first(where: {$0.documentId == game.documentID}) {
+                game.homeSpread = newGame.homeSpread
+                game.awaySpread = newGame.awaySpread
+                game.homeMoneyLine = Int16(newGame.homeMoneyLine)
+                game.awayMoneyLine = Int16(newGame.awayMoneyLine)
+                game.over = newGame.over
+                game.under = newGame.under
+                game.homeSpreadPriceTemp = newGame.homeSpreadPriceTemp
+                game.awaySpreadPriceTemp = newGame.awaySpreadPriceTemp
+                game.overPriceTemp = newGame.overPriceTemp
+                game.underPriceTemp = newGame.underPriceTemp
+                game.betOptions = []
+                for betOption in newGame.betOptions {
+                    let betOptionModel = BetOptionModel(context: context)
+                    betOptionModel.id = betOption.id
+                    betOptionModel.odds = Int16(betOption.odds)
+                    betOptionModel.spread = betOption.spread ?? 0
+                    betOptionModel.over = betOption.over
+                    betOptionModel.under = betOption.under
+                    betOptionModel.betType = betOption.betType.rawValue
+                    betOptionModel.selectedTeam = betOption.selectedTeam
+                    betOptionModel.confirmBet = betOption.confirmBet
+                    betOptionModel.maxBets = Int16(betOption.maxBets ?? 0)
+                    betOptionModel.game = game
+                    betOptionModel.betString = betOption.betString
+                    
+                    game.addToBetOptions(betOptionModel)
+                    do {
+                        try context.save()
+                    } catch {
+                        print("Error saving context: \(error)")
+                    }
+                }
+            }
+        }
+        do {
+            try context.save()
+            print("Done.")
+        } catch {
+            print("Error saving context: \(error)")
+        }
+    }
+
+    private func checkForNewBets() async throws {
+        try await fetchLocalTimestamp()
+        
+        if let timestamp = homeViewModel.counter?.timestamp {
+            var stampedBets = try await BetViewModel().fetchStampedBets(games: homeViewModel.weekGames, leagueCode: "2222", timeStamp: timestamp)
+            if !stampedBets.isEmpty {
+                let localBetIDs = Set(allBetModels.map {$0.id})
+                stampedBets = stampedBets.filter { !localBetIDs.contains($0.id) }
+                print("New bets detected:", stampedBets.count)
+                print(stampedBets.map {$0.betString})
+                convertToBetModels(bets: stampedBets, in: viewContext)
+            }
+        }
+    }
+    
+    private func fetchLocalTimestamp() async throws {
         let request: NSFetchRequest<Counter> = Counter.fetchRequest()
         request.fetchLimit = 1
         
@@ -221,52 +261,6 @@ struct Board: View {
         }
     }
     
-    func updateGameOdds(games: [GameModel], in context: NSManagedObjectContext) async throws {
-        let updatedGames = try await GameService().getGames()
-        for game in games {
-            if let newGame = updatedGames.first(where: {$0.documentId == game.documentID}) {
-                
-                game.homeSpread = newGame.homeSpread
-                game.awaySpread = newGame.awaySpread
-                game.homeMoneyLine = Int16(newGame.homeMoneyLine)
-                game.awayMoneyLine = Int16(newGame.awayMoneyLine)
-                game.over = newGame.over
-                game.under = newGame.under
-                game.homeSpreadPriceTemp = newGame.homeSpreadPriceTemp
-                game.awaySpreadPriceTemp = newGame.awaySpreadPriceTemp
-                game.overPriceTemp = newGame.overPriceTemp
-                game.underPriceTemp = newGame.underPriceTemp
-                
-                for betOption in newGame.betOptions {
-                    let betOptionModel = BetOptionModel(context: context)
-                    betOptionModel.id = betOption.id
-                    betOptionModel.odds = Int16(betOption.odds)
-                    betOptionModel.spread = betOption.spread ?? 0
-                    betOptionModel.over = betOption.over
-                    betOptionModel.under = betOption.under
-                    betOptionModel.betType = betOption.betType.rawValue
-                    betOptionModel.selectedTeam = betOption.selectedTeam
-                    betOptionModel.confirmBet = betOption.confirmBet
-                    betOptionModel.maxBets = Int16(betOption.maxBets ?? 0)
-                    betOptionModel.game = game
-                    betOptionModel.betString = betOption.betString
-                    
-                    game.addToBetOptions(betOptionModel)
-                    do {
-                        try context.save()
-                    } catch {
-                        print("Error saving context: \(error)")
-                    }
-                }
-            }
-        }
-        do {
-            try context.save()
-        } catch {
-            print("Error saving context: \(error)")
-        }
-    }
-    
     func updateGameAttribute(games: [GameModel], in context: NSManagedObjectContext) {
         if let game = games.first(where: {$0.documentID == "2023-10-30-Detroit-Lions-vs-Las-Vegas-Raiders"}) {
             game.dayType = "MNF"
@@ -279,7 +273,7 @@ struct Board: View {
         }
     }
 
-    static func doThis(games: [Game], in context: NSManagedObjectContext) {
+    func doThis(games: [Game], in context: NSManagedObjectContext) async {
         for game in games {
             let gameModel = GameModel(context: context) // Now we are using the passed-in context
             
@@ -332,29 +326,22 @@ struct Board: View {
                 betOptionModel.betString = betOption.betString
                 
                 gameModel.addToBetOptions(betOptionModel)
-                do {
-                    try context.save()
-                } catch {
-                    print("Error saving context: \(error)")
-                }
-                
             }
-            do {
-                try context.save()
-            } catch {
-                print("Error saving context: \(error)")
-            }
+        }
+        do {
+            try context.save()
+        } catch {
+            print("Error saving context: \(error)")
         }
     }
 
     func deleteAllData(ofEntity entityName: String, completion: @escaping (Result<Void, Error>) -> Void) {
-        let managedObjectContext = PersistenceController.shared.container.viewContext
         let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
         let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
 
         do {
-            try managedObjectContext.execute(batchDeleteRequest)
-            try managedObjectContext.save()
+            try viewContext.execute(batchDeleteRequest)
+            try viewContext.save()
             completion(.success(()))
         } catch {
             completion(.failure(error))
