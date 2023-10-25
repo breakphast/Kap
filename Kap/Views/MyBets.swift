@@ -159,7 +159,7 @@ struct MyBets: View {
                         }
                     }
                     
-                    ForEach(filteredBets.sorted(by: { $0.game.date < $1.game.date }), id: \.id) { bet in
+                    ForEach(homeViewModel.userBets.filter{$0.week == week && $0.result == BetResult.pending.rawValue}.sorted(by: { $0.game.date ?? Date() < $1.game.date ?? Date() }), id: \.id) { bet in
                         PlacedBetView(bet: bet, week: Int16(week))
                     }
                 }

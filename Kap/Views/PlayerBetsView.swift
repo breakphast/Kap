@@ -156,7 +156,7 @@ struct PlayerBetsView: View {
                         .background(Color("lion"))
                         .cornerRadius(4)
                     
-                    ForEach(filteredBets.sorted(by: { $0.game.date < $1.game.date }), id: \.id) { bet in
+                    ForEach(filteredBets.sorted(by: { $0.game.date ?? Date() < $1.game.date ?? Date() }), id: \.id) { bet in
                         PlacedBetView(bet: bet, week: bet.week)
                     }
                 }

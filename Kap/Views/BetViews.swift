@@ -325,11 +325,11 @@ struct ParlayView: View {
 struct PlacedBetView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
+    @Environment(\.managedObjectContext) private var viewContext
     @State var deleteActive = false
     @State private var maxBets = 0
     @Namespace var trash
     let bet: BetModel
-//    @State var bets: [Bet]
     let week: Int16
     
     func pointsColor(for result: BetResult) -> Color {
@@ -363,7 +363,7 @@ struct PlacedBetView: View {
                                 .lineLimit(nil)
                                 .fixedSize(horizontal: false, vertical: true)
                             Spacer()
-                            Text("(\(bet.game.dayType!) \(homeViewModel.leagueBets.filter({ $0.game.dayType! == bet.game.dayType && $0.week == bet.week && $0.playerID == bet.playerID && $0.leagueCode == homeViewModel.activeleagueCode!}).count)/\(maxBets))")
+                            Text("(\(bet.game.dayType ?? "") \(homeViewModel.leagueBets.filter({ $0.game.dayType == bet.game.dayType && $0.week == bet.week && $0.playerID == bet.playerID && $0.leagueCode == homeViewModel.activeleagueCode!}).count)/\(maxBets))")
                                 .font(.caption.bold())
                                 .foregroundStyle(.secondary)
                         }
@@ -388,7 +388,7 @@ struct PlacedBetView: View {
                         }
                         Spacer()
                         
-                        if Date() < bet.game.date && bet.result == "Pending" {
+                        if let gameDate = bet.game.date, Date() < gameDate && bet.result == "Pending" {
                             menu
                         }
                         
@@ -423,8 +423,10 @@ struct PlacedBetView: View {
                 withAnimation {
                     deleteActive.toggle()
                     Task {
-                        let _ = try await BetViewModel().deleteBet(betID: bet.id)
+                        try await BetViewModel().deleteBet(betID: bet.id)
+                        BetViewModel().deleteBetModel(in: viewContext, id: bet.id)
                         homeViewModel.userBets.removeAll(where: { $0.id == bet.id })
+                        homeViewModel.leagueBets.removeAll(where: { $0.id == bet.id })
                     }
                 }
             } label: {
@@ -515,7 +517,7 @@ struct PlacedParlayView: View {
                             }
                             Spacer()
                             
-                            if parlay.bets.contains(where: { Date() < $0.game.date && $0.result == .pending }) {
+                            if parlay.bets.contains(where: { Date() < $0.game.date ?? Date() && $0.result == .pending }) {
                                 menu
                             }
                         }
@@ -530,7 +532,7 @@ struct PlacedParlayView: View {
             .foregroundStyle(.white)
             .multilineTextAlignment(.leading)
             
-            if parlay.bets.filter({ Date() > $0.game.date }).count == 0 {
+            if parlay.bets.filter({ Date() > $0.game.date ?? Date() }).count == 0 {
                 if deleteActive {
                     
                 }

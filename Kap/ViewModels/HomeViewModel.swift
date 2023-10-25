@@ -44,7 +44,6 @@ class HomeViewModel: ObservableObject {
     
     @Published var allGameModels: FetchedResults<GameModel>?
     @Published var allBetModels: FetchedResults<BetModel>?
-    @Published var betCount = 0
     @Published var counter: Counter?
     
     let db = Firestore.firestore()
@@ -87,20 +86,6 @@ class HomeViewModel: ObservableObject {
         }
     }
     
-    func fetchCounter() async throws -> Int {
-        let docRef = db.collection("helpers").document("betCount")
-        do {
-            let document = try await docRef.getDocument()
-            if let fieldValue = document.get("totalBets") as? Int {
-                return fieldValue
-            } else {
-                throw NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey : "Field not found or not an integer"])
-            }
-        } catch {
-            throw error
-        }
-    }
-    
     func updateLocalTimestamp(in context: NSManagedObjectContext) {
         let fetchRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: "Counter")
         fetchRequest.predicate = NSPredicate(format: "attributeName == %@", "attributeValue")
@@ -132,7 +117,6 @@ class HomeViewModel: ObservableObject {
             DispatchQueue.main.async {
                 Task {
                     do {
-                        self.betCount = try await self.fetchCounter()
                         if let allGameModels = self.allGameModels {
                             self.allGames = Array(allGameModels)
                             self.weekGames = Array(allGameModels).filter { $0.week == self.currentWeek }

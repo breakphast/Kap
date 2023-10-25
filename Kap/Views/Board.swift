@@ -111,8 +111,14 @@ struct Board: View {
                     try await fetchCloudTimestamp()
                     
                     if let timestamp = homeViewModel.counter?.timestamp {
-                        let stampedBets = try await BetViewModel().fetchStampedBets(games: homeViewModel.weekGames, leagueCode: "2222", timeStamp: timestamp)
-                        print("Stamped:", stampedBets.count)
+                        var stampedBets = try await BetViewModel().fetchStampedBets(games: homeViewModel.weekGames, leagueCode: "2222", timeStamp: timestamp)
+                        if !stampedBets.isEmpty {
+                            let localBetIDs = Set(allBetModels.map {$0.id})
+                            stampedBets = stampedBets.filter { !localBetIDs.contains($0.id) }
+                            print("New bets detected:", stampedBets.count)
+                            print(stampedBets.map {$0.betString})
+                            convertToBetModels(bets: stampedBets, in: viewContext)
+                        }
                     }
                 } catch {
                     
@@ -176,7 +182,6 @@ struct Board: View {
         let counter = Counter(context: context)
         counter.betCount = 0
         counter.timestamp = Date()
-//        print(counter)
         
         do {
             try context.save()
@@ -187,7 +192,7 @@ struct Board: View {
         }
     }
     
-    func doThisForBets(bets: [Bet], in context: NSManagedObjectContext) {
+    func convertToBetModels(bets: [Bet], in context: NSManagedObjectContext) {
         for bet in bets {
             let betModel = BetModel(context: context)
             
@@ -206,9 +211,8 @@ struct Board: View {
             betModel.betString = bet.betString
             betModel.points = bet.points ?? 0
             betModel.betOptionString = bet.betOptionString
-            if let timestamp = betModel.timestamp {
-                betModel.timestamp = timestamp
-            }
+            betModel.timestamp = bet.timestamp
+
             do {
                 try context.save()
             } catch {
@@ -253,7 +257,6 @@ struct Board: View {
                     } catch {
                         print("Error saving context: \(error)")
                     }
-                    
                 }
             }
         }
@@ -304,7 +307,7 @@ struct Board: View {
             var documentId: String {
                 let formatter = DateFormatter()
                 formatter.dateFormat = "yyyy-MM-dd"
-                let datePart = formatter.string(from: gameModel.date)
+                let datePart = formatter.string(from: gameModel.date ?? Date())
                 
                 // Converting team names to a URL-safe format
                 let safeHomeTeam = (gameModel.homeTeam ?? "").replacingOccurrences(of: " ", with: "-")
@@ -402,7 +405,7 @@ struct GameListingView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            SectionView(title: "Thursday Night Football", games: allGameModels.sorted(by: {$0.date < $1.date}), first: true, dayType: .tnf)
+            SectionView(title: "Thursday Night Football", games: allGameModels.sorted(by: {$0.date ?? Date() < $1.date ?? Date()}), first: true, dayType: .tnf)
         }
         .padding()
     }
@@ -447,7 +450,7 @@ struct SectionView: View {
             }
             
             ForEach(games, id: \.id) { game in
-                if Date() < game.date {
+                if Date() < game.date ?? Date() {
                     GameRow(game: game)
                 }
             }
@@ -472,7 +475,7 @@ struct GameRow: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(convertDateToDesiredFormat(game.date))
+            Text(convertDateToDesiredFormat(game.date ?? Date()))
                 .font(.system(.caption2, design: .rounded, weight: .semibold))
             
             HStack(alignment: .center) {
