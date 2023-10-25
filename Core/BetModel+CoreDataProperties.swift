@@ -30,6 +30,7 @@ extension BetModel {
     @NSManaged public var week: Int16
     @NSManaged public var leagueCode: String
     @NSManaged public var betOptionString: String
+    @NSManaged public var timestamp: Date?
 
 }
 

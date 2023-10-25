@@ -15,6 +15,20 @@ struct BetView: View {
     @State var isPlaced = false
     @Environment(\.dismiss) var dismiss
     let bet: Bet
+    @Environment(\.managedObjectContext) private var viewContext
+    @FetchRequest(
+        entity: GameModel.entity(),
+        sortDescriptors: [
+            NSSortDescriptor(keyPath: \GameModel.homeTeam, ascending: true)
+        ]
+    ) var allGameModels: FetchedResults<GameModel>
+    
+    @FetchRequest(
+        entity: BetModel.entity(),
+        sortDescriptors: [
+            NSSortDescriptor(keyPath: \BetModel.id, ascending: true)
+        ]
+    ) var allBetModels: FetchedResults<BetModel>
     
     private func fetchData() async {
         do {
@@ -114,12 +128,11 @@ struct BetView: View {
         }
     }
     
-    // place bet button
     var buttons: some View {
         HStack {
             Button {
                 Task {
-                    guard let betOptionsSet = bet.game.betOptions as? Set<BetOption> else {
+                    guard let betOptionsSet = bet.game.betOptions as? Set<BetOptionModel> else {
                         print("Failed to retrieve bet options.")
                         return
                     }
@@ -130,21 +143,25 @@ struct BetView: View {
                         return
                     }
                     
-                    let placedBet = BetViewModel().makeBet(for: bet.game, betOption: betOption.id, playerID: authViewModel.currentUser?.id ?? "", week: homeViewModel.currentWeek, leagueCode: homeViewModel.activeleagueCode ?? "")
-                    
-                    if !homeViewModel.userBets.contains(where: { $0.game.documentID == placedBet?.game.documentID && $0.leagueCode == homeViewModel.activeleagueCode! }) {
-                        try await BetViewModel().addBet(bet: placedBet!, playerID: authViewModel.currentUser?.id ?? "")
-                        homeViewModel.userBets.append(placedBet!)
-                                                
-                        isPlaced = true
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                            withAnimation {
-                                homeViewModel.selectedBets.removeAll(where: { $0.id == bet.id })
-                                if homeViewModel.selectedBets.count == 0 {
-                                    dismiss()
+                    if let placedBet = BetViewModel().makeBet(for: bet.game, betOption: betOption.id ?? "", playerID: authViewModel.currentUser?.id ?? "", week: homeViewModel.currentWeek, leagueCode: homeViewModel.activeleagueCode ?? "") {
+                        if !homeViewModel.userBets.contains(where: { $0.game.documentID == placedBet.game.documentID && $0.leagueCode == homeViewModel.activeleagueCode! }) {
+                            try await BetViewModel().addBet(bet: placedBet, playerID: authViewModel.currentUser?.id ?? "", in: viewContext)
+                            homeViewModel.leagueBets = Array(allBetModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
+                            homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
+                            homeViewModel.updateLocalTimestamp(in: viewContext)
+                                                    
+                            isPlaced = true
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                                withAnimation {
+                                    homeViewModel.selectedBets.removeAll(where: { $0.id == bet.id })
+                                    if homeViewModel.selectedBets.count == 0 {
+                                        dismiss()
+                                    }
                                 }
                             }
                         }
+                    } else {
+                        return
                     }
                 }
             } label: {

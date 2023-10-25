@@ -28,6 +28,8 @@
 		3E72A8E42AE1765D00642328 /* BetOptionModel+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E72A8E02AE1765D00642328 /* BetOptionModel+CoreDataProperties.swift */; };
 		3E72A8E52AE1765D00642328 /* GameModel+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E72A8E12AE1765D00642328 /* GameModel+CoreDataClass.swift */; };
 		3E72A8E62AE1765D00642328 /* GameModel+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E72A8E22AE1765D00642328 /* GameModel+CoreDataProperties.swift */; };
+		3E9C8B7B2AE861960097A1F6 /* Counter+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E9C8B792AE861960097A1F6 /* Counter+CoreDataClass.swift */; };
+		3E9C8B7C2AE861960097A1F6 /* Counter+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E9C8B7A2AE861960097A1F6 /* Counter+CoreDataProperties.swift */; };
 		3EA650412A5F7565007CA5ED /* KapApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EA650402A5F7565007CA5ED /* KapApp.swift */; };
 		3EA650452A5F7568007CA5ED /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3EA650442A5F7568007CA5ED /* Assets.xcassets */; };
 		3EA650482A5F7568007CA5ED /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3EA650472A5F7568007CA5ED /* Preview Assets.xcassets */; };
@@ -83,6 +85,8 @@
 		3E72A8E02AE1765D00642328 /* BetOptionModel+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BetOptionModel+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		3E72A8E12AE1765D00642328 /* GameModel+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GameModel+CoreDataClass.swift"; sourceTree = "<group>"; };
 		3E72A8E22AE1765D00642328 /* GameModel+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GameModel+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		3E9C8B792AE861960097A1F6 /* Counter+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Counter+CoreDataClass.swift"; sourceTree = "<group>"; };
+		3E9C8B7A2AE861960097A1F6 /* Counter+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Counter+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		3EA6503D2A5F7565007CA5ED /* Kap.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Kap.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3EA650402A5F7565007CA5ED /* KapApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KapApp.swift; sourceTree = "<group>"; };
 		3EA650442A5F7568007CA5ED /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -152,11 +156,11 @@
 			path = League;
 			sourceTree = "<group>";
 		};
-		3EA650342A5F7565007CA5ED = {
+		3E8004482AE9405F00F0621C /* Core */ = {
 			isa = PBXGroup;
 			children = (
-				3ECDB7162AE35B5000DF1BF5 /* ContestDetails.swift */,
-				3ECDB7142AE2CD4700DF1BF5 /* ContestView.swift */,
+				3E9C8B792AE861960097A1F6 /* Counter+CoreDataClass.swift */,
+				3E9C8B7A2AE861960097A1F6 /* Counter+CoreDataProperties.swift */,
 				3E72A8DF2AE1765D00642328 /* BetOptionModel+CoreDataClass.swift */,
 				3E72A8E02AE1765D00642328 /* BetOptionModel+CoreDataProperties.swift */,
 				3E72A8E12AE1765D00642328 /* GameModel+CoreDataClass.swift */,
@@ -165,6 +169,14 @@
 				3E67D0192AE0BFEA00D7614A /* BetModel+CoreDataProperties.swift */,
 				3E67D0132AE0BE4400D7614A /* NewBetModel.xcdatamodeld */,
 				3E67D0162AE0BE9B00D7614A /* Persistence.swift */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		3EA650342A5F7565007CA5ED = {
+			isa = PBXGroup;
+			children = (
+				3E8004482AE9405F00F0621C /* Core */,
 				3EA6503F2A5F7565007CA5ED /* Kap */,
 				3EA6503E2A5F7565007CA5ED /* Products */,
 			);
@@ -249,6 +261,8 @@
 				3EA874D92ABE9800009F4ED2 /* LiveBetsView.swift */,
 				3E2995842AB4ED5E00F40003 /* PlayerBetsView.swift */,
 				3E2995862AB9F4E600F40003 /* HowToPlay.swift */,
+				3ECDB7142AE2CD4700DF1BF5 /* ContestView.swift */,
+				3ECDB7162AE35B5000DF1BF5 /* ContestDetails.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -360,6 +374,7 @@
 				3E34518D2AC3477600332133 /* LeagueList.swift in Sources */,
 				3EE35E572A60D7940026F952 /* League.swift in Sources */,
 				3EFA18772A709A99002D6E94 /* ParlayViewModel.swift in Sources */,
+				3E9C8B7C2AE861960097A1F6 /* Counter+CoreDataProperties.swift in Sources */,
 				3E3451882AC2250C00332133 /* LeagueIntro.swift in Sources */,
 				3EDBFCDC2A8FC03000EB8628 /* LiveScore.swift in Sources */,
 				3EE35E6A2A61C8C00026F952 /* Leaderboard.swift in Sources */,
@@ -394,6 +409,7 @@
 				3EDBFCD62A8EA18000EB8628 /* Login.swift in Sources */,
 				3E2995852AB4ED5E00F40003 /* PlayerBetsView.swift in Sources */,
 				3E72A8E62AE1765D00642328 /* GameModel+CoreDataProperties.swift in Sources */,
+				3E9C8B7B2AE861960097A1F6 /* Counter+CoreDataClass.swift in Sources */,
 				3EE35E592A60D7B30026F952 /* Bet.swift in Sources */,
 				3ED8EC3B2A65F47400E05FF2 /* Betslip.swift in Sources */,
 				3EDBFCDA2A8EEE0D00EB8628 /* Profile.swift in Sources */,

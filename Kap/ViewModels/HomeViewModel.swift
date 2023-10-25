@@ -9,6 +9,7 @@ import SwiftUI
 import Firebase
 import FirebaseFirestore
 import FirebaseFirestoreSwift
+import CoreData
 
 class HomeViewModel: ObservableObject {
     @Published var users: [User] = []
@@ -44,6 +45,7 @@ class HomeViewModel: ObservableObject {
     @Published var allGameModels: FetchedResults<GameModel>?
     @Published var allBetModels: FetchedResults<BetModel>?
     @Published var betCount = 0
+    @Published var counter: Counter?
     
     let db = Firestore.firestore()
     
@@ -99,6 +101,22 @@ class HomeViewModel: ObservableObject {
         }
     }
     
+    func updateLocalTimestamp(in context: NSManagedObjectContext) {
+        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: "Counter")
+        fetchRequest.predicate = NSPredicate(format: "attributeName == %@", "attributeValue")
+        
+        let counter = Counter(context: context)
+        counter.timestamp = Date()
+        print("New timestamp:", counter.timestamp)
+        
+        do {
+            try context.save()
+            self.counter = counter
+        } catch {
+            print("Error saving context: \(error)")
+        }
+    }
+    
     func fetchEssentials(updateGames: Bool, updateScores: Bool, league: League) async {
         do {
             guard let leaguePlayers = league.players else {
@@ -120,7 +138,7 @@ class HomeViewModel: ObservableObject {
                             self.weekGames = Array(allGameModels).filter { $0.week == self.currentWeek }
                         }
                         if let allBetModels = self.allBetModels {
-                            self.leagueBets = Array(allBetModels)
+                            self.leagueBets = Array(allBetModels).filter({$0.leagueCode == league.code})
                         }
                     } catch {
                         

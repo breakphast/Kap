@@ -37,13 +37,14 @@ class ParlayViewModel {
                     let selectedTeam = betData["selectedTeam"] as? String,
                     let playerID = betData["playerID"] as? String,
                     let week = betData["week"] as? Int,
-                    let leagueCode = data["leagueID"] as? String
+                    let leagueCode = data["leagueID"] as? String,
+                    let timestamp = data["timestamp"] as? Date
                 else {
                     continue
                 }
                 let foundGame = BetViewModel().findBetGame(games: games, gameID: gameID)
                 if let foundGame = foundGame {
-                    let bet = Bet(id: betOptionID + playerID, betOption: betOptionID, game: foundGame, type: type, result: result, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode)
+                    let bet = Bet(id: betOptionID + playerID, betOption: betOptionID, game: foundGame, type: type, result: result, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: timestamp)
                     bets.append(bet)
                 }
             }

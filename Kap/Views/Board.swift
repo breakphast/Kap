@@ -107,8 +107,19 @@ struct Board: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .task {
+                do {
+                    try await fetchCloudTimestamp()
+                    
+                    if let timestamp = homeViewModel.counter?.timestamp {
+                        let stampedBets = try await BetViewModel().fetchStampedBets(games: homeViewModel.weekGames, leagueCode: "2222", timeStamp: timestamp)
+                        print("Stamped:", stampedBets.count)
+                    }
+                } catch {
+                    
+                }
+//                updateEntity(in: viewContext)
 //                do {
-//                    try await GameService().updateDayType(for: homeViewModel.weekGames, in: viewContext)
+//                    try await BetViewModel().updateEntity()
 //                } catch {
 //                    
 //                }
@@ -139,6 +150,43 @@ struct Board: View {
             }
         }
     }
+    
+    private func fetchCloudTimestamp() async throws {
+        let request: NSFetchRequest<Counter> = Counter.fetchRequest()
+        request.fetchLimit = 1
+        
+        do {
+            let result = try viewContext.fetch(request)
+            
+            homeViewModel.counter = result.first
+            if let counter = homeViewModel.counter {
+                print("Current timestamp: ", counter.timestamp)
+            }
+            
+        } catch {
+            print("Failed to fetch BetModel: \(error.localizedDescription)")
+        }
+    }
+    
+    private func updateEntity(in context: NSManagedObjectContext) {
+        
+        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: "Counter")
+        fetchRequest.predicate = NSPredicate(format: "attributeName == %@", "attributeValue")
+        
+        let counter = Counter(context: context)
+        counter.betCount = 0
+        counter.timestamp = Date()
+//        print(counter)
+        
+        do {
+            try context.save()
+            print(counter)
+            
+        } catch {
+            print("Error saving context: \(error)")
+        }
+    }
+    
     func doThisForBets(bets: [Bet], in context: NSManagedObjectContext) {
         for bet in bets {
             let betModel = BetModel(context: context)
@@ -158,6 +206,9 @@ struct Board: View {
             betModel.betString = bet.betString
             betModel.points = bet.points ?? 0
             betModel.betOptionString = bet.betOptionString
+            if let timestamp = betModel.timestamp {
+                betModel.timestamp = timestamp
+            }
             do {
                 try context.save()
             } catch {

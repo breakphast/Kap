@@ -12,6 +12,7 @@
         <attribute name="result" optional="YES" attributeType="String"/>
         <attribute name="selectedTeam" optional="YES" attributeType="String"/>
         <attribute name="stake" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="timestamp" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="type" optional="YES" attributeType="String"/>
         <attribute name="week" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="game" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="GameModel" inverseName="bets" inverseEntity="GameModel"/>
@@ -29,6 +30,10 @@
         <attribute name="spread" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="under" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <relationship name="game" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="GameModel" inverseName="betOptions" inverseEntity="GameModel"/>
+    </entity>
+    <entity name="Counter" representedClassName="Counter" syncable="YES">
+        <attribute name="betCount" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="timestamp" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
     </entity>
     <entity name="GameModel" representedClassName="GameModel" syncable="YES">
         <attribute name="awayMoneyLine" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>

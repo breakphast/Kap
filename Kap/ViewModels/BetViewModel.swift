@@ -9,6 +9,8 @@ import Foundation
 import FirebaseFirestoreSwift
 import FirebaseFirestore
 import Firebase
+import CoreData
+import SwiftUI
 
 class BetViewModel: ObservableObject {
     @Published var fireBets = [Bet]()
@@ -17,7 +19,35 @@ class BetViewModel: ObservableObject {
     
     let db = Firestore.firestore()
     
+    func fetchStampedBets(games: [GameModel], leagueCode: String, timeStamp: Date) async throws -> [Bet] {
+        
+        let querySnapshot = try await db.collection("newBets").whereField("timestamp", isGreaterThan: Timestamp(date: timeStamp)).getDocuments()
+        let bets = querySnapshot.documents.map { queryDocumentSnapshot -> Bet in
+            let data = queryDocumentSnapshot.data()
+            
+            let id = data["id"] as? String ?? ""
+            let game = data["game"] as? String ?? ""
+            let betOption = data["betOption"] as? String ?? ""
+            let type = data["type"] as? String ?? ""
+            let odds = data["odds"] as? Int ?? 0
+            let result = data["result"] as? String ?? ""
+            let selectedTeam = data["selectedTeam"] as? String ?? ""
+            let playerID = data["playerID"] as? String ?? ""
+            let week = data["week"] as? Int ?? 0
+            let foundGame = self.findBetGame(games: games, gameID: game)
+            let leagueID = data["leagueID"] as? String ?? ""
+            let timestamp = data["timestamp"] as? Date
+            
+            let bet = Bet(id: id, betOption: betOption, game: foundGame!, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueID, timestamp: timestamp)
+            
+            return bet
+        }
+        
+        return bets
+    }
+    
     func fetchBets(games: [GameModel], leagueCode: String) async throws -> [Bet] {
+        
         let querySnapshot = try await db.collection("newBets").whereField("leagueID", isEqualTo: leagueCode).getDocuments()
         let bets = querySnapshot.documents.map { queryDocumentSnapshot -> Bet in
             let data = queryDocumentSnapshot.data()
@@ -33,8 +63,9 @@ class BetViewModel: ObservableObject {
             let week = data["week"] as? Int ?? 0
             let foundGame = self.findBetGame(games: games, gameID: game)
             let leagueID = data["leagueID"] as? String ?? ""
+            let timestamp = data["timestamp"] as? Date
             
-            let bet = Bet(id: id, betOption: betOption, game: foundGame!, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueID)
+            let bet = Bet(id: id, betOption: betOption, game: foundGame!, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueID, timestamp: timestamp)
             
             return bet
         }
@@ -59,7 +90,7 @@ class BetViewModel: ObservableObject {
         return BetResult(rawValue: resultString)
     }
     
-    func addBet(bet: Bet, playerID: String) async throws {
+    func addBet(bet: Bet, playerID: String, in context: NSManagedObjectContext) async throws {
         let db = Firestore.firestore()
         
         let newBet: [String: Any] = [
@@ -76,15 +107,39 @@ class BetViewModel: ObservableObject {
             "playerID": playerID,
             "week": bet.week,
             "leagueID": bet.leagueCode,
-            "datePlaced": "\(Date())"
+            "timestamp": Timestamp(date: Date())
         ]
         
         let _ = try await db.collection("newBets").document(bet.id).setData(newBet)
+        let betModel = BetModel(context: context)
+        betModel.id = bet.id
+        betModel.betOption = bet.betOption
+        betModel.game = bet.game
+        betModel.type = bet.type.rawValue
+        betModel.result = bet.result?.rawValue ?? ""
+        betModel.odds = Int16(bet.odds)
+        betModel.points = bet.points ?? 0
+        betModel.stake = 100  // This value is hardcoded in your dictionary
+        betModel.betString = bet.betString
+        betModel.selectedTeam = bet.selectedTeam ?? ""
+        betModel.playerID = playerID  // Assuming playerID is available in scope
+        betModel.week = Int16(bet.week)
+        betModel.leagueCode = bet.leagueCode
+        betModel.timestamp = bet.timestamp
+        
+        do {
+            try context.save()
+            print("Added bet locally:", betModel.id)
+        } catch {
+            print("Error saving context: \(error)")
+        }
+        let count = try await HomeViewModel().fetchCounter()
+        updateCounter(count: count + 1)
     }
     
     func makeBet(for game: GameModel, betOption: String, playerID: String, week: Int, leagueCode: String) -> Bet? {
         guard let betOptionsSet = game.betOptions,
-              let betOptionsArray = betOptionsSet.allObjects as? [BetOption] else {
+              let betOptionsArray = betOptionsSet.allObjects as? [BetOptionModel] else {
             print("Error: Unable to process bet options.")
             return nil
         }
@@ -93,13 +148,14 @@ class BetViewModel: ObservableObject {
             let bet = Bet(id: betOption + playerID + leagueCode,
                           betOption: betOption,
                           game: game,
-                          type: option.betType,
+                          type: BetType(rawValue: option.betType ?? "") ?? .moneyline,
                           result: .pending,
-                          odds: option.odds,
+                          odds: Int(option.odds),
                           selectedTeam: option.selectedTeam,
                           playerID: playerID,
                           week: week,
-                          leagueCode: leagueCode)
+                          leagueCode: leagueCode, 
+                          timestamp: nil)
             return bet
         } else {
             print("Error: Bet option not found.")
@@ -130,6 +186,19 @@ class BetViewModel: ObservableObject {
                 print("Error updating BETTTT: \(err)", bet.id)
             } else {
                 print("Document successfully updated")
+            }
+        }
+    }
+    
+    func updateCounter(count: Int) {
+        let newbet = db.collection("helpers").document("betCount")
+        newbet.updateData([
+            "totalBets": count,
+        ]) { err in
+            if let err = err {
+                print("Error updating BETTTT: \(err)")
+            } else {
+                print("Counter successfully updated")
             }
         }
     }
@@ -211,7 +280,7 @@ class BetViewModel: ObservableObject {
         }
         
         for option in betOptionsArray {
-            let bet = Bet(id: option.id ?? "", betOption: option.id ?? "", game: game, type: BetType(rawValue: option.betType!) ?? .moneyline, result: .pending, odds: Int(option.odds), selectedTeam: option.id?.last == "1" ? game.homeTeam : game.awayTeam, playerID: "", week: 0, leagueCode: "")
+            let bet = Bet(id: option.id ?? "", betOption: option.id ?? "", game: game, type: BetType(rawValue: option.betType!) ?? .moneyline, result: .pending, odds: Int(option.odds), selectedTeam: option.id?.last == "1" ? game.homeTeam : game.awayTeam, playerID: "", week: 0, leagueCode: "", timestamp: nil)
             bets.append(bet)
         }
 

@@ -68,8 +68,9 @@ class Bet {
     var week: Int
     let leagueCode: String
     var betOptionString = ""
+    let timestamp: Date?
     
-    init(id: String, betOption: String, game: GameModel, type: BetType, result: BetResult?, odds: Int, selectedTeam: String?, playerID: String, week: Int, leagueCode: String) {
+    init(id: String, betOption: String, game: GameModel, type: BetType, result: BetResult?, odds: Int, selectedTeam: String?, playerID: String, week: Int, leagueCode: String, timestamp: Date?) {
         self.id = id
         self.betOption = betOption
         self.game = game
@@ -80,6 +81,7 @@ class Bet {
         self.playerID = playerID
         self.week = week
         self.leagueCode = leagueCode
+        self.timestamp = timestamp
         
         let formattedOdds = odds > 0 ? "+\(odds)" : "\(odds)"
         let spread = selectedTeam == game.homeTeam ? game.homeSpread : game.awaySpread
