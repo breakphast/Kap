@@ -103,16 +103,26 @@ class HomeViewModel: ObservableObject {
     }
     
     func checkForNewBets(in context: NSManagedObjectContext, timestamp: Date?) async throws {
-        var stampedBets = try await BetViewModel().fetchStampedBets(games: self.weekGames, leagueCode: "2222", timeStamp: timestamp == nil ? nil : timestamp)
-        
-        if let allBets = self.allBetModels {
-            let localBetIDs = Set(allBets).map {$0.id}
-            stampedBets = stampedBets.filter { !localBetIDs.contains($0.id) }
+        if let timestamp {
+            var stampedBets = try await BetViewModel().fetchStampedBets(games: self.weekGames, leagueCode: "2222", timeStamp: timestamp)
+            
+            if let allBets = self.allBetModels {
+                let localBetIDs = Set(allBets).map {$0.id}
+                stampedBets = stampedBets.filter { !localBetIDs.contains($0.id) }
 
-            if !stampedBets.isEmpty {
-                print("New bets detected:", stampedBets.count)
-                print(stampedBets.map {$0.betString})
-                convertToBetModels(bets: stampedBets, in: context)
+                if !stampedBets.isEmpty {
+                    print("New bets detected:", stampedBets.count)
+                    print(stampedBets.map {$0.betString})
+                    convertToBetModels(bets: stampedBets, in: context)
+                }
+            }
+            
+            let deletedStampedBets = try await BetViewModel().fetchDeletedStampedBets(games: self.weekGames, leagueCode: "2222", deletedTimestamp: timestamp)
+            if !deletedStampedBets.isEmpty {
+                for bet in deletedStampedBets {
+                    try await BetViewModel().deleteBet(betID: bet.id)
+                    BetViewModel().deleteBetModel(in: context, id: bet.id)
+                }
             }
         }
     }
@@ -249,6 +259,17 @@ class HomeViewModel: ObservableObject {
         do {
             let fetchedAllGames = try await GameService().fetchGamesFromFirestore()
             await Board().doThis(games: fetchedAllGames, in: context)
+        } catch {
+            
+        }
+    }
+    
+    func addInitialBets(games: [GameModel], in context: NSManagedObjectContext) async throws {
+        do {
+            let fetchedBets = try await BetViewModel().fetchBets(games: allGames, leagueCode: activeleagueCode ?? "")
+            for bet in fetchedBets {
+                BetViewModel().addBetToLocalDatabase(bet: bet, playerID: bet.playerID, in: context)
+            }
         } catch {
             
         }

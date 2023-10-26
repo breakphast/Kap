@@ -159,6 +159,14 @@ struct Login: View {
                                     await homeViewModel.fetchEssentials(updateGames: false, updateScores: false, league: activeLeague, in: viewContext)
                                     homeViewModel.leagueBets = Array(allBetModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
                                     homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
+                                    if allBetModels.isEmpty {
+                                        print("Adding initial bets...")
+                                        
+                                        do {
+                                            try await homeViewModel.addInitialBets(games: homeViewModel.allGames, in: viewContext)
+                                            homeViewModel.allBetModels = self.allBetModels
+                                        }
+                                    }
                                     if let last = Array(allBetModels).last {
                                         if let timestamp = last.timestamp {
                                             homeViewModel.counter?.timestamp = timestamp

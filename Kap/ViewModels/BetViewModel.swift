@@ -39,8 +39,12 @@ class BetViewModel: ObservableObject {
                 let timestamp = data["timestamp"] as? Timestamp
                 let date2 = GameService().convertTimestampToISOString(timestamp: timestamp ?? Timestamp(date: Date()))
                 let date = GameService().dateFromISOString(date2 ?? "")
+                let deletedTimestamp = data["deletedTimestamp"] as? Timestamp
+                let date3 = GameService().convertTimestampToISOString(timestamp: deletedTimestamp ?? Timestamp(date: Date()))
+                let date4 = GameService().dateFromISOString(date3 ?? "")
+                let isDeleted = data["isDeleted"] as? Bool ?? false
                 
-                let bet = Bet(id: id, betOption: betOption, game: foundGame!, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueID, timestamp: date ?? Date())
+                let bet = Bet(id: id, betOption: betOption, game: foundGame!, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueID, timestamp: date ?? Date(), deletedTimestamp: date4 ?? Date(), isDeleted: isDeleted)
                 
                 return bet
             }
@@ -64,14 +68,54 @@ class BetViewModel: ObservableObject {
                 let timestamp = data["timestamp"] as? Timestamp
                 let date2 = GameService().convertTimestampToISOString(timestamp: timestamp ?? Timestamp(date: Date()))
                 let date = GameService().dateFromISOString(date2 ?? "")
+                let deletedTimestamp = data["deletedTimestamp"] as? Timestamp
+                let date3 = GameService().convertTimestampToISOString(timestamp: deletedTimestamp ?? Timestamp(date: Date()))
+                let date4 = GameService().dateFromISOString(date3 ?? "")
+                let isDeleted = data["isDeleted"] as? Bool ?? false
                 
-                let bet = Bet(id: id, betOption: betOption, game: foundGame!, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueID, timestamp: date ?? Date())
+                let bet = Bet(id: id, betOption: betOption, game: foundGame!, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueID, timestamp: date ?? Date(), deletedTimestamp: date4 ?? Date(), isDeleted: isDeleted)
                 
                 return bet
             }
             return bets
         }
     }
+    
+    func fetchDeletedStampedBets(games: [GameModel], leagueCode: String, deletedTimestamp: Date?) async throws -> [Bet] {
+        if let deletedTimestamp {
+            let querySnapshot = try await db.collection("userBets").whereField("deletedTimestamp", isGreaterThan: Timestamp(date: deletedTimestamp )).getDocuments()
+            let bets = querySnapshot.documents.map { queryDocumentSnapshot -> Bet in
+                let data = queryDocumentSnapshot.data()
+                
+                let id = data["id"] as? String ?? ""
+                let game = data["game"] as? String ?? ""
+                let betOption = data["betOption"] as? String ?? ""
+                let type = data["type"] as? String ?? ""
+                let odds = data["odds"] as? Int ?? 0
+                let result = data["result"] as? String ?? ""
+                let selectedTeam = data["selectedTeam"] as? String ?? ""
+                let playerID = data["playerID"] as? String ?? ""
+                let week = data["week"] as? Int ?? 0
+                let foundGame = self.findBetGame(games: games, gameID: game)
+                let leagueID = data["leagueID"] as? String ?? ""
+                let timestamp = data["timestamp"] as? Timestamp
+                let date2 = GameService().convertTimestampToISOString(timestamp: timestamp ?? Timestamp(date: Date()))
+                let date = GameService().dateFromISOString(date2 ?? "")
+                let deletedTimestamp = data["deletedTimestamp"] as? Timestamp
+                let date3 = GameService().convertTimestampToISOString(timestamp: deletedTimestamp ?? Timestamp(date: Date()))
+                let date4 = GameService().dateFromISOString(date3 ?? "")
+                let isDeleted = data["isDeleted"] as? Bool ?? false
+                
+                let bet = Bet(id: id, betOption: betOption, game: foundGame!, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueID, timestamp: date ?? Date(), deletedTimestamp: date4 ?? Date(), isDeleted: isDeleted)
+                
+                return bet
+            }
+            return bets
+        } else {
+            return []
+        }
+    }
+
     
     func fetchBets(games: [GameModel], leagueCode: String) async throws -> [Bet] {
         
@@ -91,8 +135,10 @@ class BetViewModel: ObservableObject {
             let foundGame = self.findBetGame(games: games, gameID: game)
             let leagueID = data["leagueID"] as? String ?? ""
             let timestamp = data["timestamp"] as? Date
+            let deletedTimestamp = data["deletedTimestamp"] as? Date
+            let isDeleted = data["isDeleted"] as? Bool ?? false
             
-            let bet = Bet(id: id, betOption: betOption, game: foundGame!, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueID, timestamp: timestamp)
+            let bet = Bet(id: id, betOption: betOption, game: foundGame!, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueID, timestamp: timestamp, deletedTimestamp: deletedTimestamp, isDeleted: isDeleted)
             
             return bet
         }
@@ -117,28 +163,7 @@ class BetViewModel: ObservableObject {
         return BetResult(rawValue: resultString)
     }
     
-    func addBet(bet: Bet, playerID: String, in context: NSManagedObjectContext) async throws {
-        let db = Firestore.firestore()
-        
-        let newBet: [String: Any] = [
-            "id": bet.id,
-            "betOption": bet.betOption,
-            "game": bet.game.documentID ?? "",
-            "type": bet.type.rawValue,
-            "result": bet.result?.rawValue ?? "",
-            "odds": bet.odds,
-            "points": bet.points ?? 0,
-            "stake": 100,
-            "betString": bet.betString,
-            "selectedTeam": bet.selectedTeam ?? "",
-            "playerID": playerID,
-            "week": bet.week,
-            "leagueID": bet.leagueCode,
-            "timestamp": Timestamp(date: Date())
-        ]
-        
-        let _ = try await db.collection("userBets").document(bet.id).setData(newBet)
-        print("Added bet to the cloud.")
+    func addBetToLocalDatabase(bet: Bet, playerID: String, in context: NSManagedObjectContext) {
         let betModel = BetModel(context: context)
         betModel.id = bet.id
         betModel.betOption = bet.betOption
@@ -163,6 +188,31 @@ class BetViewModel: ObservableObject {
         }
     }
     
+    func addBet(bet: Bet, playerID: String, in context: NSManagedObjectContext) async throws {
+        let db = Firestore.firestore()
+        
+        let newBet: [String: Any] = [
+            "id": bet.id,
+            "betOption": bet.betOption,
+            "game": bet.game.documentID ?? "",
+            "type": bet.type.rawValue,
+            "result": bet.result?.rawValue ?? "",
+            "odds": bet.odds,
+            "points": bet.points ?? 0,
+            "stake": 100,
+            "betString": bet.betString,
+            "selectedTeam": bet.selectedTeam ?? "",
+            "playerID": playerID,
+            "week": bet.week,
+            "leagueID": bet.leagueCode,
+            "timestamp": Timestamp(date: Date())
+        ]
+        
+        let _ = try await db.collection("userBets").document(bet.id).setData(newBet)
+        print("Added bet to the cloud.")
+        addBetToLocalDatabase(bet: bet, playerID: bet.playerID, in: context)
+    }
+    
     func makeBet(for game: GameModel, betOption: String, playerID: String, week: Int, leagueCode: String) -> Bet? {
         guard let betOptionsSet = game.betOptions,
               let betOptionsArray = betOptionsSet.allObjects as? [BetOptionModel] else {
@@ -181,7 +231,10 @@ class BetViewModel: ObservableObject {
                           playerID: playerID,
                           week: week,
                           leagueCode: leagueCode,
-                          timestamp: Date())
+                          timestamp: Date(),
+                          deletedTimestamp: nil,
+                          isDeleted: false
+            )
             return bet
         } else {
             print("Error: Bet option not found.")
@@ -194,6 +247,21 @@ class BetViewModel: ObservableObject {
         newbet.updateData([
             "betString": bet.betString,
             "result": bet.game.betResult(for: bet).rawValue
+        ]) { err in
+            if let err = err {
+                print("Error updating BETTTT: \(err)", bet.id)
+            } else {
+                print("Document successfully updated")
+            }
+        }
+    }
+    
+    func updateDeletedBet(bet: BetModel) {
+        let newbet = db.collection("userBets").document(bet.id)
+        
+        newbet.updateData([
+            "isDeleted": true,
+            "deletedTimestamp": Date()
         ]) { err in
             if let err = err {
                 print("Error updating BETTTT: \(err)", bet.id)
@@ -311,7 +379,7 @@ class BetViewModel: ObservableObject {
         }
         
         for option in betOptionsArray {
-            let bet = Bet(id: option.id ?? "", betOption: option.id ?? "", game: game, type: BetType(rawValue: option.betType!) ?? .moneyline, result: .pending, odds: Int(option.odds), selectedTeam: option.id?.last == "1" ? game.homeTeam : game.awayTeam, playerID: "", week: 0, leagueCode: "", timestamp: nil)
+            let bet = Bet(id: option.id ?? "", betOption: option.id ?? "", game: game, type: BetType(rawValue: option.betType!) ?? .moneyline, result: .pending, odds: Int(option.odds), selectedTeam: option.id?.last == "1" ? game.homeTeam : game.awayTeam, playerID: "", week: 0, leagueCode: "", timestamp: nil, deletedTimestamp: nil, isDeleted: false)
             bets.append(bet)
         }
 

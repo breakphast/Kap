@@ -148,7 +148,6 @@ struct BetView: View {
                             try await BetViewModel().addBet(bet: placedBet, playerID: authViewModel.currentUser?.id ?? "", in: viewContext)
                             homeViewModel.leagueBets = Array(allBetModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
                             homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
-                            homeViewModel.updateLocalTimestamp(in: viewContext, date: Date())
                                                     
                             isPlaced = true
                             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
@@ -423,10 +422,17 @@ struct PlacedBetView: View {
                 withAnimation {
                     deleteActive.toggle()
                     Task {
-                        try await BetViewModel().deleteBet(betID: bet.id)
+                        BetViewModel().updateDeletedBet(bet: bet)
                         BetViewModel().deleteBetModel(in: viewContext, id: bet.id)
                         homeViewModel.userBets.removeAll(where: { $0.id == bet.id })
                         homeViewModel.leagueBets.removeAll(where: { $0.id == bet.id })
+                        
+                        if let _ = homeViewModel.counter?.timestamp {
+                            if let lastTimestamp = homeViewModel.leagueBets.last?.timestamp {
+                                homeViewModel.counter?.timestamp = lastTimestamp
+                                print("New timestamp after removing bet.")
+                            }
+                        }
                     }
                 }
             } label: {
