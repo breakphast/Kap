@@ -45,21 +45,7 @@ class HomeViewModel: ObservableObject {
     @Published var allGameModels: FetchedResults<GameModel>?
     @Published var allBetModels: FetchedResults<BetModel>?
     @Published var counter: Counter?
-    
-    @FetchRequest(
-        entity: GameModel.entity(),
-        sortDescriptors: [
-            NSSortDescriptor(keyPath: \GameModel.homeTeam, ascending: true)
-        ]
-    ) var localGameModels: FetchedResults<GameModel>
-    
-    @FetchRequest(
-        entity: BetModel.entity(),
-        sortDescriptors: [
-            NSSortDescriptor(keyPath: \BetModel.timestamp, ascending: true)
-        ]
-    ) var localBetModels: FetchedResults<BetModel>
-    
+        
     let db = Firestore.firestore()
     
     static let keys = [
@@ -116,16 +102,18 @@ class HomeViewModel: ObservableObject {
         }
     }
     
-    func checkForNewBets(in context: NSManagedObjectContext, timestamp: Date) async throws {
-        var stampedBets = try await BetViewModel().fetchStampedBets(games: self.weekGames, leagueCode: "2222", timeStamp: timestamp)
+    func checkForNewBets(in context: NSManagedObjectContext, timestamp: Date?) async throws {
+        var stampedBets = try await BetViewModel().fetchStampedBets(games: self.weekGames, leagueCode: "2222", timeStamp: timestamp == nil ? nil : timestamp)
         
-        let localBetIDs = Set(localBetModels.map {$0.id})
-        stampedBets = stampedBets.filter { !localBetIDs.contains($0.id) }
+        if let allBets = self.allBetModels {
+            let localBetIDs = Set(allBets).map {$0.id}
+            stampedBets = stampedBets.filter { !localBetIDs.contains($0.id) }
 
-        if !stampedBets.isEmpty {
-            print("New bets detected:", stampedBets.count)
-            print(stampedBets.map {$0.betString})
-            convertToBetModels(bets: stampedBets, in: context)
+            if !stampedBets.isEmpty {
+                print("New bets detected:", stampedBets.count)
+                print(stampedBets.map {$0.betString})
+                convertToBetModels(bets: stampedBets, in: context)
+            }
         }
     }
     
@@ -181,20 +169,6 @@ class HomeViewModel: ObservableObject {
                         if let allGameModels = self.allGameModels {
                             self.allGames = Array(allGameModels)
                             self.weekGames = Array(allGameModels).filter { $0.week == self.currentWeek }
-                        }
-                        if let allBetModels = self.allBetModels {
-                            self.leagueBets = Array(allBetModels).filter({$0.leagueCode == league.code})
-                            if let last = Array(allBetModels).last {
-                                if let timestamp = last.timestamp {
-                                    self.counter?.timestamp = timestamp
-                                    print("Current timestampppp:", timestamp)
-                                    do {
-                                        try await self.checkForNewBets(in: context, timestamp: timestamp)
-                                    } catch {
-                                        
-                                    }
-                                }
-                            }
                         }
                     }
                 }

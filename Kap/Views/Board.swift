@@ -291,8 +291,10 @@ struct Board: View {
         do {
             try viewContext.execute(batchDeleteRequest)
             try viewContext.save()
+            print("Deleted all \(entityName) data.")
             completion(.success(()))
         } catch {
+            print("Failed to delete all \(entityName) data.")
             completion(.failure(error))
         }
     }

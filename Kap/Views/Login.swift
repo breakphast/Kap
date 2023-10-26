@@ -38,7 +38,7 @@ struct Login: View {
     @FetchRequest(
         entity: BetModel.entity(),
         sortDescriptors: [
-            NSSortDescriptor(keyPath: \BetModel.id, ascending: true)
+            NSSortDescriptor(keyPath: \BetModel.timestamp, ascending: true)
         ]
     ) var allBetModels: FetchedResults<BetModel>
     
@@ -157,7 +157,27 @@ struct Login: View {
                                     homeViewModel.allBetModels = self.allBetModels
 
                                     await homeViewModel.fetchEssentials(updateGames: false, updateScores: false, league: activeLeague, in: viewContext)
-                                    
+                                    homeViewModel.leagueBets = Array(allBetModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
+                                    homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
+                                    if let last = Array(allBetModels).last {
+                                        if let timestamp = last.timestamp {
+                                            homeViewModel.counter?.timestamp = timestamp
+                                            print("Current timestampppp:", timestamp)
+                                            do {
+                                                try await homeViewModel.checkForNewBets(in: viewContext, timestamp: timestamp)
+                                                homeViewModel.leagueBets = Array(allBetModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
+                                                homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
+                                            } catch {
+                                                
+                                            }
+                                        }
+                                    } else {
+                                        do {
+                                            try await homeViewModel.checkForNewBets(in: viewContext, timestamp: nil)
+                                        } catch {
+                                            
+                                        }
+                                    }
                                     leagueViewModel.points = activeLeague.points ?? [:]
                                     let leaguePlayers = homeViewModel.leagues.first(where: { $0.code == activeLeague.code })?.players
                                     

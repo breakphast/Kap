@@ -19,32 +19,58 @@ class BetViewModel: ObservableObject {
     
     let db = Firestore.firestore()
     
-    func fetchStampedBets(games: [GameModel], leagueCode: String, timeStamp: Date) async throws -> [Bet] {
-        let querySnapshot = try await db.collection("userBets").whereField("timestamp", isGreaterThan: Timestamp(date: timeStamp)).getDocuments()
-        let bets = querySnapshot.documents.map { queryDocumentSnapshot -> Bet in
-            let data = queryDocumentSnapshot.data()
-            
-            let id = data["id"] as? String ?? ""
-            let game = data["game"] as? String ?? ""
-            let betOption = data["betOption"] as? String ?? ""
-            let type = data["type"] as? String ?? ""
-            let odds = data["odds"] as? Int ?? 0
-            let result = data["result"] as? String ?? ""
-            let selectedTeam = data["selectedTeam"] as? String ?? ""
-            let playerID = data["playerID"] as? String ?? ""
-            let week = data["week"] as? Int ?? 0
-            let foundGame = self.findBetGame(games: games, gameID: game)
-            let leagueID = data["leagueID"] as? String ?? ""
-            let timestamp = data["timestamp"] as? Timestamp
-            let date2 = GameService().convertTimestampToISOString(timestamp: timestamp ?? Timestamp(date: Date()))
-            let date = GameService().dateFromISOString(date2 ?? "")
-            
-            let bet = Bet(id: id, betOption: betOption, game: foundGame!, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueID, timestamp: date ?? Date())
-            
-            return bet
+    func fetchStampedBets(games: [GameModel], leagueCode: String, timeStamp: Date?) async throws -> [Bet] {
+        if let timeStamp {
+            let querySnapshot = try await db.collection("userBets").whereField("timestamp", isGreaterThan: Timestamp(date: timeStamp)).getDocuments()
+            let bets = querySnapshot.documents.map { queryDocumentSnapshot -> Bet in
+                let data = queryDocumentSnapshot.data()
+                
+                let id = data["id"] as? String ?? ""
+                let game = data["game"] as? String ?? ""
+                let betOption = data["betOption"] as? String ?? ""
+                let type = data["type"] as? String ?? ""
+                let odds = data["odds"] as? Int ?? 0
+                let result = data["result"] as? String ?? ""
+                let selectedTeam = data["selectedTeam"] as? String ?? ""
+                let playerID = data["playerID"] as? String ?? ""
+                let week = data["week"] as? Int ?? 0
+                let foundGame = self.findBetGame(games: games, gameID: game)
+                let leagueID = data["leagueID"] as? String ?? ""
+                let timestamp = data["timestamp"] as? Timestamp
+                let date2 = GameService().convertTimestampToISOString(timestamp: timestamp ?? Timestamp(date: Date()))
+                let date = GameService().dateFromISOString(date2 ?? "")
+                
+                let bet = Bet(id: id, betOption: betOption, game: foundGame!, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueID, timestamp: date ?? Date())
+                
+                return bet
+            }
+            return bets
+        } else {
+            let querySnapshot = try await db.collection("userBets").whereField("leagueID", isEqualTo: leagueCode).getDocuments()
+            let bets = querySnapshot.documents.map { queryDocumentSnapshot -> Bet in
+                let data = queryDocumentSnapshot.data()
+                
+                let id = data["id"] as? String ?? ""
+                let game = data["game"] as? String ?? ""
+                let betOption = data["betOption"] as? String ?? ""
+                let type = data["type"] as? String ?? ""
+                let odds = data["odds"] as? Int ?? 0
+                let result = data["result"] as? String ?? ""
+                let selectedTeam = data["selectedTeam"] as? String ?? ""
+                let playerID = data["playerID"] as? String ?? ""
+                let week = data["week"] as? Int ?? 0
+                let foundGame = self.findBetGame(games: games, gameID: game)
+                let leagueID = data["leagueID"] as? String ?? ""
+                let timestamp = data["timestamp"] as? Timestamp
+                let date2 = GameService().convertTimestampToISOString(timestamp: timestamp ?? Timestamp(date: Date()))
+                let date = GameService().dateFromISOString(date2 ?? "")
+                
+                let bet = Bet(id: id, betOption: betOption, game: foundGame!, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueID, timestamp: date ?? Date())
+                
+                return bet
+            }
+            return bets
         }
-        
-        return bets
     }
     
     func fetchBets(games: [GameModel], leagueCode: String) async throws -> [Bet] {
@@ -121,15 +147,13 @@ class BetViewModel: ObservableObject {
         betModel.result = bet.result?.rawValue ?? ""
         betModel.odds = Int16(bet.odds)
         betModel.points = bet.points ?? 0
-        betModel.stake = 100  // This value is hardcoded in your dictionary
+        betModel.stake = 100
         betModel.betString = bet.betString
         betModel.selectedTeam = bet.selectedTeam ?? ""
-        betModel.playerID = playerID  // Assuming playerID is available in scope
+        betModel.playerID = playerID
         betModel.week = Int16(bet.week)
         betModel.leagueCode = bet.leagueCode
-        if let timestamp = betModel.timestamp {
-            betModel.timestamp = timestamp
-        }
+        betModel.timestamp = Date()
         
         do {
             try context.save()
@@ -271,7 +295,7 @@ class BetViewModel: ObservableObject {
                 context.delete(entityToDelete)
                 
                 try context.save()
-                print("Bet delete locally", id)
+                print("Deleted bet in local:", id)
             } else {
                 // Entity with the specified attribute value not found
             }
