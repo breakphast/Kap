@@ -36,7 +36,7 @@ struct Board: View {
                 Color("onyx").ignoresSafeArea()
                 
                 ScrollView(showsIndicators: false) {
-                    GameListingView(allGameModels: Array(allGameModels).filter({$0.week == homeViewModel.currentWeek}))
+                    GameListingView(allGameModels: homeViewModel.weekGames)
                         .navigationBarBackButtonHidden()
                         .toolbar {
                             ToolbarItem(placement: .navigationBarLeading) {
@@ -116,22 +116,15 @@ struct Board: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .task {
-//                if let allGames = homeViewModel.allGameModels {
-//                    do {
-////                        print(Array(allGames).filter({$0.week == 8}))
-//                        try await updateGameOdds(games: Array(allGames).filter({$0.week == 8}), in: viewContext)
-//                    } catch {
-//                        
-//                    }
-//                }
 //                do {
-////                    try await checkForNewBets()
-//                    try await addInitialGames()
+//                    try await checkForNewBets(in: viewContext)
 //                } catch {
 //                    
 //                }
 //                deleteAllData(ofEntity: "GameModel") { result in }
 //                deleteAllData(ofEntity: "BetOptionModel") { result in }
+//                deleteAllData(ofEntity: "Counter") { result in }
+//                deleteAllData(ofEntity: "BetModel") { result in }
             }
         }
     }
@@ -182,21 +175,6 @@ struct Board: View {
         }
     }
 
-    private func checkForNewBets() async throws {
-        try await fetchLocalTimestamp()
-        
-        if let timestamp = homeViewModel.counter?.timestamp {
-            var stampedBets = try await BetViewModel().fetchStampedBets(games: homeViewModel.weekGames, leagueCode: "2222", timeStamp: timestamp)
-            if !stampedBets.isEmpty {
-                let localBetIDs = Set(allBetModels.map {$0.id})
-                stampedBets = stampedBets.filter { !localBetIDs.contains($0.id) }
-                print("New bets detected:", stampedBets.count)
-                print(stampedBets.map {$0.betString})
-                convertToBetModels(bets: stampedBets, in: viewContext)
-            }
-        }
-    }
-    
     private func fetchLocalTimestamp() async throws {
         let request: NSFetchRequest<Counter> = Counter.fetchRequest()
         request.fetchLimit = 1
@@ -229,35 +207,6 @@ struct Board: View {
             
         } catch {
             print("Error saving context: \(error)")
-        }
-    }
-    
-    func convertToBetModels(bets: [Bet], in context: NSManagedObjectContext) {
-        for bet in bets {
-            let betModel = BetModel(context: context)
-            
-            // Set the attributes on the GameModel from the Game
-            betModel.id = bet.id
-            betModel.betOption = bet.betOption
-            betModel.game = bet.game
-            betModel.type = bet.type.rawValue
-            betModel.result = bet.result?.rawValue ?? "Pending"
-            betModel.odds = Int16(bet.odds)
-            betModel.selectedTeam = bet.selectedTeam
-            betModel.playerID = bet.playerID
-            betModel.week = Int16(bet.week)
-            betModel.leagueCode = bet.leagueCode
-            betModel.stake = 100.0
-            betModel.betString = bet.betString
-            betModel.points = bet.points ?? 0
-            betModel.betOptionString = bet.betOptionString
-            betModel.timestamp = bet.timestamp
-
-            do {
-                try context.save()
-            } catch {
-                print("Error saving context: \(error)")
-            }
         }
     }
     

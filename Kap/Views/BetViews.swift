@@ -148,7 +148,7 @@ struct BetView: View {
                             try await BetViewModel().addBet(bet: placedBet, playerID: authViewModel.currentUser?.id ?? "", in: viewContext)
                             homeViewModel.leagueBets = Array(allBetModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
                             homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
-                            homeViewModel.updateLocalTimestamp(in: viewContext)
+                            homeViewModel.updateLocalTimestamp(in: viewContext, date: Date())
                                                     
                             isPlaced = true
                             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {

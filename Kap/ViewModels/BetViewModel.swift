@@ -112,6 +112,7 @@ class BetViewModel: ObservableObject {
         ]
         
         let _ = try await db.collection("userBets").document(bet.id).setData(newBet)
+        print("Added bet to the cloud.")
         let betModel = BetModel(context: context)
         betModel.id = bet.id
         betModel.betOption = bet.betOption
@@ -126,7 +127,9 @@ class BetViewModel: ObservableObject {
         betModel.playerID = playerID  // Assuming playerID is available in scope
         betModel.week = Int16(bet.week)
         betModel.leagueCode = bet.leagueCode
-        betModel.timestamp = bet.timestamp ?? Date()
+        if let timestamp = betModel.timestamp {
+            betModel.timestamp = timestamp
+        }
         
         do {
             try context.save()

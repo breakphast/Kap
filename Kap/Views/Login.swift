@@ -131,6 +131,7 @@ struct Login: View {
                                     if let allGames = homeViewModel.allGameModels {
                                         do {
                                             try await Board().updateGameOdds(games: Array(allGames).filter({$0.week == homeViewModel.currentWeek}), in: viewContext)
+                                            homeViewModel.allGameModels = self.allGameModels
                                             print("Done adding games.")
                                         } catch {
                                             
@@ -155,7 +156,7 @@ struct Login: View {
                                     homeViewModel.allGameModels = self.allGameModels
                                     homeViewModel.allBetModels = self.allBetModels
 
-                                    await homeViewModel.fetchEssentials(updateGames: false, updateScores: false, league: activeLeague)
+                                    await homeViewModel.fetchEssentials(updateGames: false, updateScores: false, league: activeLeague, in: viewContext)
                                     
                                     leagueViewModel.points = activeLeague.points ?? [:]
                                     let leaguePlayers = homeViewModel.leagues.first(where: { $0.code == activeLeague.code })?.players

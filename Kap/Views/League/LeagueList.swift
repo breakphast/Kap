@@ -12,7 +12,8 @@ struct LeagueList: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var leagueViewModel: LeagueViewModel
     @EnvironmentObject var leaderboardViewModel: LeaderboardViewModel
-    
+    @Environment(\.managedObjectContext) private var viewContext
+
     @Environment(\.dismiss) var dismiss
     @Binding var leagues: [League]
     @Binding var loggedIn: Bool
@@ -103,7 +104,7 @@ struct LeagueList: View {
                         }
                         let activeLeague = homeViewModel.userLeagues.first(where: {$0.code == league.code})
                         
-                        await homeViewModel.fetchEssentials(updateGames: false, updateScores: false, league: league)
+                        await homeViewModel.fetchEssentials(updateGames: false, updateScores: false, league: league, in: viewContext)
                         
                         homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
                         homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == authViewModel.currentUser?.id})

@@ -19,6 +19,7 @@ struct JoinLeague: View {
     @Binding var loggedIn: Bool
     @State private var errorText = "Invalid code. Please try again."
     @Environment(\.dismiss) var dismiss
+    @Environment(\.managedObjectContext) private var viewContext
     
     var body: some View {
         NavigationStack {
@@ -111,7 +112,7 @@ struct JoinLeague: View {
                     try await leagueViewModel.addPlayerToLeague(leagueCode: league?.id ?? "", playerId: userID)
                     homeViewModel.userLeagues = try await LeagueViewModel().fetchLeaguesContainingID(id: userID)
                     if let activeLeague = homeViewModel.userLeagues.first(where: {$0.code == code}) {
-                        await homeViewModel.fetchEssentials(updateGames: false, updateScores: false, league: activeLeague)
+                        await homeViewModel.fetchEssentials(updateGames: false, updateScores: false, league: activeLeague, in: viewContext)
                         homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
                         homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == authViewModel.currentUser?.id})
                         await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets, parlays: homeViewModel.leagueParlays, week: homeViewModel.currentWeek, leagueCode: code)

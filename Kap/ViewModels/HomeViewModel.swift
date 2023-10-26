@@ -53,6 +53,13 @@ class HomeViewModel: ObservableObject {
         ]
     ) var localGameModels: FetchedResults<GameModel>
     
+    @FetchRequest(
+        entity: BetModel.entity(),
+        sortDescriptors: [
+            NSSortDescriptor(keyPath: \BetModel.timestamp, ascending: true)
+        ]
+    ) var localBetModels: FetchedResults<BetModel>
+    
     let db = Firestore.firestore()
     
     static let keys = [
@@ -93,7 +100,7 @@ class HomeViewModel: ObservableObject {
         }
     }
     
-    func updateLocalTimestamp(in context: NSManagedObjectContext) {
+    func updateLocalTimestamp(in context: NSManagedObjectContext, date: Date) {
         let fetchRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: "Counter")
         fetchRequest.predicate = NSPredicate(format: "attributeName == %@", "attributeValue")
         
@@ -109,7 +116,56 @@ class HomeViewModel: ObservableObject {
         }
     }
     
-    func fetchEssentials(updateGames: Bool, updateScores: Bool, league: League) async {
+    func checkForNewBets(in context: NSManagedObjectContext, timestamp: Date) async throws {
+        var stampedBets = try await BetViewModel().fetchStampedBets(games: self.weekGames, leagueCode: "2222", timeStamp: timestamp)
+        
+        let localBetIDs = Set(localBetModels.map {$0.id})
+        stampedBets = stampedBets.filter { !localBetIDs.contains($0.id) }
+
+        if !stampedBets.isEmpty {
+            print("New bets detected:", stampedBets.count)
+            print(stampedBets.map {$0.betString})
+            convertToBetModels(bets: stampedBets, in: context)
+        }
+    }
+    
+    func convertToBetModels(bets: [Bet], in context: NSManagedObjectContext) {
+        for bet in bets.sorted(by: {$0.game.date ?? Date() < $1.game.date ?? Date()}) {
+            let betModel = BetModel(context: context)
+            
+            // Set the attributes on the GameModel from the Game
+            betModel.id = bet.id
+            betModel.betOption = bet.betOption
+            betModel.game = bet.game
+            betModel.type = bet.type.rawValue
+            betModel.result = bet.result?.rawValue ?? "Pending"
+            betModel.odds = Int16(bet.odds)
+            betModel.selectedTeam = bet.selectedTeam
+            betModel.playerID = bet.playerID
+            betModel.week = Int16(bet.week)
+            betModel.leagueCode = bet.leagueCode
+            betModel.stake = 100.0
+            betModel.betString = bet.betString
+            betModel.points = bet.points ?? 0
+            betModel.betOptionString = bet.betOptionString
+            betModel.timestamp = bet.timestamp
+            
+            if bets.last?.id == bet.id {
+                if let timestamp = betModel.timestamp {
+                    self.counter?.timestamp = timestamp
+                    print("New timestamp from last bet added: ", bet.timestamp ?? "")
+                }
+            }
+        }
+        do {
+            try context.save()
+            print("Saved new bets locally.")
+        } catch {
+            print("Error saving context: \(error)")
+        }
+    }
+    
+    func fetchEssentials(updateGames: Bool, updateScores: Bool, league: League, in context: NSManagedObjectContext) async {
         do {
             guard let leaguePlayers = league.players else {
                 print("Error: league players are nil.")
@@ -119,8 +175,6 @@ class HomeViewModel: ObservableObject {
             let fetchedUsers = try await UserViewModel().fetchAllUsers(leagueUsers: leaguePlayers)
             let relevantUsers = fetchedUsers.filter { leaguePlayers.contains($0.id ?? "") }
 
-//            let fetchedAllGames = try await GameService().fetchGamesFromFirestore()
-            
             DispatchQueue.main.async {
                 Task {
                     do {
@@ -130,9 +184,18 @@ class HomeViewModel: ObservableObject {
                         }
                         if let allBetModels = self.allBetModels {
                             self.leagueBets = Array(allBetModels).filter({$0.leagueCode == league.code})
+                            if let last = Array(allBetModels).last {
+                                if let timestamp = last.timestamp {
+                                    self.counter?.timestamp = timestamp
+                                    print("Current timestampppp:", timestamp)
+                                    do {
+                                        try await self.checkForNewBets(in: context, timestamp: timestamp)
+                                    } catch {
+                                        
+                                    }
+                                }
+                            }
                         }
-                    } catch {
-                        
                     }
                 }
             }
