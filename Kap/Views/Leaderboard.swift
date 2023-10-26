@@ -129,7 +129,7 @@ struct Leaderboard: View {
         var points: String = "0"
         
         if let userId = user.id {
-            points = leaderboardViewModel.usersPoints[userId]?[week ?? homeViewModel.currentWeek]?.twoDecimalString ?? "0"
+            points = leaderboardViewModel.usersPoints[userId]?[week ?? homeViewModel.currentWeek]?.oneDecimalString ?? "0"
         }
         
         return HStack {

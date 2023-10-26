@@ -49,18 +49,12 @@ struct MyBets: View {
                         menu
                         Spacer()
                         VStack(alignment: .trailing, spacing: 4) {
-                            HStack(spacing: 8) {
-                                dayTrackerElement(dayType: .tnf, leagueCode: leagueCode, userID: userID, filterWeek: week)
-                                dayTrackerElement(dayType: .sunday, leagueCode: leagueCode, userID: userID, filterWeek: week)
-                            }
-                            HStack(spacing: 8) {
-                                dayTrackerElement(dayType: .snf, leagueCode: leagueCode, userID: userID, filterWeek: week)
-                                dayTrackerElement(dayType: .mnf, leagueCode: leagueCode, userID: userID, filterWeek: week)
-                            }
+                            betTracker(leagueCode: leagueCode, userID: userID, filterWeek: week, maxBets: 10)
+                            Text("Points: \((weeklyPoints ?? 0).oneDecimalString)")
                         }
-                        .font(.system(.caption2, design: .rounded, weight: .bold))
+                        .font(.system(.caption, design: .rounded, weight: .bold))
                     }
-                    .padding(.top, 8)
+                    .padding(.vertical, 8)
                     
                     if selectedSegment == 0 {
                         activeBetsTab
@@ -87,7 +81,7 @@ struct MyBets: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             } else {
                 ScrollView(showsIndicators: false) {
-                    betSection(for: .tnf, settled: true)
+                    betSection(settled: true)
                     if !homeViewModel.userParlays.filter({ $0.result != .pending && $0.week == week }).isEmpty {
                         parlaySection(settled: true)
                     }
@@ -105,7 +99,7 @@ struct MyBets: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             } else {
                 ScrollView(showsIndicators: false) {
-                    betSection(for: .tnf, settled: false)
+                    betSection(settled: false)
                     if !homeViewModel.userParlays.filter({ $0.result == .pending && $0.week == week }).isEmpty {
                         parlaySection(settled: false)
                     }
@@ -114,7 +108,7 @@ struct MyBets: View {
         }
     }
     
-    func betSection(for dayType: DayType, settled: Bool) -> some View {
+    func betSection(settled: Bool) -> some View {
         let liveBets = homeViewModel.leagueBets.filter({$0.week == homeViewModel.currentWeek && Date() > $0.game.date ?? Date() && $0.game.completed == false})
         
         let filteredBets = homeViewModel.userBets.filter { bet in
@@ -128,10 +122,6 @@ struct MyBets: View {
         if !filteredBets.isEmpty {
             return AnyView(
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("POINTS: \((weeklyPoints ?? 0).twoDecimalString)")
-                        .font(.system(.caption, design: .rounded, weight: .bold))
-                        .padding(.leading, 1)
-                    
                     HStack {
                         Text("NFL")
                             .font(.caption.bold())
@@ -289,27 +279,17 @@ struct MyBets: View {
     }
 }
 
-struct dayTrackerElement: View {
+struct betTracker: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
-    let dayType: DayType
     let leagueCode: String
     let userID: String
     let filterWeek: Int
-    
-    var maxBets: Int {
-        switch dayType {
-        case .sunday:
-            7
-        default:
-            1
-        }
-    }
+    var maxBets: Int
     
     var body: some View {
-        let newBets = homeViewModel.userBets.filter({ $0.week == filterWeek && $0.leagueCode == leagueCode})
-        let filteredBetsCount = newBets.filter { $0.game.dayType == dayType.rawValue }.count
-        Text("\(dayType.rawValue) ")
-        + Text("\(filteredBetsCount)").foregroundColor(filteredBetsCount < maxBets ? .redd : .bean)
-        + Text("/\(maxBets)").foregroundColor(filteredBetsCount < maxBets ? .redd : .bean)
+        let newBets = homeViewModel.userBets.filter({ $0.week == filterWeek })
+        Text("Bets Placed: ")
+        + Text("\(newBets.count)").foregroundColor(newBets.count < maxBets ? .redd : .bean)
+        + Text("/\(maxBets)").foregroundColor(newBets.count < maxBets ? .redd : .bean)
     }
 }

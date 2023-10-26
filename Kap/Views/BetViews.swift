@@ -36,11 +36,6 @@ struct BetView: View {
             let bets = homeViewModel.userBets.filter {
                 $0.week == currentWeek
             }
-            
-            isValid = bets.filter {
-                $0.game.dayType! == bet.game.dayType! &&
-                $0.week == currentWeek
-            }.count < maxBets2 && !bets.contains { $0.game.id == bet.game.id }
         }
     }
     
@@ -71,18 +66,10 @@ struct BetView: View {
         .shadow(radius: 10)
         .task {
             await fetchData()
+            isValid = homeViewModel.userBets.filter({ $0.week == homeViewModel.currentWeek }).count <= 10 && homeViewModel.userBets.filter({ $0.game.id == bet.game.id }).isEmpty
         }
         .onChange(of: homeViewModel.userBets.count) { newValue in
-            isValid = homeViewModel.userBets.filter({ $0.game.dayType! == bet.game.dayType! && $0.week == homeViewModel.currentWeek }).count < maxBets2 && homeViewModel.userBets.filter({ $0.game.id == bet.game.id }).isEmpty
-        }
-    }
-    
-    var maxBets2: Int {
-        switch bet.game.dayType {
-        case "SUN":
-            7
-        default:
-            1
+            isValid = homeViewModel.userBets.filter({ $0.week == homeViewModel.currentWeek }).count <= 10 && homeViewModel.userBets.filter({ $0.game.id == bet.game.id }).isEmpty
         }
     }
     
@@ -121,7 +108,7 @@ struct BetView: View {
                     .lineLimit(nil)
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer()
-                Text("(\(bet.game.dayType ?? "") \(homeViewModel.userBets.filter({ $0.game.dayType ?? "" == bet.game.dayType ?? "" && $0.week == homeViewModel.currentWeek && $0.leagueCode == homeViewModel.activeleagueCode!}).count)/\(maxBets2))")
+                Text("[DATE HERE]")
                     .font(.caption.bold())
                     .foregroundStyle(.secondary)
             }
@@ -362,7 +349,7 @@ struct PlacedBetView: View {
                                 .lineLimit(nil)
                                 .fixedSize(horizontal: false, vertical: true)
                             Spacer()
-                            Text("(\(bet.game.dayType ?? "") \(homeViewModel.leagueBets.filter({ $0.game.dayType == bet.game.dayType && $0.week == bet.week && $0.playerID == bet.playerID && $0.leagueCode == homeViewModel.activeleagueCode!}).count)/\(maxBets))")
+                            Text("[DATE HERE]")
                                 .font(.caption.bold())
                                 .foregroundStyle(.secondary)
                         }
@@ -381,7 +368,7 @@ struct PlacedBetView: View {
                         HStack(spacing: 4) {
                             Text("Points:")
                                 .font(.headline.bold())
-                            Text("\(bet.result != "Pending" ? bet.points < 0 ? "-" : "+" : "")\(abs(bet.result == "Push" ? 0 : bet.points).twoDecimalString)")
+                            Text("\(bet.result != "Pending" ? bet.points < 0 ? "-" : "+" : "")\(abs(bet.result == "Push" ? 0 : bet.points).oneDecimalString)")
                                 .font(.title2.bold())
                                 .foregroundStyle(pointsColor(for: BetResult(rawValue: bet.result) ?? .pending))
                         }
@@ -405,15 +392,7 @@ struct PlacedBetView: View {
             .multilineTextAlignment(.leading)
         }
         .frame(height: 125)
-        .cornerRadius(18)
-        .task {
-            switch DayType(rawValue: bet.game.dayType ?? "") {
-            case .tnf, .mnf, .snf:
-                self.maxBets = 1
-            default:
-                self.maxBets = 7
-            }
-        }
+        .cornerRadius(15)
     }
     
     private var menu: some View {
@@ -517,7 +496,7 @@ struct PlacedParlayView: View {
                             HStack(spacing: 4) {
                                 Text("Points:")
                                     .font(.headline.bold())
-                                Text("\(parlay.result == .loss ? "" : "+")\(abs(parlay.totalPoints).twoDecimalString)")
+                                Text("\(parlay.result == .loss ? "" : "+")\(abs(parlay.totalPoints).oneDecimalString)")
                                     .font(.title3.bold())
                                     .foregroundStyle(pointsColor(for: parlay.result))
                             }

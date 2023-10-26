@@ -19,7 +19,6 @@ class BetOption {
     var betString: String
     var selectedTeam: String?
     var confirmBet: Bool
-    var dayType: DayType?
     var maxBets: Int?
     
     init(id: String, game: Game, betType: BetType, odds: Int, spread: Double? = nil, over: Double, under: Double, selectedTeam: String? = nil, confirmBet: Bool = false) {
@@ -185,7 +184,6 @@ extension BetOption {
             "selectedTeam": selectedTeam ?? NSNull(),
             "confirmBet": confirmBet,
             "betString": betString,
-            "dayType": dayType?.rawValue ?? NSNull(),
             "maxBets": maxBets ?? NSNull()
         ]
     }
@@ -223,14 +221,6 @@ enum BetResult: String {
     case loss = "Loss"
     case push = "Push"
     case pending = "Pending"
-}
-
-enum DayType: String {
-    case tnf = "TNF"
-    case sunday = "SUN"
-    case snf = "SNF"
-    case mnf = "MNF"
-    case parlay = "PARLAY BONUS"
 }
 
 extension Double {

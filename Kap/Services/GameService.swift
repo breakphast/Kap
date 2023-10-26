@@ -90,8 +90,7 @@ class GameService {
             "under": game.under,
             "underPriceTemp": game.underPriceTemp,
             "homeSpread": game.homeSpread,
-            "homeSpreadPriceTemp": game.homeSpreadPriceTemp,
-            "dayType": game.dayType ?? "Nope"
+            "homeSpreadPriceTemp": game.homeSpreadPriceTemp
         ]) { err in
             if let err = err {
                 print("Error updating document: \(err)")
@@ -146,7 +145,6 @@ class GameService {
             let awaySpreadPriceTemp = data["awaySpreadPriceTemp"] as? Double ?? 0.0
             let overPriceTemp = data["overPriceTemp"] as? Double ?? 0.0
             let underPriceTemp = data["underPriceTemp"] as? Double ?? 0.0
-            let dayType = data["dayType"] as? String ?? ""
             let week = data["week"] as? Int ?? 0
 
             let gameElement = GameElement(id: id, sportKey: .americanfootball_nfl, sportTitle: .NFL, commenceTime: date ?? Date(), completed: completed, homeTeam: homeTeam, awayTeam: awayTeam, bookmakers: nil, scores: [Score(name: homeTeam, score: homeScore ?? ""), Score(name: awayTeam, score: awayScore ?? "")])
@@ -163,7 +161,6 @@ class GameService {
             game.overPriceTemp = overPriceTemp
             game.underPriceTemp = underPriceTemp
             game.completed = completed
-            game.dayType = dayType
             game.week = week
             
             if let betOptionsDictionaries = data["betOptions"] as? [[String: Any]] {
@@ -271,51 +268,6 @@ class GameService {
         return data
     }
     
-//    func updateDayType(for games: inout [Game]) {
-//        for game in games.prefix(1) {
-//            print(game.awayTeam)
-//            
-//            game.betOptions = game.betOptions.map { bet in
-//                game.dayType = DayType.tnf.rawValue
-//                let mutableBet = bet
-//                mutableBet.dayType = .tnf
-//                mutableBet.maxBets = 1
-//                return mutableBet
-//            }
-//        }
-//        
-//        let sundayAfternoonGamesCount = games.count - 3
-//        for game in games.dropFirst().prefix(sundayAfternoonGamesCount) {
-//            game.betOptions = game.betOptions.map { bet in
-//                game.dayType = DayType.sunday.rawValue
-//                let mutableBet = bet
-//                mutableBet.dayType = .sunday
-//                mutableBet.maxBets = 7
-//                return mutableBet
-//            }
-//        }
-//        
-//        for game in games.dropFirst(sundayAfternoonGamesCount + 1).prefix(1) {
-//            game.betOptions = game.betOptions.map { bet in
-//                game.dayType = DayType.snf.rawValue
-//                let mutableBet = bet
-//                mutableBet.dayType = .snf
-//                mutableBet.maxBets = 1
-//                return mutableBet
-//            }
-//        }
-//        
-//        for game in games.suffix(1) {
-//            game.betOptions = game.betOptions.map { bet in
-//                game.dayType = DayType.mnf.rawValue
-//                let mutableBet = bet
-//                mutableBet.dayType = .mnf
-//                mutableBet.maxBets = 1
-//                return mutableBet
-//            }
-//        }
-//    }
-    
     func deleteCollection(collectionName: String, batchSize: Int = 100, completion: @escaping (Error?) -> Void) {
         // Get a reference to the collection
         let collectionRef = Firestore.firestore().collection(collectionName)
@@ -354,29 +306,6 @@ class GameService {
                     }
                 }
             }
-        }
-    }
-    func updateDayType(for games: [GameModel], in context: NSManagedObjectContext) async throws {
-        for game in games.prefix(1) {
-            game.dayType = DayType.tnf.rawValue
-        }
-        
-        let sundayAfternoonGamesCount = games.count - 3
-        for game in games.dropFirst().prefix(sundayAfternoonGamesCount) {
-            game.dayType = DayType.sunday.rawValue
-        }
-        
-        for game in games.dropFirst(sundayAfternoonGamesCount + 1).prefix(1) {
-            game.dayType = DayType.snf.rawValue
-        }
-        
-        for game in games.suffix(1) {
-            game.dayType = DayType.mnf.rawValue
-        }
-        do {
-            try context.save()
-        } catch {
-            print("Error saving context: \(error)")
         }
     }
 }
@@ -423,7 +352,6 @@ extension Game {
             "overPriceTemp": overPriceTemp,
             "underPriceTemp": underPriceTemp,
             "week": week ?? 0,
-            "dayType": dayType ?? ""
         ]
     }
 }

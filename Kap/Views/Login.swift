@@ -170,7 +170,7 @@ struct Login: View {
                                     if let last = Array(allBetModels).last {
                                         if let timestamp = last.timestamp {
                                             homeViewModel.counter?.timestamp = timestamp
-                                            print("Current timestampppp:", timestamp)
+                                            print("Current timestamp:", timestamp)
                                             do {
                                                 try await homeViewModel.checkForNewBets(in: viewContext, timestamp: timestamp)
                                                 homeViewModel.leagueBets = Array(allBetModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})

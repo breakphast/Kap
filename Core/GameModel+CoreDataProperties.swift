@@ -34,7 +34,6 @@ extension GameModel {
     @NSManaged public var awaySpreadPriceTemp: Double
     @NSManaged public var overPriceTemp: Double
     @NSManaged public var underPriceTemp: Double
-    @NSManaged public var dayType: String?
     @NSManaged public var week: Int16
     @NSManaged public var betOptions: NSSet?
 //    @NSManaged public var betOptions: BetOptionModel?

@@ -62,7 +62,7 @@ struct PlayerBetsView: View {
                 HStack(alignment: .center) {
                     menu
                     VStack(alignment: .leading) {
-                        Text((calculateWeeklyPoints(pointsWeek: week) + Double(missedBets * -10)).twoDecimalString)
+                        Text((calculateWeeklyPoints(pointsWeek: week) + Double(missedBets * -10)).oneDecimalString)
                             .font(.system(.caption2, design: .rounded, weight: .bold))
                         Text("Missing Bets: \(missedBets)")
                             .font(.system(.caption2, design: .rounded, weight: .bold))
@@ -73,7 +73,7 @@ struct PlayerBetsView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             
             ScrollView(showsIndicators: false) {
-                betSection(for: .tnf, settled: true)
+                betSection(settled: true)
                 if !homeViewModel.leagueParlays.filter({ $0.result != .pending && $0.playerID == userID && $0.week == week }).isEmpty {
                     parlaySection(settled: true)
                 }
@@ -136,7 +136,7 @@ struct PlayerBetsView: View {
         )
     }
     
-    func betSection(for dayType: DayType, settled: Bool) -> some View {
+    func betSection(settled: Bool) -> some View {
         let filteredBets = homeViewModel.leagueBets.filter { bet in
             if selectedOption != "Overall" {
                 (bet.result != "Pending" && bet.playerID == userID && bet.week == week)

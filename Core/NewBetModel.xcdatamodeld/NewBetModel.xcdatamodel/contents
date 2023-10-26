@@ -21,7 +21,6 @@
         <attribute name="betString" optional="YES" attributeType="String"/>
         <attribute name="betType" optional="YES" attributeType="String"/>
         <attribute name="confirmBet" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
-        <attribute name="dayType" optional="YES" attributeType="String"/>
         <attribute name="id" optional="YES" attributeType="String"/>
         <attribute name="maxBets" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="odds" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
@@ -43,7 +42,6 @@
         <attribute name="awayTeam" optional="YES" attributeType="String"/>
         <attribute name="completed" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
-        <attribute name="dayType" optional="YES" attributeType="String"/>
         <attribute name="documentID" optional="YES" attributeType="String"/>
         <attribute name="homeMoneyLine" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="homeScore" optional="YES" attributeType="String"/>

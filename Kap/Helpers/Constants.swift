@@ -146,8 +146,6 @@ let mlbTeams = [
 import CoreData
 
 class DataManager {
-    
-    // Reference to managed object context
     let managedObjectContext: NSManagedObjectContext
     
     init(context: NSManagedObjectContext) {
@@ -158,10 +156,8 @@ class DataManager {
         var gameModels: [GameModel] = []
         
         for game in games {
-            // Create a new GameModel instance in the given context
             let gameModel = GameModel(context: context)
             
-            // Set the attributes on the GameModel from the Game
             gameModel.id = game.id
             gameModel.homeTeam = game.homeTeam
             gameModel.awayTeam = game.awayTeam
@@ -179,14 +175,11 @@ class DataManager {
             gameModel.awaySpreadPriceTemp = game.awaySpreadPriceTemp
             gameModel.overPriceTemp = game.overPriceTemp
             gameModel.underPriceTemp = game.underPriceTemp
-            gameModel.dayType = game.dayType
             gameModel.week = Int16(game.week ?? 0)
             gameModel.documentID = game.documentId
             
-            // Convert BetOptions from Game to BetOptionModel and add them to the GameModel
             for betOption in game.betOptions {
                 let betOptionModel = BetOptionModel(context: context)
-                // ... [set the attributes on the BetOptionModel from the BetOption] ...
                 betOptionModel.id = betOption.id
                 betOptionModel.odds = Int16(betOption.odds)
                 betOptionModel.spread = betOption.spread ?? 0
@@ -195,19 +188,10 @@ class DataManager {
                 betOptionModel.betType = betOption.betType.rawValue
                 betOptionModel.selectedTeam = betOption.selectedTeam
                 betOptionModel.betString = betOption.betString
-                // other properties...
-                
-                // Since we are not saving, we don't add it to the gameModel's betOptions set
-                // gameModel.addToBetOptions(betOptionModel)
             }
             
-            // Append to our array of GameModels
             gameModels.append(gameModel)
-            
-            // We are not saving the context, just converting
         }
-        
-        // Return the array of GameModels
         return gameModels
     }
 }

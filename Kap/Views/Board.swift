@@ -76,6 +76,7 @@ struct Board: View {
                     Task {
                         do {
                             try await updateGameOdds(games: homeViewModel.weekGames, in: viewContext)
+                            homeViewModel.allGameModels = allGameModels
                         } catch {
                             
                         }
@@ -161,6 +162,7 @@ struct Board: View {
                     game.addToBetOptions(betOptionModel)
                     do {
                         try context.save()
+                        print("Updated game odds.")
                     } catch {
                         print("Error saving context: \(error)")
                     }
@@ -212,7 +214,6 @@ struct Board: View {
     
     func updateGameAttribute(games: [GameModel], in context: NSManagedObjectContext) {
         if let game = games.first(where: {$0.documentID == "2023-10-30-Detroit-Lions-vs-Las-Vegas-Raiders"}) {
-            game.dayType = "MNF"
             game.week = 8
             do {
                 try context.save()
@@ -244,7 +245,6 @@ struct Board: View {
             gameModel.awaySpreadPriceTemp = game.awaySpreadPriceTemp
             gameModel.overPriceTemp = game.overPriceTemp
             gameModel.underPriceTemp = game.underPriceTemp
-            gameModel.dayType = game.dayType
             gameModel.week = Int16(game.week ?? 0)
             
             var documentId: String {
@@ -343,7 +343,7 @@ struct GameListingView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            SectionView(title: "Thursday Night Football", games: allGameModels.sorted(by: {$0.date ?? Date() < $1.date ?? Date()}), first: true, dayType: .tnf)
+            SectionView(title: "NFL", games: allGameModels.sorted(by: {$0.date ?? Date() < $1.date ?? Date()}), first: true)
         }
         .padding()
     }
@@ -354,13 +354,12 @@ struct SectionView: View {
     var title: String
     var games: [GameModel]
     var first: Bool?
-    let dayType: DayType
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
                 if first == true {
-                    Text("NFL")
+                    Text(title)
                         .font(.caption.bold())
                         .foregroundColor(Color("oW"))
                         .padding(.horizontal, 16)
@@ -375,7 +374,7 @@ struct SectionView: View {
                 if first != nil {
                     HStack(spacing: 10) {
                         Text("Spread")
-                            .frame(maxWidth: UIScreen.main.bounds.width / (1.75 * 3), alignment: .center) // Adjust width according to each placeholder.
+                            .frame(maxWidth: UIScreen.main.bounds.width / (1.75 * 3), alignment: .center)
                         Text("ML")
                             .frame(maxWidth: UIScreen.main.bounds.width / (1.75 * 3), alignment: .center)
                         Text("Totals")

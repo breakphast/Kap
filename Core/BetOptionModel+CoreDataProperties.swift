@@ -26,7 +26,6 @@ extension BetOptionModel {
     @NSManaged public var confirmBet: Bool
     @NSManaged public var maxBets: Int16
     @NSManaged public var betType: String?
-    @NSManaged public var dayType: String?
     @NSManaged public var game: GameModel?
     
     var betTypeEnum: BetType {
@@ -40,17 +39,6 @@ extension BetOptionModel {
             betType = newBetType.rawValue
         }
     }
-
-    // Similar computed properties would be used for other enum attributes like dayType
-    var dayTypeEnum: DayType {
-        get {
-            return DayType(rawValue: dayType ?? "") ?? .sunday // Default value as an example
-        }
-        set(newDayType) {
-            dayType = newDayType.rawValue
-        }
-    }
-
 }
 
 extension BetOptionModel : Identifiable {
