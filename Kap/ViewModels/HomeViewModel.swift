@@ -104,24 +104,26 @@ class HomeViewModel: ObservableObject {
     
     func checkForNewBets(in context: NSManagedObjectContext, timestamp: Date?) async throws {
         if let timestamp {
-            var stampedBets = try await BetViewModel().fetchStampedBets(games: self.weekGames, leagueCode: "2222", timeStamp: timestamp)
-            
-            if let allBets = self.allBetModels {
-                let localBetIDs = Set(allBets).map {$0.id}
-                stampedBets = stampedBets.filter { !localBetIDs.contains($0.id) }
+            if let activeleagueCode {
+                var stampedBets = try await BetViewModel().fetchStampedBets(games: self.weekGames, leagueCode: activeleagueCode, timeStamp: timestamp)
+                
+                if let allBets = self.allBetModels {
+                    let localBetIDs = Set(allBets).map {$0.id}
+                    stampedBets = stampedBets.filter { !localBetIDs.contains($0.id) }
 
-                if !stampedBets.isEmpty {
-                    print("New bets detected:", stampedBets.count)
-                    print(stampedBets.map {$0.betString})
-                    convertToBetModels(bets: stampedBets, in: context)
+                    if !stampedBets.isEmpty {
+                        print("New bets detected:", stampedBets.count)
+                        print(stampedBets.map {$0.betString})
+                        convertToBetModels(bets: stampedBets, in: context)
+                    }
                 }
-            }
-            
-            let deletedStampedBets = try await BetViewModel().fetchDeletedStampedBets(games: self.weekGames, leagueCode: "2222", deletedTimestamp: timestamp)
-            if !deletedStampedBets.isEmpty {
-                for bet in deletedStampedBets {
-                    try await BetViewModel().deleteBet(betID: bet.id)
-                    BetViewModel().deleteBetModel(in: context, id: bet.id)
+                
+                let deletedStampedBets = try await BetViewModel().fetchDeletedStampedBets(games: self.weekGames, leagueCode: activeleagueCode, deletedTimestamp: timestamp)
+                if !deletedStampedBets.isEmpty {
+                    for bet in deletedStampedBets {
+                        try await BetViewModel().deleteBet(betID: bet.id)
+                        BetViewModel().deleteBetModel(in: context, id: bet.id)
+                    }
                 }
             }
         }
@@ -269,6 +271,9 @@ class HomeViewModel: ObservableObject {
             let fetchedBets = try await BetViewModel().fetchBets(games: allGames, leagueCode: activeleagueCode ?? "")
             for bet in fetchedBets {
                 BetViewModel().addBetToLocalDatabase(bet: bet, playerID: bet.playerID, in: context)
+            }
+            if fetchedBets.isEmpty {
+                print("No league bets have been placed yet.")
             }
         } catch {
             

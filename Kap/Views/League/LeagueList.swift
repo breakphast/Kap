@@ -24,6 +24,20 @@ struct LeagueList: View {
     @State private var leagueToggle = false
     @State private var showingSplashScreen = false
     
+    @FetchRequest(
+            entity: GameModel.entity(),
+            sortDescriptors: [
+                NSSortDescriptor(keyPath: \GameModel.date, ascending: true)
+            ]
+        ) var allGameModels: FetchedResults<GameModel>
+    
+    @FetchRequest(
+        entity: BetModel.entity(),
+        sortDescriptors: [
+            NSSortDescriptor(keyPath: \BetModel.timestamp, ascending: true)
+        ]
+    ) var allBetModels: FetchedResults<BetModel>
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -98,46 +112,99 @@ struct LeagueList: View {
                 .foregroundStyle(.onyx.opacity(0.00001))
                 .onTapGesture {
                     Task {
-                        showingSplashScreen.toggle()
                         withAnimation {
-                            leagueToggle.toggle()
+                            clickedLeague = league.code
                         }
-                        let activeLeague = homeViewModel.userLeagues.first(where: {$0.code == league.code})
-                        
-                        await homeViewModel.fetchEssentials(updateGames: false, updateScores: false, league: league, in: viewContext)
-                        
-                        homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
-                        homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == authViewModel.currentUser?.id})
-                        DispatchQueue.main.async {
-                            leagueViewModel.activeLeague = activeLeague
-                            homeViewModel.activeleagueCode = league.code
-                            if league.code == "5555" {
-                                leaderboardViewModel.leagueType = .season
-                            } else {
-                                leaderboardViewModel.leagueType = .weekly
-                            }
-                            
-                            if let activeLeague = leagueViewModel.activeLeague {
-                                leagueViewModel.points = activeLeague.points ?? [:]
-                            }
-                            Task {
-                                await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets, parlays: homeViewModel.leagueParlays, week: homeViewModel.currentWeek, leagueCode: league.code)
-
-                                loggedIn = true
-                                if defaultLeague {
-                                    defaultleagueCode = league.code
-                                }
-                            }
+                        if let userID = authViewModel.currentUser?.id {
+                            try await ignitionSequence(userID: userID, leagueCode: league.code)
                         }
                     }
                 }
         )
     }
-
+    
+    func ignitionSequence(userID: String, leagueCode: String) async throws {
+        if allGameModels.isEmpty {
+            print("No games. Adding now...")
+            do {
+                try await homeViewModel.addInitialGames(in: viewContext)
+                homeViewModel.allGameModels = self.allGameModels
+                if let allGames = homeViewModel.allGameModels {
+                    do {
+                        try await Board().updateGameOdds(games: Array(allGames).filter({$0.week == homeViewModel.currentWeek}), in: viewContext)
+                        homeViewModel.allGameModels = self.allGameModels
+                        print("Done adding games.")
+                    } catch {
+                        
+                    }
+                }
+            } catch {
+                
+            }
+        }
+        homeViewModel.userLeagues = try await LeagueViewModel().fetchLeaguesContainingID(id: userID)
+        leagueViewModel.activeLeague = homeViewModel.leagues.first(where: {$0.code == leagueCode})
+        homeViewModel.activeleagueCode = leagueCode
+        
+        if let activeLeague = leagueViewModel.activeLeague {
+            homeViewModel.allGameModels = self.allGameModels
+            homeViewModel.allBetModels = self.allBetModels
+            
+            await homeViewModel.fetchEssentials(updateGames: false, updateScores: false, league: activeLeague, in: viewContext)
+            homeViewModel.leagueBets = Array(allBetModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
+            homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
+            if homeViewModel.leagueBets.isEmpty {
+                do {
+                    try await homeViewModel.addInitialBets(games: homeViewModel.allGames, in: viewContext)
+                    homeViewModel.allBetModels = self.allBetModels
+                } catch {
+                    print("League bets are still empty.")
+                }
+            }
+            if let last = Array(allBetModels).last {
+                if let timestamp = last.timestamp {
+                    homeViewModel.counter?.timestamp = timestamp
+                    print("Current timestamp:", timestamp)
+                    do {
+                        try await homeViewModel.checkForNewBets(in: viewContext, timestamp: timestamp)
+                        homeViewModel.leagueBets = Array(allBetModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
+                        homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
+                    } catch {
+                        
+                    }
+                }
+            } else {
+                do {
+                    try await homeViewModel.checkForNewBets(in: viewContext, timestamp: nil)
+                } catch {
+                    
+                }
+            }
+            leagueViewModel.points = activeLeague.points ?? [:]
+            let leaguePlayers = homeViewModel.leagues.first(where: { $0.code == activeLeague.code })?.players
+            
+            if let leaguePlayers = leaguePlayers {
+                homeViewModel.users = homeViewModel.users.filter({ leaguePlayers.contains($0.id!) })
+            }
+            await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets.filter({$0.leagueCode == leagueViewModel.activeLeague!.code}), parlays: homeViewModel.leagueParlays.filter({$0.leagueCode == leagueViewModel.activeLeague!.code}), week: homeViewModel.currentWeek, leagueCode: activeLeague.code)
+            
+            homeViewModel.userBets = homeViewModel.leagueBets.filter({ $0.playerID == userID })
+            homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == userID })
+        }
+        
+        loggedIn = true
+        return
+    }
+    
+    
     func leagueDetailZStack(index: Int, league: League) -> some View {
         ZStack(alignment: .leading) {
             RoundedRectangle(cornerRadius: 20)
-                .stroke(leagueToggle ? .leader : Color.lion, lineWidth: leagueToggle ? 6 : 3)
+                .stroke(clickedLeague == league.code ? .lion : .oW, lineWidth: clickedLeague == league.code ? 4: 3)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 20)
+                        .foregroundStyle(.lion.opacity(clickedLeague == league.code ? 1.0 : 0.0))
+                }
             leagueDetailHStack(for: league, index: index)
         }
     }
@@ -155,7 +222,7 @@ struct LeagueList: View {
                 Text(league.name)
                     .fontWeight(.bold)
                     .font(.title2)
-                    .foregroundStyle(clickedLeague == league.code ? .lion : .oW)
+                    .foregroundStyle(.oW)
             }
         }
         .padding(.horizontal)
