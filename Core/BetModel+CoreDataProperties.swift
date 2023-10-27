@@ -9,7 +9,6 @@
 import Foundation
 import CoreData
 
-
 extension BetModel {
 
     @nonobjc public class func fetchRequest() -> NSFetchRequest<BetModel> {

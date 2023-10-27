@@ -16,6 +16,7 @@
         <attribute name="type" optional="YES" attributeType="String"/>
         <attribute name="week" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="game" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="GameModel" inverseName="bets" inverseEntity="GameModel"/>
+        <relationship name="parlay" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ParlayModel" inverseName="bets" inverseEntity="ParlayModel"/>
     </entity>
     <entity name="BetOptionModel" representedClassName="BetOptionModel" syncable="YES">
         <attribute name="betString" optional="YES" attributeType="String"/>
@@ -56,5 +57,17 @@
         <attribute name="week" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="betOptions" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="BetOptionModel" inverseName="game" inverseEntity="BetOptionModel"/>
         <relationship name="bets" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="BetModel" inverseName="game" inverseEntity="BetModel"/>
+    </entity>
+    <entity name="ParlayModel" representedClassName="ParlayModel" syncable="YES">
+        <attribute name="betString" optional="YES" attributeType="String"/>
+        <attribute name="id" optional="YES" attributeType="String"/>
+        <attribute name="leagueCode" optional="YES" attributeType="String"/>
+        <attribute name="playerID" optional="YES" attributeType="String"/>
+        <attribute name="result" optional="YES" attributeType="String"/>
+        <attribute name="timestamp" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="totalOdds" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="totalPoints" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="week" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="bets" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="BetModel" inverseName="parlay" inverseEntity="BetModel"/>
     </entity>
 </model>

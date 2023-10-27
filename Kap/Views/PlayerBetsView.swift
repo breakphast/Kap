@@ -74,7 +74,7 @@ struct PlayerBetsView: View {
             
             ScrollView(showsIndicators: false) {
                 betSection(settled: true)
-                if !homeViewModel.leagueParlays.filter({ $0.result != .pending && $0.playerID == userID && $0.week == week }).isEmpty {
+                if !homeViewModel.leagueParlays.filter({ $0.result != "Pending" && $0.playerID == userID && $0.week == week }).isEmpty {
                     parlaySection(settled: true)
                 }
             }
@@ -89,7 +89,7 @@ struct PlayerBetsView: View {
             for i in 1...homeViewModel.currentWeek {
                 let filteredBetsPoints = homeViewModel.leagueBets.filter { $0.week == i && $0.result != "Push" && $0.result != "Pending" && $0.playerID == userID }
                     .reduce(0) { $0 + ($1.points) }
-                let parlayPoints = homeViewModel.leagueParlays.filter({$0.playerID == userID && $0.week == i && $0.result != .push && $0.result != .pending && $0.playerID == userID}).reduce(0) { $0 + ($1.totalPoints) }
+                let parlayPoints = homeViewModel.leagueParlays.filter({$0.playerID == userID && $0.week == i && $0.result != "Push" && $0.result != "Pending" && $0.playerID == userID}).reduce(0) { $0 + ($1.totalPoints) }
                 
                 pts += (filteredBetsPoints + parlayPoints)
             }
@@ -97,7 +97,7 @@ struct PlayerBetsView: View {
         } else {
             let filteredBetsPoints = homeViewModel.leagueBets.filter { $0.week == pointsWeek && $0.result != "Push" && $0.result != "Pending" && $0.playerID == userID }
                 .reduce(0) { $0 + ($1.points) }
-            let parlayPoints = homeViewModel.leagueParlays.filter({$0.playerID == userID && $0.week == pointsWeek && $0.result != .push && $0.result != .pending && $0.playerID == userID}).reduce(0) { $0 + ($1.totalPoints) }
+            let parlayPoints = homeViewModel.leagueParlays.filter({$0.playerID == userID && $0.week == pointsWeek && $0.result != "Push" && $0.result != "Pending" && $0.playerID == userID}).reduce(0) { $0 + ($1.totalPoints) }
             
             return filteredBetsPoints + parlayPoints
         }
@@ -124,11 +124,11 @@ struct PlayerBetsView: View {
                 .padding(.vertical, 8)
                 
                 if settled {
-                    ForEach(homeViewModel.leagueParlays.filter { $0.result != .pending && $0.playerID == userID && $0.week == week}, id: \.id) { parlay in
+                    ForEach(homeViewModel.leagueParlays.filter { $0.result != "Pending" && $0.playerID == userID && $0.week == week}, id: \.id) { parlay in
                         PlacedParlayView(parlay: parlay)
                     }
                 } else {
-                    ForEach(homeViewModel.leagueParlays.filter { $0.result == .pending && $0.playerID == userID && $0.week == week}, id: \.id) { parlay in
+                    ForEach(homeViewModel.leagueParlays.filter { $0.result == "Pending" && $0.playerID == userID && $0.week == week}, id: \.id) { parlay in
                         PlacedParlayView(parlay: parlay)
                     }
                 }

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import CoreData
 
 struct LeagueList: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
@@ -37,6 +38,13 @@ struct LeagueList: View {
             NSSortDescriptor(keyPath: \BetModel.timestamp, ascending: true)
         ]
     ) var allBetModels: FetchedResults<BetModel>
+    
+    @FetchRequest(
+        entity: ParlayModel.entity(),
+        sortDescriptors: [
+            NSSortDescriptor(keyPath: \ParlayModel.timestamp, ascending: true)
+        ]
+    ) var allParlayModels: FetchedResults<ParlayModel>
     
     var body: some View {
         NavigationStack {
@@ -112,7 +120,7 @@ struct LeagueList: View {
                 .foregroundStyle(.onyx.opacity(0.00001))
                 .onTapGesture {
                     Task {
-                        withAnimation {
+                        withAnimation(.easeInOut(duration: 0.7).repeatForever(autoreverses: true)) {
                             clickedLeague = league.code
                         }
                         if let userID = authViewModel.currentUser?.id {
@@ -121,6 +129,29 @@ struct LeagueList: View {
                     }
                 }
         )
+    }
+    
+    func fetchEssentials(updateGames: Bool, updateScores: Bool, league: League, in context: NSManagedObjectContext) async {
+        do {
+            guard let leaguePlayers = league.players else {
+                throw NSError(domain: "HomeViewModel", code: -1, userInfo: [NSLocalizedDescriptionKey: "Error: league players are nil."])
+            }
+
+            let fetchedUsers = try await UserViewModel().fetchAllUsers(leagueUsers: leaguePlayers)
+            let relevantUsers = fetchedUsers.filter { leaguePlayers.contains($0.id ?? "") }
+
+            homeViewModel.users = relevantUsers
+
+            if let allGameModels = homeViewModel.allGameModels {
+                homeViewModel.allGames = Array(allGameModels)
+                homeViewModel.weekGames = homeViewModel.allGames.filter { $0.week == homeViewModel.currentWeek }
+            }
+
+            homeViewModel.leagueCodes = homeViewModel.leagues.map { $0.code }
+
+        } catch {
+            print("Failed with error: \(error.localizedDescription)")
+        }
     }
     
     func ignitionSequence(userID: String, leagueCode: String) async throws {
@@ -149,10 +180,14 @@ struct LeagueList: View {
         if let activeLeague = leagueViewModel.activeLeague {
             homeViewModel.allGameModels = self.allGameModels
             homeViewModel.allBetModels = self.allBetModels
+            homeViewModel.allParlayModels = self.allParlayModels
             
-            await homeViewModel.fetchEssentials(updateGames: false, updateScores: false, league: activeLeague, in: viewContext)
+            await fetchEssentials(updateGames: false, updateScores: false, league: activeLeague, in: viewContext)
             homeViewModel.leagueBets = Array(allBetModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
             homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
+            
+            homeViewModel.leagueParlays = Array(allParlayModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
+            homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == authViewModel.currentUser?.id})
             if homeViewModel.leagueBets.isEmpty {
                 do {
                     try await homeViewModel.addInitialBets(games: homeViewModel.allGames, in: viewContext)
@@ -161,21 +196,41 @@ struct LeagueList: View {
                     print("League bets are still empty.")
                 }
             }
-            if let last = Array(allBetModels).last {
-                if let timestamp = last.timestamp {
-                    homeViewModel.counter?.timestamp = timestamp
-                    print("Current timestamp:", timestamp)
+            if homeViewModel.leagueParlays.isEmpty {
+                do {
+                    try await homeViewModel.addInitialParlays(games: homeViewModel.allGames, in: viewContext)
+                } catch {
+                    print("League parlays are still empty.")
+                }
+            }
+            var currentTimestamp = Date()
+            if let lastBet = homeViewModel.leagueBets.last {
+                if let betTimestamp = lastBet.timestamp {
+                    currentTimestamp = betTimestamp
+                    if let lastParlay = homeViewModel.leagueParlays.last {
+                        if let parlayTimestamp = lastParlay.timestamp {
+                            if parlayTimestamp > betTimestamp {
+                                currentTimestamp = parlayTimestamp
+                                homeViewModel.counter?.timestamp = currentTimestamp
+                            }
+                        }
+                    }
+                    print("Current timestamp:", currentTimestamp)
                     do {
-                        try await homeViewModel.checkForNewBets(in: viewContext, timestamp: timestamp)
+                        try await homeViewModel.checkForNewBets(in: viewContext, timestamp: currentTimestamp, games: homeViewModel.weekGames)
                         homeViewModel.leagueBets = Array(allBetModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
                         homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
+                        
+                        try await homeViewModel.checkForNewParlays(in: viewContext, timestamp: currentTimestamp)
+                        homeViewModel.leagueParlays = Array(allParlayModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
+                        homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == authViewModel.currentUser?.id})
                     } catch {
                         
                     }
                 }
             } else {
                 do {
-                    try await homeViewModel.checkForNewBets(in: viewContext, timestamp: nil)
+                    try await homeViewModel.checkForNewBets(in: viewContext, timestamp: nil, games: homeViewModel.weekGames)
                 } catch {
                     
                 }

@@ -12,7 +12,7 @@ class LeaderboardViewModel: ObservableObject {
     @Published var usersPoints: [String: [Int: Double]] = [:]
     @Published var leagueType: LeagueType = .season
 
-    func generateUserPoints(users: [User], bets: [BetModel], parlays: [Parlay], week: Int, leagueCode: String) async {
+    func generateUserPoints(users: [User], bets: [BetModel], parlays: [ParlayModel], week: Int, leagueCode: String) async {
         for user in users {
             if let userID = user.id {
                 
@@ -50,7 +50,7 @@ class LeaderboardViewModel: ObservableObject {
         }
     }
     
-    func generateWeeklyUserPoints(users: [User], bets: [BetModel], parlays: [Parlay], week: Int, leagueCode: String) async {
+    func generateWeeklyUserPoints(users: [User], bets: [BetModel], parlays: [ParlayModel], week: Int, leagueCode: String) async {
         for user in users {
             if let userID = user.id {
                 func calculateTotalPoints() async -> Double {
@@ -78,7 +78,7 @@ class LeaderboardViewModel: ObservableObject {
         }
     }
 
-    func getWeeklyPoints(userID: String, bets: [BetModel], parlays: [Parlay], week: Int) async -> Double {
+    func getWeeklyPoints(userID: String, bets: [BetModel], parlays: [ParlayModel], week: Int) async -> Double {
         // Filtering bets
         let filteredBets = bets.filter {
             $0.week == week && $0.result != "Pending"
@@ -91,9 +91,10 @@ class LeaderboardViewModel: ObservableObject {
         }
         
         // Filtering parlays
-        let filteredParlays = parlays.filter {
-            $0.playerID == userID && $0.week == week && $0.result != .pending
+        var filteredParlays = parlays.filter {
+            $0.playerID == userID && $0.week == week
         }
+        filteredParlays = filteredParlays.filter({$0.result != "Pending"})
         
         // Getting points from parlays
         let parlayPoints = filteredParlays.first?.totalPoints ?? 0
@@ -105,7 +106,7 @@ class LeaderboardViewModel: ObservableObject {
     }
 
     
-    func calculateTotalPointsPlayersView(userID: String, bets: [BetModel], parlays: [Parlay], week: Int, leagueCode: String) async -> Double {
+    func calculateTotalPointsPlayersView(userID: String, bets: [BetModel], parlays: [ParlayModel], week: Int, leagueCode: String) async -> Double {
         var totalPoints = 0.0
         for currentWeek in 1...week {
             let points = await getWeeklyPoints(userID: userID, bets: bets, parlays: parlays, week: currentWeek)

@@ -43,7 +43,6 @@ class BetViewModel: ObservableObject {
                 let date3 = GameService().convertTimestampToISOString(timestamp: deletedTimestamp ?? Timestamp(date: Date()))
                 let date4 = GameService().dateFromISOString(date3 ?? "")
                 let isDeleted = data["isDeleted"] as? Bool ?? false
-                
                 let bet = Bet(id: id, betOption: betOption, game: foundGame!, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueID, timestamp: date ?? Date(), deletedTimestamp: date4 ?? Date(), isDeleted: isDeleted)
                 
                 return bet
@@ -285,7 +284,7 @@ class BetViewModel: ObservableObject {
     }
     
     func updateParlay(parlay: Parlay) {
-        let newParlay = db.collection("parlays").document(parlay.id)
+        let newParlay = db.collection("userParlays").document(parlay.id)
         let parlayBets = parlay.bets
         if !parlayBets.filter({ $0.game.betResult(for: $0) == .loss }).isEmpty {
             newParlay.updateData([

@@ -17,8 +17,9 @@ class Parlay {
     var playerID: String
     var week: Int
     var leagueCode: String
+    let timestamp: Date
     
-    init(id: String, bets: [Bet], totalOdds: Int, result: BetResult, playerID: String, week: Int, leagueCode: String) {
+    init(id: String, bets: [Bet], totalOdds: Int, result: BetResult, playerID: String, week: Int, leagueCode: String, timestamp: Date) {
         self.id = id
         self.bets = bets
         self.totalOdds = totalOdds
@@ -27,6 +28,7 @@ class Parlay {
         self.playerID = playerID
         self.week = week
         self.leagueCode = leagueCode
+        self.timestamp = timestamp
     }
 }
 

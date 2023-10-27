@@ -19,16 +19,23 @@ struct BetView: View {
     @FetchRequest(
         entity: GameModel.entity(),
         sortDescriptors: [
-            NSSortDescriptor(keyPath: \GameModel.homeTeam, ascending: true)
+            NSSortDescriptor(keyPath: \GameModel.date, ascending: true)
         ]
     ) var allGameModels: FetchedResults<GameModel>
     
     @FetchRequest(
         entity: BetModel.entity(),
         sortDescriptors: [
-            NSSortDescriptor(keyPath: \BetModel.id, ascending: true)
+            NSSortDescriptor(keyPath: \BetModel.timestamp, ascending: true)
         ]
     ) var allBetModels: FetchedResults<BetModel>
+    
+    @FetchRequest(
+        entity: ParlayModel.entity(),
+        sortDescriptors: [
+            NSSortDescriptor(keyPath: \ParlayModel.timestamp, ascending: true)
+        ]
+    ) var allParlayModels: FetchedResults<ParlayModel>
     
     private func fetchData() async {
         do {
@@ -206,6 +213,8 @@ struct BetView: View {
 struct ParlayView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
+    @Environment(\.managedObjectContext) private var viewContext
+
     @State var isValid = false
     @Binding var parlays: [Parlay]
     let parlay: Parlay
@@ -283,7 +292,7 @@ struct ParlayView: View {
         Button {
             let placedParlay = ParlayViewModel().makeParlay(for: parlay.bets, playerID: authViewModel.currentUser?.id ?? "", week: homeViewModel.currentWeek, leagueCode: homeViewModel.activeleagueCode ?? "")
             Task {
-                try await ParlayViewModel().addParlay(parlay: placedParlay)
+                try await ParlayViewModel().addParlay(parlay: placedParlay, in: viewContext)
                 parlays.append(placedParlay)
                 ParlayViewModel().updateParlayLeague(parlay: placedParlay, leagueCode: homeViewModel.activeleagueCode ?? "")
             }
@@ -442,21 +451,9 @@ struct PlacedParlayView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @State var deleteActive = false
     @Namespace var trash
-    let parlay: Parlay
+    let parlay: ParlayModel
     
     @State private var formattedBets = [String]()
-    @State private var legs: Int = 0
-    
-    func pointsColor(for result: BetResult) -> Color {
-        switch result {
-        case .win:
-            return Color("bean")
-        case .loss:
-            return Color("redd")
-        case .push, .pending:
-            return .primary
-        }
-    }
     
     var body: some View {
         ZStack(alignment: .topLeading) {
@@ -465,7 +462,7 @@ struct PlacedParlayView: View {
                 VStack(alignment: .leading) {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack(alignment: .center) {
-                            Text("\(legs) Leg Parlay")
+                            Text("\(Array(parlay.bets ?? []).count) Leg Parlay")
                             Text("(Week \(parlay.week))")
                                 .font(.caption2)
                             Spacer()
@@ -496,13 +493,14 @@ struct PlacedParlayView: View {
                             HStack(spacing: 4) {
                                 Text("Points:")
                                     .font(.headline.bold())
-                                Text("\(parlay.result == .loss ? "" : "+")\(abs(parlay.totalPoints).oneDecimalString)")
+                                Text("\(parlay.result == "Loss" ? "" : "+")\(abs(parlay.totalPoints).oneDecimalString)")
                                     .font(.title3.bold())
-                                    .foregroundStyle(pointsColor(for: parlay.result))
+                                    .foregroundStyle(pointsColor(for: BetResult(rawValue: parlay.result ?? "") ?? .pending))
                             }
                             Spacer()
                             
-                            if parlay.bets.contains(where: { Date() < $0.game.date ?? Date() && $0.result == .pending }) {
+                            if let betsArray = parlay.bets?.allObjects as? [Bet],
+                               betsArray.contains(where: { Date() < ($0.game.date ?? Date()) && $0.result == .pending }) {
                                 menu
                             }
                         }
@@ -517,7 +515,8 @@ struct PlacedParlayView: View {
             .foregroundStyle(.white)
             .multilineTextAlignment(.leading)
             
-            if parlay.bets.filter({ Date() > $0.game.date ?? Date() }).count == 0 {
+            if let betsArray = parlay.bets?.allObjects as? [Bet],
+               betsArray.filter({ Date() > ($0.game.date ?? Date()) }).isEmpty {
                 if deleteActive {
                     
                 }
@@ -528,7 +527,6 @@ struct PlacedParlayView: View {
         .task {
             formattedBets = parlay.betString?.split(separator: ",").map { String($0.trimmingCharacters(in: .whitespaces))
             } ?? []
-            legs = formattedBets.count
         }
     }
     
@@ -538,7 +536,7 @@ struct PlacedParlayView: View {
                 withAnimation {
                     deleteActive.toggle()
                     Task {
-                        let _ = try await ParlayViewModel().deleteParlay(parlayID: parlay.id)
+                        let _ = try await ParlayViewModel().deleteParlay(parlayID: parlay.id ?? "")
                         homeViewModel.leagueParlays.removeAll(where: { $0.id == parlay.id })
                     }
                 }
@@ -553,6 +551,17 @@ struct PlacedParlayView: View {
                 .font(.title.bold())
         }
         .zIndex(1000)
+    }
+    
+    func pointsColor(for result: BetResult) -> Color {
+        switch result {
+        case .win:
+            return Color("bean")
+        case .loss:
+            return Color("redd")
+        case .push, .pending:
+            return .primary
+        }
     }
 }
 

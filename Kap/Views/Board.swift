@@ -19,16 +19,23 @@ struct Board: View {
     @FetchRequest(
         entity: GameModel.entity(),
         sortDescriptors: [
-            NSSortDescriptor(keyPath: \GameModel.homeTeam, ascending: true)
+            NSSortDescriptor(keyPath: \GameModel.date, ascending: true)
         ]
     ) var allGameModels: FetchedResults<GameModel>
     
     @FetchRequest(
         entity: BetModel.entity(),
         sortDescriptors: [
-            NSSortDescriptor(keyPath: \BetModel.id, ascending: true)
+            NSSortDescriptor(keyPath: \BetModel.timestamp, ascending: true)
         ]
     ) var allBetModels: FetchedResults<BetModel>
+    
+    @FetchRequest(
+        entity: ParlayModel.entity(),
+        sortDescriptors: [
+            NSSortDescriptor(keyPath: \ParlayModel.timestamp, ascending: true)
+        ]
+    ) var allParlayModels: FetchedResults<ParlayModel>
     
     var body: some View {
         NavigationStack {
@@ -117,15 +124,11 @@ struct Board: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .task {
-//                do {
-//                    try await checkForNewBets(in: viewContext)
-//                } catch {
-//                    
-//                }
 //                deleteAllData(ofEntity: "GameModel") { result in }
 //                deleteAllData(ofEntity: "BetOptionModel") { result in }
 //                deleteAllData(ofEntity: "Counter") { result in }
 //                deleteAllData(ofEntity: "BetModel") { result in }
+//                deleteAllData(ofEntity: "ParlayModel") { result in }
             }
         }
     }
@@ -172,41 +175,6 @@ struct Board: View {
         do {
             try context.save()
             print("Done.")
-        } catch {
-            print("Error saving context: \(error)")
-        }
-    }
-
-    private func fetchLocalTimestamp() async throws {
-        let request: NSFetchRequest<Counter> = Counter.fetchRequest()
-        request.fetchLimit = 1
-        
-        do {
-            let result = try viewContext.fetch(request)
-            
-            homeViewModel.counter = result.first
-            if let counter = homeViewModel.counter {
-                print("Current timestamp: ", counter.timestamp)
-            }
-            
-        } catch {
-            print("Failed to fetch BetModel: \(error.localizedDescription)")
-        }
-    }
-    
-    private func updateEntity(in context: NSManagedObjectContext) {
-        
-        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: "Counter")
-        fetchRequest.predicate = NSPredicate(format: "attributeName == %@", "attributeValue")
-        
-        let counter = Counter(context: context)
-        counter.betCount = 0
-        counter.timestamp = Date()
-        
-        do {
-            try context.save()
-            print(counter)
-            
         } catch {
             print("Error saving context: \(error)")
         }

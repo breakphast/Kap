@@ -39,11 +39,12 @@ class HomeViewModel: ObservableObject {
     
     @Published var leagueBets = [BetModel]()
     @Published var userBets = [BetModel]()
-    @Published var leagueParlays = [Parlay]()
-    @Published var userParlays = [Parlay]()
+    @Published var leagueParlays = [ParlayModel]()
+    @Published var userParlays = [ParlayModel]()
     
     @Published var allGameModels: FetchedResults<GameModel>?
     @Published var allBetModels: FetchedResults<BetModel>?
+    @Published var allParlayModels: FetchedResults<ParlayModel>?
     @Published var counter: Counter?
         
     let db = Firestore.firestore()
@@ -86,26 +87,10 @@ class HomeViewModel: ObservableObject {
         }
     }
     
-    func updateLocalTimestamp(in context: NSManagedObjectContext, date: Date) {
-        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: "Counter")
-        fetchRequest.predicate = NSPredicate(format: "attributeName == %@", "attributeValue")
-        
-        let counter = Counter(context: context)
-        counter.timestamp = Date()
-        print("New timestamp:", counter.timestamp)
-        
-        do {
-            try context.save()
-            self.counter = counter
-        } catch {
-            print("Error saving context: \(error)")
-        }
-    }
-    
-    func checkForNewBets(in context: NSManagedObjectContext, timestamp: Date?) async throws {
+    func checkForNewBets(in context: NSManagedObjectContext, timestamp: Date?, games: [GameModel]) async throws {
         if let timestamp {
             if let activeleagueCode {
-                var stampedBets = try await BetViewModel().fetchStampedBets(games: self.weekGames, leagueCode: activeleagueCode, timeStamp: timestamp)
+                var stampedBets = try await BetViewModel().fetchStampedBets(games: games, leagueCode: activeleagueCode, timeStamp: timestamp)
                 
                 if let allBets = self.allBetModels {
                     let localBetIDs = Set(allBets).map {$0.id}
@@ -113,7 +98,6 @@ class HomeViewModel: ObservableObject {
 
                     if !stampedBets.isEmpty {
                         print("New bets detected:", stampedBets.count)
-                        print(stampedBets.map {$0.betString})
                         convertToBetModels(bets: stampedBets, in: context)
                     }
                 }
@@ -123,6 +107,33 @@ class HomeViewModel: ObservableObject {
                     for bet in deletedStampedBets {
                         try await BetViewModel().deleteBet(betID: bet.id)
                         BetViewModel().deleteBetModel(in: context, id: bet.id)
+                    }
+                }
+            }
+        }
+    }
+    
+    func checkForNewParlays(in context: NSManagedObjectContext, timestamp: Date?) async throws {
+        if let timestamp {
+            if let activeleagueCode {
+                var stampedParlays = try await ParlayViewModel().fetchStampedParlays(games: self.weekGames, leagueCode: activeleagueCode, timeStamp: timestamp)
+                
+                if let allParlays = self.allParlayModels {
+                    let localParlayIDs = Set(allParlays).map {$0.id}
+                    stampedParlays = stampedParlays.filter { !localParlayIDs.contains($0.id) }
+
+                    if !stampedParlays.isEmpty {
+                        print("New parlays detected:", stampedParlays.count)
+                        print(stampedParlays.map {$0.betString})
+                        convertToParlayModels(parlays: stampedParlays, in: context)
+                    }
+                }
+                
+                let deletedStampedParlays = try await ParlayViewModel().fetchDeletedStampedParlays(games: self.weekGames, leagueCode: activeleagueCode, deletedTimeStamp: timestamp)
+                if !deletedStampedParlays.isEmpty {
+                    for parlay in deletedStampedParlays {
+                        try await ParlayViewModel().deleteParlay(parlayID: parlay.id)
+                        ParlayViewModel().deleteParlayModel(in: context, id: parlay.id)
                     }
                 }
             }
@@ -165,60 +176,87 @@ class HomeViewModel: ObservableObject {
         }
     }
     
-    func fetchEssentials(updateGames: Bool, updateScores: Bool, league: League, in context: NSManagedObjectContext) async {
-        do {
-            guard let leaguePlayers = league.players else {
-                print("Error: league players are nil.")
-                return
-            }
-
-            let fetchedUsers = try await UserViewModel().fetchAllUsers(leagueUsers: leaguePlayers)
-            let relevantUsers = fetchedUsers.filter { leaguePlayers.contains($0.id ?? "") }
-
-            DispatchQueue.main.async {
-                Task {
-                    do {
-                        if let allGameModels = self.allGameModels {
-                            self.allGames = Array(allGameModels)
-                            self.weekGames = Array(allGameModels).filter { $0.week == self.currentWeek }
-                        }
-                    }
-                }
+    func convertToParlayModels(parlays: [Parlay], in context: NSManagedObjectContext) {
+        for parlay in parlays {
+            let parlayModel = ParlayModel(context: context)
+            
+            parlayModel.id = parlay.id
+            parlayModel.totalOdds = Int16(parlay.totalOdds)
+            parlayModel.result = parlay.result.rawValue
+            parlayModel.totalPoints = parlay.totalPoints
+            parlayModel.betString = parlay.betString
+            parlayModel.playerID = parlay.playerID
+            parlayModel.week = Int16(parlay.week)
+            parlayModel.leagueCode = parlay.leagueCode
+            
+            for bet in parlay.bets {
+                let betModel = BetModel(context: context)
+                betModel.id = bet.id
+                betModel.betOption = bet.betOption
+                betModel.game = bet.game
+                betModel.type = bet.type.rawValue
+                betModel.result = bet.result?.rawValue ?? "Pending"
+                betModel.odds = Int16(bet.odds)
+                betModel.selectedTeam = bet.selectedTeam
+                betModel.playerID = bet.playerID
+                betModel.week = Int16(bet.week)
+                betModel.leagueCode = bet.leagueCode
+                betModel.stake = 100.0
+                betModel.betString = bet.betString
+                betModel.points = bet.points ?? 0
+                betModel.betOptionString = bet.betOptionString
+                betModel.timestamp = bet.timestamp
+                
+                parlayModel.addToBets(betModel)
             }
             
-            if let allGameModels = allGameModels {
-//                let leagueBetsResult = try await BetViewModel().fetchBets(games: Array(allGameModels), leagueCode: league.code)
-                let leagueParlaysResult = try await ParlayViewModel().fetchParlays(games: Array(allGameModels)).filter({ $0.leagueCode == league.code })
-                DispatchQueue.main.async {
-//                    self.leagueBets = leagueBetsResult
-                    self.leagueParlays = leagueParlaysResult
+            if parlays.last?.id == parlay.id {
+                if let timestamp = parlayModel.timestamp {
+                    self.counter?.timestamp = timestamp
+                    print("New timestamp from last bet added: ", parlay.timestamp)
                 }
             }
-
-//            if updateScores {
-//                await self.updateAndFetch(games: self.weekGames, league: league)
-//            }
-//
-//            if updateGames {
-//                let updatedGames = try await GameService().getGames()
-//                let matchingGames = updatedGames.filter { updatedGame in
-//                    self.weekGames.contains { fetchedGame in
-//                        return updatedGame.documentId == fetchedGame.documentId
-//                    }
-//                }
-//                
-//                GameService().addGames(games: matchingGames, week: currentWeek)
-//            }
-
-            DispatchQueue.main.async {
-                self.users = relevantUsers
-                self.leagueCodes = self.leagues.map { $0.code }
-            }
+        }
+        do {
+            try context.save()
+            print("Saved new bets locally.")
         } catch {
-            print("Failed with error: \(error.localizedDescription)")
+            print("Error saving context: \(error)")
         }
     }
 
+    
+//    func fetchEssentials(updateGames: Bool, updateScores: Bool, league: League, in context: NSManagedObjectContext) async {
+//        do {
+//            guard let leaguePlayers = league.players else {
+//                // Handling the scenario where league players are unexpectedly nil.
+//                throw NSError(domain: "HomeViewModel", code: -1, userInfo: [NSLocalizedDescriptionKey: "Error: league players are nil."])
+//            }
+//
+//            // Fetch all relevant users asynchronously based on the league players.
+//            let fetchedUsers = try await UserViewModel().fetchAllUsers(leagueUsers: leaguePlayers)
+//            let relevantUsers = fetchedUsers.filter { leaguePlayers.contains($0.id ?? "") }
+//
+//            // Assign the fetched and filtered users to your 'users' property.
+//            self.users = relevantUsers
+//
+//            // Populate the 'allGames' and 'weekGames' properties based on 'allGameModels'.
+//            if let allGameModels = self.allGameModels {
+//                print("Got the models.")
+//                self.allGames = Array(allGameModels)
+//                self.weekGames = self.allGames.filter { $0.week == self.currentWeek }
+//                print("ASSIGNED WEEK GAMES!!!!!")
+//            }
+//
+//            // Generate the league codes based on available leagues and assign them to the 'leagueCodes' property.
+//            self.leagueCodes = self.leagues.map { $0.code }
+//
+//        } catch {
+//            // If there's an error at any point, it's captured and printed here.
+//            // Consider whether you want to handle different errors differently or re-throw them.
+//            print("Failed with error: \(error.localizedDescription)")
+//        }
+//    }
     // updates bets based on new game scores and updates game scores
     func updateAndFetch(games: [Game], league: League) async {
         do {
@@ -228,7 +266,7 @@ class HomeViewModel: ObservableObject {
             }
             if let allGameModels = allGameModels {
                 let newBets = try await BetViewModel().fetchBets(games: Array(allGameModels), leagueCode: league.code)
-                let newParlays = try await ParlayViewModel().fetchParlays(games: Array(allGameModels))
+                let newParlays = try await ParlayViewModel().fetchParlays(games: Array(allGameModels), leagueCode: league.code)
                 DispatchQueue.main.async {
 //                    self.weekGames = alteredGames
                     for parlay in newParlays {
@@ -274,6 +312,20 @@ class HomeViewModel: ObservableObject {
             }
             if fetchedBets.isEmpty {
                 print("No league bets have been placed yet.")
+            }
+        } catch {
+            
+        }
+    }
+    
+    func addInitialParlays(games: [GameModel], in context: NSManagedObjectContext) async throws {
+        do {
+            let fetchedParlays = try await ParlayViewModel().fetchParlays(games: games, leagueCode: activeleagueCode ?? "")
+            for parlay in fetchedParlays {
+                ParlayViewModel().addParlayToLocalDatabase(parlay: parlay, playerID: parlay.playerID, in: context)
+            }
+            if fetchedParlays.isEmpty {
+                print("No league parlays have been placed yet.")
             }
         } catch {
             

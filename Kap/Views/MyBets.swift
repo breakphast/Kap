@@ -75,14 +75,14 @@ struct MyBets: View {
     
     var settledBetsTab: some View {
         VStack {
-            if isEmptyBets(for: .win) && isEmptyBets(for: .loss) && isEmptyBets(for: .push) && homeViewModel.userParlays.filter({ $0.result != .pending && $0.week == week }).isEmpty {
+            if isEmptyBets(for: .win) && isEmptyBets(for: .loss) && isEmptyBets(for: .push) && homeViewModel.userParlays.filter({ $0.result != "Pending" && $0.week == week }).isEmpty {
                 Text("No settled bets")
                     .font(.largeTitle.bold())
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             } else {
                 ScrollView(showsIndicators: false) {
                     betSection(settled: true)
-                    if !homeViewModel.userParlays.filter({ $0.result != .pending && $0.week == week }).isEmpty {
+                    if !homeViewModel.userParlays.filter({ $0.result != "Pending" && $0.week == week }).isEmpty {
                         parlaySection(settled: true)
                     }
                 }
@@ -92,7 +92,7 @@ struct MyBets: View {
     
     var activeBetsTab: some View {
         VStack {
-            if isEmptyBets(for: .pending) && homeViewModel.userParlays.filter({ $0.result == .pending && $0.week == week }).isEmpty {
+            if isEmptyBets(for: .pending) && homeViewModel.userParlays.filter({ $0.result == "Pending" && $0.week == week }).isEmpty {
                 Text("No active bets")
                     .foregroundColor(.white)
                     .font(.largeTitle.bold())
@@ -100,7 +100,7 @@ struct MyBets: View {
             } else {
                 ScrollView(showsIndicators: false) {
                     betSection(settled: false)
-                    if !homeViewModel.userParlays.filter({ $0.result == .pending && $0.week == week }).isEmpty {
+                    if !homeViewModel.userParlays.filter({ $0.result == "Pending" && $0.week == week }).isEmpty {
                         parlaySection(settled: false)
                     }
                 }
@@ -161,7 +161,7 @@ struct MyBets: View {
     
     func parlaySection(settled: Bool) -> some View {
         let filteredParlays = homeViewModel.userParlays.filter { bet in
-            (settled ? bet.result != .pending : bet.result == .pending)
+            (settled ? bet.result != "Pending" : bet.result == "Pending")
         }
         return AnyView(
             VStack(alignment: .leading, spacing: 16) {
@@ -183,11 +183,11 @@ struct MyBets: View {
                 .padding(.vertical, 8)
                 
                 if settled {
-                    ForEach(homeViewModel.userParlays.filter { $0.result != .pending }, id: \.id) { parlay in
+                    ForEach(homeViewModel.userParlays.filter { $0.result != "Pending" }, id: \.id) { parlay in
                         PlacedParlayView(parlay: parlay)
                     }
                 } else {
-                    ForEach(homeViewModel.userParlays.filter { $0.result == .pending }, id: \.id) { parlay in
+                    ForEach(homeViewModel.userParlays.filter { $0.result == "Pending" }, id: \.id) { parlay in
                         PlacedParlayView(parlay: parlay)
                     }
                 }
@@ -243,12 +243,10 @@ struct MyBets: View {
                 
                 if isHorizontalSwipe && abs(horizontalDistance) > swipeThreshold {
                     if horizontalDistance < 0 && selectedSegment < 1 {
-                        // Swipe Left: Go to next segment if available
                         withAnimation {
                             selectedSegment += 1
                         }
                     } else if horizontalDistance > 0 && selectedSegment > 0 {
-                        // Swipe Right: Go to previous segment if available
                         withAnimation {
                             selectedSegment -= 1
                         }
@@ -260,7 +258,7 @@ struct MyBets: View {
     func calculateWeeklyPoints() -> Double {
         let filteredBetsPoints = homeViewModel.userBets.filter { $0.week == week && $0.result != "Push" && $0.result != "Pending" }
             .reduce(0) { $0 + ($1.points) }
-        let parlayPoints = homeViewModel.userParlays.filter { $0.week == week && $0.result != .push && $0.result != .pending }.reduce(0) { $0 + ($1.totalPoints) }
+        let parlayPoints = homeViewModel.userParlays.filter { $0.week == week && $0.result != "Push" && $0.result != "Pending" }.reduce(0) { $0 + ($1.totalPoints) }
         
         return filteredBetsPoints + parlayPoints
     }
