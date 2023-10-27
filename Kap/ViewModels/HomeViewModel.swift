@@ -132,7 +132,6 @@ class HomeViewModel: ObservableObject {
                 let deletedStampedParlays = try await ParlayViewModel().fetchDeletedStampedParlays(games: self.weekGames, leagueCode: activeleagueCode, deletedTimeStamp: timestamp)
                 if !deletedStampedParlays.isEmpty {
                     for parlay in deletedStampedParlays {
-                        try await ParlayViewModel().deleteParlay(parlayID: parlay.id)
                         ParlayViewModel().deleteParlayModel(in: context, id: parlay.id)
                     }
                 }
@@ -188,6 +187,7 @@ class HomeViewModel: ObservableObject {
             parlayModel.playerID = parlay.playerID
             parlayModel.week = Int16(parlay.week)
             parlayModel.leagueCode = parlay.leagueCode
+            parlayModel.timestamp = parlay.timestamp
             
             for bet in parlay.bets {
                 let betModel = BetModel(context: context)
@@ -213,13 +213,13 @@ class HomeViewModel: ObservableObject {
             if parlays.last?.id == parlay.id {
                 if let timestamp = parlayModel.timestamp {
                     self.counter?.timestamp = timestamp
-                    print("New timestamp from last bet added: ", parlay.timestamp)
+                    print("New timestamp from last parlay added: ", parlay.timestamp)
                 }
             }
         }
         do {
             try context.save()
-            print("Saved new bets locally.")
+            print("Saved new parlays locally.")
         } catch {
             print("Error saving context: \(error)")
         }

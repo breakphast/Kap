@@ -163,6 +163,8 @@
 		3E8004482AE9405F00F0621C /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				3EB6B2172AEB1DEF00E919E0 /* ParlayModel+CoreDataClass.swift */,
+				3EB6B2182AEB1DEF00E919E0 /* ParlayModel+CoreDataProperties.swift */,
 				3E9C8B792AE861960097A1F6 /* Counter+CoreDataClass.swift */,
 				3E9C8B7A2AE861960097A1F6 /* Counter+CoreDataProperties.swift */,
 				3E72A8DF2AE1765D00642328 /* BetOptionModel+CoreDataClass.swift */,
@@ -180,8 +182,6 @@
 		3EA650342A5F7565007CA5ED = {
 			isa = PBXGroup;
 			children = (
-				3EB6B2172AEB1DEF00E919E0 /* ParlayModel+CoreDataClass.swift */,
-				3EB6B2182AEB1DEF00E919E0 /* ParlayModel+CoreDataProperties.swift */,
 				3E8004482AE9405F00F0621C /* Core */,
 				3EA6503F2A5F7565007CA5ED /* Kap */,
 				3EA6503E2A5F7565007CA5ED /* Products */,

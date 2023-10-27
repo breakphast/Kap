@@ -204,10 +204,11 @@ struct LeagueList: View {
                 }
             }
             var currentTimestamp = Date()
-            if let lastBet = homeViewModel.leagueBets.last {
+            let filteredLeagueBets = homeViewModel.leagueBets.filter({$0.playerID != authViewModel.currentUser?.id})
+            if let lastBet = filteredLeagueBets.last {
                 if let betTimestamp = lastBet.timestamp {
                     currentTimestamp = betTimestamp
-                    if let lastParlay = homeViewModel.leagueParlays.last {
+                    if let lastParlay = homeViewModel.leagueParlays.filter({$0.playerID != authViewModel.currentUser?.id}).last {
                         if let parlayTimestamp = lastParlay.timestamp {
                             if parlayTimestamp > betTimestamp {
                                 currentTimestamp = parlayTimestamp

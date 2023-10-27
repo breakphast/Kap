@@ -27,7 +27,9 @@ class ParlayViewModel {
                 let playerID = data["playerID"] as? String,
                 let week = data["week"] as? Int,
                 let leagueCode = data["leagueID"] as? String,
-                let timestamp = data["timestamp"] as? Timestamp
+                let timestamp = data["timestamp"] as? Timestamp,
+                let deletedTimestamp = data["deletedTimestamp"] as? Date,
+                let isDeleted = data["isDeleted"] as? Bool
             else { return nil }
             var bets = [Bet]()
             for betData in betsData {
@@ -41,21 +43,19 @@ class ParlayViewModel {
                     let playerID = betData["playerID"] as? String,
                     let week = betData["week"] as? Int,
                     let leagueCode = data["leagueID"] as? String,
-                    let timestamp = data["timestamp"] as? Date,
-                    let deletedTimestamp = data["deletedTimestamp"] as? Date,
-                    let isDeleted = data["isDeleted"] as? Bool
+                    let timestamp = data["timestamp"] as? Date
                 else {
                     continue
                 }
                 let foundGame = BetViewModel().findBetGame(games: games, gameID: gameID)
                 if let foundGame = foundGame {
-                    let bet = Bet(id: betOptionID + playerID, betOption: betOptionID, game: foundGame, type: type, result: result, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: timestamp, deletedTimestamp: deletedTimestamp, isDeleted: isDeleted)
+                    let bet = Bet(id: betOptionID + playerID, betOption: betOptionID, game: foundGame, type: type, result: result, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: timestamp, deletedTimestamp: nil, isDeleted: nil)
                     bets.append(bet)
                 }
             }
             let date2 = GameService().convertTimestampToISOString(timestamp: timestamp)
             let date = GameService().dateFromISOString(date2 ?? "")
-            let parlay = Parlay(id: id, bets: bets, totalOdds: totalOdds, result: result, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: date ?? Date())
+            let parlay = Parlay(id: id, bets: bets, totalOdds: totalOdds, result: result, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: date ?? Date(), deletedTimestamp: deletedTimestamp, isDeleted: isDeleted)
             parlay.totalOdds = totalOdds
             parlay.betString = betString
             
@@ -74,6 +74,7 @@ class ParlayViewModel {
         parlayModel.playerID = parlay.playerID
         parlayModel.week = Int16(parlay.week)
         parlayModel.leagueCode = parlay.leagueCode
+        parlayModel.timestamp = Date()
         
         for bet in parlay.bets {
             let betModel = BetModel(context: context)
@@ -121,14 +122,17 @@ class ParlayViewModel {
                     "selectedTeam": bet.selectedTeam ?? "",
                     "week": parlay.week,
                     "playerID": parlay.playerID,
-                    "leagueID": parlay.leagueCode
+                    "leagueID": parlay.leagueCode,
+                    "timestamp": Timestamp(date: Date())
                 ] as [String : Any]
             },
             "result": parlay.result.rawValue,
             "totalOdds": parlay.totalOdds,
             "totalPoints": parlay.totalPoints,
             "playerID": parlay.playerID,
-            "week": parlay.week
+            "week": parlay.week,
+            "leagueID": parlay.leagueCode,
+            "timestamp": Timestamp(date: Date())
         ]
         
         var betString: String {
@@ -146,23 +150,11 @@ class ParlayViewModel {
         
         newParlay["betString"] = betString
         parlay.betString = betString
+        parlay.timestamp = Date()
 
         let _ = try await db.collection("userParlays").document(parlay.id).setData(newParlay)
         print("Added parlay to cloud", parlay.id)
         addParlayToLocalDatabase(parlay: parlay, playerID: parlay.playerID, in: context)
-    }
-    
-    func deleteParlay(parlayID: String) async throws {
-        return try await withCheckedThrowingContinuation { continuation in
-            db.collection("userParlays").document(parlayID).delete() { error in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                } else {
-                    continuation.resume()
-                    print("Deleted bet \(parlayID)")
-                }
-            }
-        } 
     }
     
     func fetchStampedParlays(games: [GameModel], leagueCode: String, timeStamp: Date?) async throws -> [Parlay] {
@@ -182,6 +174,11 @@ class ParlayViewModel {
                 let timestamp = data["timestamp"] as? Timestamp
                 let date2 = GameService().convertTimestampToISOString(timestamp: timestamp ?? Timestamp(date: Date()))
                 let date = GameService().dateFromISOString(date2 ?? "")
+                let deletedTimestamp = data["deletedTimestamp"] as? Timestamp
+                let date3 = GameService().convertTimestampToISOString(timestamp: deletedTimestamp ?? Timestamp(date: Date()))
+                let date4 = GameService().dateFromISOString(date3 ?? "")
+                let isDeleted = data["isDeleted"] as? Bool ?? false
+                
                 var bets = [Bet]()
                 for betData in betsData {
                     guard
@@ -194,28 +191,25 @@ class ParlayViewModel {
                         let playerID = betData["playerID"] as? String,
                         let week = betData["week"] as? Int,
                         let leagueCode = data["leagueID"] as? String,
-                        let timestamp = data["timestamp"] as? Date,
-                        let deletedTimestamp = data["deletedTimestamp"] as? Date,
-                        let isDeleted = data["isDeleted"] as? Bool
+                        let timestamp = data["timestamp"] as? Timestamp
                     else {
+                        print("Invalid parlay bet.")
                         continue
                     }
                     let foundGame = BetViewModel().findBetGame(games: games, gameID: gameID)
                     if let foundGame = foundGame {
-                        let bet = Bet(id: betOptionID + playerID, betOption: betOptionID, game: foundGame, type: type, result: BetViewModel().stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: timestamp, deletedTimestamp: deletedTimestamp, isDeleted: isDeleted)
+                        let date2 = GameService().convertTimestampToISOString(timestamp: timestamp)
+                        let date = GameService().dateFromISOString(date2 ?? "")
+                        
+                        let bet = Bet(id: betOptionID + playerID, betOption: betOptionID, game: foundGame, type: type, result: BetViewModel().stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: date ?? Date(), deletedTimestamp: nil, isDeleted: nil)
                         bets.append(bet)
                     }
                 }
                 
-//                let deletedTimestamp = data["deletedTimestamp"] as? Timestamp
-//                let date3 = GameService().convertTimestampToISOString(timestamp: deletedTimestamp ?? Timestamp(date: Date()))
-//                let date4 = GameService().dateFromISOString(date3 ?? "")
-//                let isDeleted = data["isDeleted"] as? Bool ?? false
-                
-                let parlay = Parlay(id: id, bets: bets, totalOdds: totalOdds, result: BetViewModel().stringToBetResult(result)!, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: date ?? Date())
+                let parlay = Parlay(id: id, bets: bets, totalOdds: totalOdds, result: BetViewModel().stringToBetResult(result)!, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: date ?? Date(), deletedTimestamp: date4 ?? Date(), isDeleted: isDeleted)
                 parlay.totalOdds = totalOdds
                 parlay.betString = betString
-                
+                parlay.bets = bets
                 return parlay
             }
             return parlays
@@ -235,6 +229,11 @@ class ParlayViewModel {
                 let timestamp = data["timestamp"] as? Timestamp
                 let date2 = GameService().convertTimestampToISOString(timestamp: timestamp ?? Timestamp(date: Date()))
                 let date = GameService().dateFromISOString(date2 ?? "")
+                let deletedTimestamp = data["deletedTimestamp"] as? Timestamp
+                let date3 = GameService().convertTimestampToISOString(timestamp: deletedTimestamp ?? Timestamp(date: Date()))
+                let date4 = GameService().dateFromISOString(date3 ?? "")
+                let isDeleted = data["isDeleted"] as? Bool ?? false
+                
                 var bets = [Bet]()
                 for betData in betsData {
                     guard
@@ -246,16 +245,13 @@ class ParlayViewModel {
                         let selectedTeam = betData["selectedTeam"] as? String,
                         let playerID = betData["playerID"] as? String,
                         let week = betData["week"] as? Int,
-                        let leagueCode = data["leagueID"] as? String,
-                        let timestamp = data["timestamp"] as? Date,
-                        let deletedTimestamp = data["deletedTimestamp"] as? Date,
-                        let isDeleted = data["isDeleted"] as? Bool
+                        let leagueCode = data["leagueID"] as? String
                     else {
                         continue
                     }
                     let foundGame = BetViewModel().findBetGame(games: games, gameID: gameID)
                     if let foundGame = foundGame {
-                        let bet = Bet(id: betOptionID + playerID, betOption: betOptionID, game: foundGame, type: type, result: BetViewModel().stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: timestamp, deletedTimestamp: deletedTimestamp, isDeleted: isDeleted)
+                        let bet = Bet(id: betOptionID + playerID, betOption: betOptionID, game: foundGame, type: type, result: BetViewModel().stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: date ?? Date(), deletedTimestamp: nil, isDeleted: nil)
                         bets.append(bet)
                     }
                 }
@@ -264,7 +260,7 @@ class ParlayViewModel {
 //                let date4 = GameService().dateFromISOString(date3 ?? "")
 //                let isDeleted = data["isDeleted"] as? Bool ?? false
                 
-                let parlay = Parlay(id: id, bets: bets, totalOdds: totalOdds, result: BetViewModel().stringToBetResult(result)!, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: date ?? Date())
+                let parlay = Parlay(id: id, bets: bets, totalOdds: totalOdds, result: BetViewModel().stringToBetResult(result)!, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: date ?? Date(), deletedTimestamp: date4 ?? Date(), isDeleted: isDeleted)
                 parlay.totalOdds = totalOdds
                 parlay.betString = betString
                 
@@ -276,7 +272,7 @@ class ParlayViewModel {
 
     func fetchDeletedStampedParlays(games: [GameModel], leagueCode: String, deletedTimeStamp: Date?) async throws -> [Parlay] {
         if let deletedTimeStamp {
-            let querySnapshot = try await db.collection("userParlays").whereField("deletedTimeStamp", isGreaterThan: Timestamp(date: deletedTimeStamp)).getDocuments()
+            let querySnapshot = try await db.collection("userParlays").whereField("deletedTimestamp", isGreaterThan: Timestamp(date: deletedTimeStamp)).getDocuments()
             let parlays = querySnapshot.documents.map { queryDocumentSnapshot -> Parlay in
                 let data = queryDocumentSnapshot.data()
                 
@@ -291,6 +287,11 @@ class ParlayViewModel {
                 let timestamp = data["timestamp"] as? Timestamp
                 let date2 = GameService().convertTimestampToISOString(timestamp: timestamp ?? Timestamp(date: Date()))
                 let date = GameService().dateFromISOString(date2 ?? "")
+                let deletedTimestamp = data["deletedTimestamp"] as? Timestamp
+                let date3 = GameService().convertTimestampToISOString(timestamp: deletedTimestamp ?? Timestamp(date: Date()))
+                let date4 = GameService().dateFromISOString(date3 ?? "")
+                let isDeleted = data["isDeleted"] as? Bool ?? false
+                
                 var bets = [Bet]()
                 for betData in betsData {
                     guard
@@ -302,25 +303,18 @@ class ParlayViewModel {
                         let selectedTeam = betData["selectedTeam"] as? String,
                         let playerID = betData["playerID"] as? String,
                         let week = betData["week"] as? Int,
-                        let leagueCode = data["leagueID"] as? String,
-                        let timestamp = data["timestamp"] as? Date,
-                        let deletedTimestamp = data["deletedTimestamp"] as? Date,
-                        let isDeleted = data["isDeleted"] as? Bool
+                        let leagueCode = data["leagueID"] as? String
                     else {
                         continue
                     }
                     let foundGame = BetViewModel().findBetGame(games: games, gameID: gameID)
                     if let foundGame = foundGame {
-                        let bet = Bet(id: betOptionID + playerID, betOption: betOptionID, game: foundGame, type: type, result: BetViewModel().stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: timestamp, deletedTimestamp: deletedTimestamp, isDeleted: isDeleted)
+                        let bet = Bet(id: betOptionID + playerID, betOption: betOptionID, game: foundGame, type: type, result: BetViewModel().stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: date ?? Date(), deletedTimestamp: nil, isDeleted: nil)
                         bets.append(bet)
                     }
                 }
-//                let deletedTimestamp = data["deletedTimestamp"] as? Timestamp
-//                let date3 = GameService().convertTimestampToISOString(timestamp: deletedTimestamp ?? Timestamp(date: Date()))
-//                let date4 = GameService().dateFromISOString(date3 ?? "")
-//                let isDeleted = data["isDeleted"] as? Bool ?? false
                 
-                let parlay = Parlay(id: id, bets: bets, totalOdds: totalOdds, result: BetViewModel().stringToBetResult(result)!, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: date ?? Date())
+                let parlay = Parlay(id: id, bets: bets, totalOdds: totalOdds, result: BetViewModel().stringToBetResult(result)!, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: date ?? Date(), deletedTimestamp: date4 ?? Date(), isDeleted: isDeleted)
                 parlay.totalOdds = totalOdds
                 parlay.betString = betString
                 
@@ -343,6 +337,11 @@ class ParlayViewModel {
                 let timestamp = data["timestamp"] as? Timestamp
                 let date2 = GameService().convertTimestampToISOString(timestamp: timestamp ?? Timestamp(date: Date()))
                 let date = GameService().dateFromISOString(date2 ?? "")
+                let deletedTimestamp = data["deletedTimestamp"] as? Timestamp
+                let date3 = GameService().convertTimestampToISOString(timestamp: deletedTimestamp ?? Timestamp(date: Date()))
+                let date4 = GameService().dateFromISOString(date3 ?? "")
+                let isDeleted = data["isDeleted"] as? Bool ?? false
+                
                 var bets = [Bet]()
                 for betData in betsData {
                     guard
@@ -355,30 +354,36 @@ class ParlayViewModel {
                         let playerID = betData["playerID"] as? String,
                         let week = betData["week"] as? Int,
                         let leagueCode = data["leagueID"] as? String,
-                        let timestamp = data["timestamp"] as? Date,
-                        let deletedTimestamp = data["deletedTimestamp"] as? Date,
-                        let isDeleted = data["isDeleted"] as? Bool
+                        let timestamp = data["timestamp"] as? Date
                     else {
                         continue
                     }
                     let foundGame = BetViewModel().findBetGame(games: games, gameID: gameID)
                     if let foundGame = foundGame {
-                        let bet = Bet(id: betOptionID + playerID, betOption: betOptionID, game: foundGame, type: type, result: BetViewModel().stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: timestamp, deletedTimestamp: deletedTimestamp, isDeleted: isDeleted)
+                        let bet = Bet(id: betOptionID + playerID, betOption: betOptionID, game: foundGame, type: type, result: BetViewModel().stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: timestamp, deletedTimestamp: nil, isDeleted: nil)
                         bets.append(bet)
                     }
                 }
-//                let deletedTimestamp = data["deletedTimestamp"] as? Timestamp
-//                let date3 = GameService().convertTimestampToISOString(timestamp: deletedTimestamp ?? Timestamp(date: Date()))
-//                let date4 = GameService().dateFromISOString(date3 ?? "")
-//                let isDeleted = data["isDeleted"] as? Bool ?? false
-                
-                let parlay = Parlay(id: id, bets: bets, totalOdds: totalOdds, result: BetViewModel().stringToBetResult(result)!, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: date ?? Date())
+                let parlay = Parlay(id: id, bets: bets, totalOdds: totalOdds, result: BetViewModel().stringToBetResult(result)!, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: date ?? Date(), deletedTimestamp: date4 ?? Date(), isDeleted: isDeleted)
                 parlay.totalOdds = totalOdds
                 parlay.betString = betString
                 
                 return parlay
             }
             return parlays
+        }
+    }
+    
+    func deleteParlay(parlayID: String) async throws {
+        return try await withCheckedThrowingContinuation { continuation in
+            db.collection("userParlays").document(parlayID).delete() { error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                    print("Deleted bet \(parlayID)")
+                }
+            }
         }
     }
     
@@ -401,7 +406,7 @@ class ParlayViewModel {
     }
 
     func makeParlay(for bets: [Bet], playerID: String, week: Int, leagueCode: String) -> Parlay {
-        let parlay = Parlay(id: playerID + String(week), bets: bets, totalOdds: calculateParlayOdds(bets: bets), result: .pending, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: Date())
+        let parlay = Parlay(id: playerID + String(week), bets: bets, totalOdds: calculateParlayOdds(bets: bets), result: .pending, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: Date(), deletedTimestamp: nil, isDeleted: false)
         return parlay
     }
     

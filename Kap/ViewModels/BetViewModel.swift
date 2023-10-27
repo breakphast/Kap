@@ -270,6 +270,21 @@ class BetViewModel: ObservableObject {
         }
     }
     
+    func updateDeletedParlay(parlay: ParlayModel) {
+        let newParlay = db.collection("userParlays").document(parlay.id ?? "")
+        
+        newParlay.updateData([
+            "isDeleted": true,
+            "deletedTimestamp": Date()
+        ]) { err in
+            if let err = err {
+                print("Error updating BETTTT: \(err)", parlay.id ?? "")
+            } else {
+                print("Document successfully updated")
+            }
+        }
+    }
+    
     func updateBetLeague(bet: Bet, leagueCode: String) {
         let newbet = db.collection("userBets").document(bet.id)
         newbet.updateData([

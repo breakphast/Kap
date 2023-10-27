@@ -214,6 +214,13 @@ struct ParlayView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
     @Environment(\.managedObjectContext) private var viewContext
+    
+    @FetchRequest(
+        entity: ParlayModel.entity(),
+        sortDescriptors: [
+            NSSortDescriptor(keyPath: \ParlayModel.timestamp, ascending: true)
+        ]
+    ) var allParlayModels: FetchedResults<ParlayModel>
 
     @State var isValid = false
     @Binding var parlays: [Parlay]
@@ -293,8 +300,8 @@ struct ParlayView: View {
             let placedParlay = ParlayViewModel().makeParlay(for: parlay.bets, playerID: authViewModel.currentUser?.id ?? "", week: homeViewModel.currentWeek, leagueCode: homeViewModel.activeleagueCode ?? "")
             Task {
                 try await ParlayViewModel().addParlay(parlay: placedParlay, in: viewContext)
-                parlays.append(placedParlay)
-                ParlayViewModel().updateParlayLeague(parlay: placedParlay, leagueCode: homeViewModel.activeleagueCode ?? "")
+                homeViewModel.leagueParlays = Array(allParlayModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
+                homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == authViewModel.currentUser?.id})
             }
             homeViewModel.activeParlay = nil
         } label: {
@@ -452,6 +459,7 @@ struct PlacedParlayView: View {
     @State var deleteActive = false
     @Namespace var trash
     let parlay: ParlayModel
+    @Environment(\.managedObjectContext) private var viewContext
     
     @State private var formattedBets = [String]()
     
@@ -499,8 +507,7 @@ struct PlacedParlayView: View {
                             }
                             Spacer()
                             
-                            if let betsArray = parlay.bets?.allObjects as? [Bet],
-                               betsArray.contains(where: { Date() < ($0.game.date ?? Date()) && $0.result == .pending }) {
+                            if let betsArray = parlay.bets?.allObjects as? [BetModel] {
                                 menu
                             }
                         }
@@ -536,8 +543,17 @@ struct PlacedParlayView: View {
                 withAnimation {
                     deleteActive.toggle()
                     Task {
-                        let _ = try await ParlayViewModel().deleteParlay(parlayID: parlay.id ?? "")
+                        BetViewModel().updateDeletedParlay(parlay: parlay)
+                        ParlayViewModel().deleteParlayModel(in: viewContext, id: parlay.id ?? "")
+                        homeViewModel.userParlays.removeAll(where: { $0.id == parlay.id })
                         homeViewModel.leagueParlays.removeAll(where: { $0.id == parlay.id })
+                        
+                        if let _ = homeViewModel.counter?.timestamp {
+                            if let lastTimestamp = homeViewModel.leagueBets.last?.timestamp {
+                                homeViewModel.counter?.timestamp = lastTimestamp
+                                print("New timestamp after removing parlay.")
+                            }
+                        }
                     }
                 }
             } label: {

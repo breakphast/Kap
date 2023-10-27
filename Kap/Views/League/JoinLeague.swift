@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import CoreData
 
 struct JoinLeague: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
@@ -89,6 +90,36 @@ struct JoinLeague: View {
         }
     }
     
+    func fetchEssentials(updateGames: Bool, updateScores: Bool, league: League, in context: NSManagedObjectContext) async {
+        do {
+            guard let leaguePlayers = league.players else {
+                // Handling the scenario where league players are unexpectedly nil.
+                throw NSError(domain: "HomeViewModel", code: -1, userInfo: [NSLocalizedDescriptionKey: "Error: league players are nil."])
+            }
+
+            // Fetch all relevant users asynchronously based on the league players.
+            let fetchedUsers = try await UserViewModel().fetchAllUsers(leagueUsers: leaguePlayers)
+            let relevantUsers = fetchedUsers.filter { leaguePlayers.contains($0.id ?? "") }
+
+            // Assign the fetched and filtered users to your 'users' property.
+            homeViewModel.users = relevantUsers
+
+            // Populate the 'allGames' and 'weekGames' properties based on 'allGameModels'.
+            if let allGameModels = homeViewModel.allGameModels {
+                homeViewModel.allGames = Array(allGameModels)
+                homeViewModel.weekGames = homeViewModel.allGames.filter { $0.week == homeViewModel.currentWeek }
+            }
+
+            // Generate the league codes based on available leagues and assign them to the 'leagueCodes' property.
+            homeViewModel.leagueCodes = homeViewModel.leagues.map { $0.code }
+
+        } catch {
+            // If there's an error at any point, it's captured and printed here.
+            // Consider whether you want to handle different errors differently or re-throw them.
+            print("Failed with error: \(error.localizedDescription)")
+        }
+    }
+    
     private func validateCode(newValue: String) {
         guard !homeViewModel.userLeagues.contains(where: {$0.code == code}) else {
             errorText = "You are already in this league.\nPlease enter a new code."
@@ -112,7 +143,7 @@ struct JoinLeague: View {
                     try await leagueViewModel.addPlayerToLeague(leagueCode: league?.id ?? "", playerId: userID)
                     homeViewModel.userLeagues = try await LeagueViewModel().fetchLeaguesContainingID(id: userID)
                     if let activeLeague = homeViewModel.userLeagues.first(where: {$0.code == code}) {
-                        await homeViewModel.fetchEssentials(updateGames: false, updateScores: false, league: activeLeague, in: viewContext)
+                        await fetchEssentials(updateGames: false, updateScores: false, league: activeLeague, in: viewContext)
                         homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
                         homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == authViewModel.currentUser?.id})
                         await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets, parlays: homeViewModel.leagueParlays, week: homeViewModel.currentWeek, leagueCode: code)
