@@ -336,31 +336,46 @@ class BetViewModel: ObservableObject {
 //        }
 //    }
     
-    func updateBetResults(bets: [BetModel], in context: NSManagedObjectContext) {
+    func updateBetResults(bets: [BetModel], in context: NSManagedObjectContext) async throws {
+        print("Starting result updates...")
+
         for bet in bets {
             guard bet.result == "Pending" else { return }
-            
+
             let newbet = db.collection("userBets").document(bet.id)
-            
+
             bet.result = bet.game.betResult(for: bet).rawValue
             bet.points = bet.result == BetResult.push.rawValue ? 0 : bet.result == BetResult.loss.rawValue ? -10 : bet.points
-            
-            newbet.updateData([
-                "result": bet.result,
-                "points": bet.result == BetResult.push.rawValue ? 0 : bet.result == BetResult.loss.rawValue ? -10 : bet.points
-            ]) { err in
-                if let err = err {
-                    print("Error updating BET RESULT: \(err)")
-                } else {
-                    print("Bet result successfully updated")
-                }
+
+            do {
+                try await updateDataAsync(document: newbet, data: [
+                    "result": bet.result,
+                    "points": bet.result == BetResult.push.rawValue ? 0 : bet.result == BetResult.loss.rawValue ? -10 : bet.points
+                ])
+                print("Bet result successfully updated")
+            } catch {
+                print("Error updating BET RESULT: \(error)")
             }
         }
+
         do {
             try context.save()
             print("\(bets.count) Bet results successfully updated")
         } catch {
-            
+            // Handle the error...
+        }
+    }
+
+    // This is the function that wraps the callback-based Firestore method to make it awaitable
+    func updateDataAsync(document: DocumentReference, data: [String: Any]) async throws {
+        return try await withCheckedThrowingContinuation { continuation in
+            document.updateData(data) { error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume(returning: ())
+                }
+            }
         }
     }
     

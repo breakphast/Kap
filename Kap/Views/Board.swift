@@ -85,11 +85,15 @@ struct Board: View {
                 .refreshable {
                     Task {
                         do {
+//                            print(Array(allBetModels).map {$0.id})
                             // local .. add refresh limit
-                            try await updateGameOdds(games: homeViewModel.weekGames, in: viewContext)
-                            homeViewModel.allGameModels = allGameModels
+//                            try await updateGameOdds(games: homeViewModel.weekGames, in: viewContext)
+//                            homeViewModel.allGameModels = allGameModels
                             // cloud
-//                            try await updateGameScores(games: homeViewModel.weekGames, in: viewContext)
+                            try await updateGameScores(games: homeViewModel.weekGames, in: viewContext)
+                            try await BetViewModel().updateBetResults(bets: homeViewModel.userBets, in: viewContext)
+                            print("Starting bet assignment...")
+                            homeViewModel.allBetModels = allBetModels
                         } catch {
                             
                         }
