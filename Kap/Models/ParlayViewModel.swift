@@ -28,9 +28,11 @@ class ParlayViewModel {
                 let week = data["week"] as? Int,
                 let leagueCode = data["leagueID"] as? String,
                 let timestamp = data["timestamp"] as? Timestamp,
-                let deletedTimestamp = data["deletedTimestamp"] as? Date,
+                let deletedTimestamp = data["deletedTimestamp"] as? Timestamp,
                 let isDeleted = data["isDeleted"] as? Bool
-            else { return nil }
+            else { 
+                return nil
+            }
             var bets = [Bet]()
             for betData in betsData {
                 guard
@@ -55,7 +57,9 @@ class ParlayViewModel {
             }
             let date2 = GameService().convertTimestampToISOString(timestamp: timestamp)
             let date = GameService().dateFromISOString(date2 ?? "")
-            let parlay = Parlay(id: id, bets: bets, totalOdds: totalOdds, result: result, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: date ?? Date(), deletedTimestamp: deletedTimestamp, isDeleted: isDeleted)
+            let date3 = GameService().convertTimestampToISOString(timestamp: deletedTimestamp)
+            let date4 = GameService().dateFromISOString(date3 ?? "")
+            let parlay = Parlay(id: id, bets: bets, totalOdds: totalOdds, result: result, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: date ?? Date(), deletedTimestamp: date4 ?? Date(), isDeleted: isDeleted)
             parlay.totalOdds = totalOdds
             parlay.betString = betString
             
@@ -74,7 +78,7 @@ class ParlayViewModel {
         parlayModel.playerID = parlay.playerID
         parlayModel.week = Int16(parlay.week)
         parlayModel.leagueCode = parlay.leagueCode
-        parlayModel.timestamp = Date()
+        parlayModel.timestamp = parlay.timestamp
         
         for bet in parlay.bets {
             let betModel = BetModel(context: context)
@@ -272,7 +276,7 @@ class ParlayViewModel {
 
     func fetchDeletedStampedParlays(games: [GameModel], leagueCode: String, deletedTimeStamp: Date?) async throws -> [Parlay] {
         if let deletedTimeStamp {
-            let querySnapshot = try await db.collection("userParlays").whereField("deletedTimestamp", isGreaterThan: Timestamp(date: deletedTimeStamp)).getDocuments()
+            let querySnapshot = try await db.collection("userParlays").whereField("isDeleted", isEqualTo: true).getDocuments()
             let parlays = querySnapshot.documents.map { queryDocumentSnapshot -> Parlay in
                 let data = queryDocumentSnapshot.data()
                 
@@ -396,7 +400,7 @@ class ParlayViewModel {
                 context.delete(entityToDelete)
                 
                 try context.save()
-                print("Deleted bet in local:", id)
+                print("Deleted parlay in local:", id)
             } else {
                 // Entity with the specified attribute value not found
             }

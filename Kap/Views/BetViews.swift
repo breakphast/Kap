@@ -409,10 +409,18 @@ struct PlacedBetView: View {
                         homeViewModel.leagueBets.removeAll(where: { $0.id == bet.id })
                         
                         if let _ = homeViewModel.counter?.timestamp {
+                            var timestamp = Date()
+                            
                             if let lastTimestamp = homeViewModel.leagueBets.last?.timestamp {
-                                homeViewModel.counter?.timestamp = lastTimestamp
-                                print("New timestamp after removing bet.")
+                                timestamp = lastTimestamp
                             }
+                            if let lastTimestamp = homeViewModel.leagueParlays.last?.timestamp {
+                                if lastTimestamp > timestamp {
+                                    timestamp = lastTimestamp
+                                }
+                            }
+                            homeViewModel.counter?.timestamp = timestamp
+                            print("New timestamp after removing bet.", timestamp)
                         }
                     }
                 }
@@ -535,8 +543,18 @@ struct PlacedParlayView: View {
                         homeViewModel.leagueParlays.removeAll(where: { $0.id == parlay.id })
                         
                         if let _ = homeViewModel.counter?.timestamp {
+                            var timestamp = Date()
+                            
+                            if let lastTimestamp = homeViewModel.leagueParlays.last?.timestamp {
+                                homeViewModel.counter?.timestamp = lastTimestamp
+                                timestamp = lastTimestamp
+                                print("New timestamp after removing parlay.")
+                            }
                             if let lastTimestamp = homeViewModel.leagueBets.last?.timestamp {
                                 homeViewModel.counter?.timestamp = lastTimestamp
+                                if lastTimestamp > timestamp {
+                                    timestamp = lastTimestamp
+                                }
                                 print("New timestamp after removing parlay.")
                             }
                         }

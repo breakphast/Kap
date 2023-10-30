@@ -19,6 +19,68 @@ class BetViewModel: ObservableObject {
     
     let db = Firestore.firestore()
     
+    func fetchUpdatedBets(games: [GameModel], leagueCode: String, timeStamp: Date?) async throws -> [Bet] {
+        if let timeStamp {
+            let querySnapshot = try await db.collection("userBets").whereField("result", isNotEqualTo: BetResult.pending.rawValue).getDocuments()
+            let bets = querySnapshot.documents.map { queryDocumentSnapshot -> Bet in
+                let data = queryDocumentSnapshot.data()
+                
+                let id = data["id"] as? String ?? ""
+                let game = data["game"] as? String ?? ""
+                let betOption = data["betOption"] as? String ?? ""
+                let type = data["type"] as? String ?? ""
+                let odds = data["odds"] as? Int ?? 0
+                let result = data["result"] as? String ?? ""
+                let selectedTeam = data["selectedTeam"] as? String ?? ""
+                let playerID = data["playerID"] as? String ?? ""
+                let week = data["week"] as? Int ?? 0
+                let foundGame = self.findBetGame(games: games, gameID: game)
+                let leagueID = data["leagueID"] as? String ?? ""
+                let timestamp = data["timestamp"] as? Timestamp
+                let date2 = GameService().convertTimestampToISOString(timestamp: timestamp ?? Timestamp(date: Date()))
+                let date = GameService().dateFromISOString(date2 ?? "")
+                let deletedTimestamp = data["deletedTimestamp"] as? Timestamp
+                let date3 = GameService().convertTimestampToISOString(timestamp: deletedTimestamp ?? Timestamp(date: Date()))
+                let date4 = GameService().dateFromISOString(date3 ?? "")
+                let isDeleted = data["isDeleted"] as? Bool ?? false
+                let bet = Bet(id: id, betOption: betOption, game: foundGame!, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueID, timestamp: date ?? Date(), deletedTimestamp: date4 ?? Date(), isDeleted: isDeleted)
+                
+                return bet
+            }
+            return bets
+        } else {
+            let querySnapshot = try await db.collection("userBets").whereField("leagueID", isEqualTo: leagueCode).getDocuments()
+            let bets = querySnapshot.documents.map { queryDocumentSnapshot -> Bet in
+                let data = queryDocumentSnapshot.data()
+                
+                let id = data["id"] as? String ?? ""
+                let game = data["game"] as? String ?? ""
+                let betOption = data["betOption"] as? String ?? ""
+                let type = data["type"] as? String ?? ""
+                let odds = data["odds"] as? Int ?? 0
+                let result = data["result"] as? String ?? ""
+                let selectedTeam = data["selectedTeam"] as? String ?? ""
+                let playerID = data["playerID"] as? String ?? ""
+                let week = data["week"] as? Int ?? 0
+                let foundGame = self.findBetGame(games: games, gameID: game)
+                let leagueID = data["leagueID"] as? String ?? ""
+                let timestamp = data["timestamp"] as? Timestamp
+                let date2 = GameService().convertTimestampToISOString(timestamp: timestamp ?? Timestamp(date: Date()))
+                let date = GameService().dateFromISOString(date2 ?? "")
+                let deletedTimestamp = data["deletedTimestamp"] as? Timestamp
+                let date3 = GameService().convertTimestampToISOString(timestamp: deletedTimestamp ?? Timestamp(date: Date()))
+                let date4 = GameService().dateFromISOString(date3 ?? "")
+                let isDeleted = data["isDeleted"] as? Bool ?? false
+                
+                let bet = Bet(id: id, betOption: betOption, game: foundGame!, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueID, timestamp: date ?? Date(), deletedTimestamp: date4 ?? Date(), isDeleted: isDeleted)
+                
+                return bet
+            }
+            return bets
+        }
+
+    }
+    
     func fetchStampedBets(games: [GameModel], leagueCode: String, timeStamp: Date?) async throws -> [Bet] {
         if let timeStamp {
             let querySnapshot = try await db.collection("userBets").whereField("timestamp", isGreaterThan: Timestamp(date: timeStamp)).getDocuments()
@@ -133,11 +195,15 @@ class BetViewModel: ObservableObject {
             let week = data["week"] as? Int ?? 0
             let foundGame = self.findBetGame(games: games, gameID: game)
             let leagueID = data["leagueID"] as? String ?? ""
-            let timestamp = data["timestamp"] as? Date
-            let deletedTimestamp = data["deletedTimestamp"] as? Date
+            let timestamp = data["timestamp"] as? Timestamp
+            let deletedTimestamp = data["deletedTimestamp"] as? Timestamp
             let isDeleted = data["isDeleted"] as? Bool ?? false
+            let date2 = GameService().convertTimestampToISOString(timestamp: timestamp ?? Timestamp(date: Date()))
+            let date = GameService().dateFromISOString(date2 ?? "")
+            let date3 = GameService().convertTimestampToISOString(timestamp: deletedTimestamp ?? Timestamp(date: Date()))
+            let date4 = GameService().dateFromISOString(date3 ?? "")
             
-            let bet = Bet(id: id, betOption: betOption, game: foundGame!, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueID, timestamp: timestamp, deletedTimestamp: deletedTimestamp, isDeleted: isDeleted)
+            let bet = Bet(id: id, betOption: betOption, game: foundGame!, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueID, timestamp: date ?? Date(), deletedTimestamp: date4 ?? Date(), isDeleted: isDeleted)
             
             return bet
         }
@@ -177,7 +243,7 @@ class BetViewModel: ObservableObject {
         betModel.playerID = playerID
         betModel.week = Int16(bet.week)
         betModel.leagueCode = bet.leagueCode
-        betModel.timestamp = Date()
+        betModel.timestamp = bet.timestamp
         
         do {
             try context.save()
@@ -357,12 +423,25 @@ class BetViewModel: ObservableObject {
                 print("Error updating BET RESULT: \(error)")
             }
         }
+    }
+    
+    func updateLocalBetResults(bets: [BetModel], in context: NSManagedObjectContext) async throws {
+        print("Starting local result updates...")
+
+        for bet in bets {
+            guard bet.result != "Pending" else { return }
+
+            let newbet = db.collection("userBets").document(bet.id)
+
+            bet.result = bet.game.betResult(for: bet).rawValue
+            bet.points = bet.result == BetResult.push.rawValue ? 0 : bet.result == BetResult.loss.rawValue ? -10 : bet.points
+        }
 
         do {
             try context.save()
-            print("\(bets.count) Bet results successfully updated")
+            print("\(bets.count) Bet results successfully updated locally")
         } catch {
-            // Handle the error...
+            
         }
     }
 
