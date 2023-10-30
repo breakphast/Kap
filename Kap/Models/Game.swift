@@ -247,12 +247,12 @@ extension Game {
 }
 
 extension GameModel {
-    func betResult(for bet: Bet) -> BetResult {
+    func betResult(for bet: BetModel) -> BetResult {
         guard completed, let homeScore = self.homeScore, let awayScore = self.awayScore else {
             return .pending
         }
         switch bet.type {
-        case .moneyline:
+        case BetType.moneyline.rawValue:
             guard let homeIntScore = Int(homeScore), let awayIntScore = Int(awayScore) else { return .pending }
             
             if bet.selectedTeam == homeTeam {
@@ -261,7 +261,7 @@ extension GameModel {
                 return awayIntScore > homeIntScore ? .win : .loss
             }
             
-        case .spread:
+        case BetType.spread.rawValue:
             guard let homeIntScore = Int(homeScore), let awayIntScore = Int(awayScore) else { return .pending }
             
             let resultScore: Int
@@ -280,15 +280,17 @@ extension GameModel {
             }
 
             
-        case .over:
+        case BetType.over.rawValue:
             guard let homeIntScore = Int(homeScore), let awayIntScore = Int(awayScore) else { return .pending }
             
             return Double(homeIntScore + awayIntScore) > bet.game.over ? .win : .loss
             
-        case .under:
+        case BetType.under.rawValue:
             guard let homeIntScore = Int(homeScore), let awayIntScore = Int(awayScore) else { return .pending }
             
             return Double(homeIntScore + awayIntScore) < bet.game.under ? .win : .loss
+        default:
+            return .pending
         }
     }
 }

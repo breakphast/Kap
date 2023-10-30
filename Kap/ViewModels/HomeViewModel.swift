@@ -33,7 +33,7 @@ class HomeViewModel: ObservableObject {
     @Published var showingSplashScreen = true
     
     @Published var activeleagueCode: String?
-    @Published var leagueCodes: [String] = []
+    @Published var leagueCodes: [String] = ["2222", "5555"]
     @Published var userLeagues: [League] = []
     @Published var leagueType: LeagueType = .weekly
     
@@ -50,7 +50,7 @@ class HomeViewModel: ObservableObject {
     let db = Firestore.firestore()
     
     static let keys = [
-        "31a0c05953fcef15b59b2a998fadafd9"
+        "ae61283ad9c8818954d09a7ef48c0887"
     ]
     
     let formatter: DateFormatter = {
@@ -224,81 +224,11 @@ class HomeViewModel: ObservableObject {
             print("Error saving context: \(error)")
         }
     }
-
-    
-//    func fetchEssentials(updateGames: Bool, updateScores: Bool, league: League, in context: NSManagedObjectContext) async {
-//        do {
-//            guard let leaguePlayers = league.players else {
-//                // Handling the scenario where league players are unexpectedly nil.
-//                throw NSError(domain: "HomeViewModel", code: -1, userInfo: [NSLocalizedDescriptionKey: "Error: league players are nil."])
-//            }
-//
-//            // Fetch all relevant users asynchronously based on the league players.
-//            let fetchedUsers = try await UserViewModel().fetchAllUsers(leagueUsers: leaguePlayers)
-//            let relevantUsers = fetchedUsers.filter { leaguePlayers.contains($0.id ?? "") }
-//
-//            // Assign the fetched and filtered users to your 'users' property.
-//            self.users = relevantUsers
-//
-//            // Populate the 'allGames' and 'weekGames' properties based on 'allGameModels'.
-//            if let allGameModels = self.allGameModels {
-//                print("Got the models.")
-//                self.allGames = Array(allGameModels)
-//                self.weekGames = self.allGames.filter { $0.week == self.currentWeek }
-//                print("ASSIGNED WEEK GAMES!!!!!")
-//            }
-//
-//            // Generate the league codes based on available leagues and assign them to the 'leagueCodes' property.
-//            self.leagueCodes = self.leagues.map { $0.code }
-//
-//        } catch {
-//            // If there's an error at any point, it's captured and printed here.
-//            // Consider whether you want to handle different errors differently or re-throw them.
-//            print("Failed with error: \(error.localizedDescription)")
-//        }
-//    }
-    // updates bets based on new game scores and updates game scores
-    func updateAndFetch(games: [Game], league: League) async {
-        do {
-            let alteredGames = games
-            for game in alteredGames {
-                try await GameService().updateGameScore(game: game)
-            }
-            if let allGameModels = allGameModels {
-                let newBets = try await BetViewModel().fetchBets(games: Array(allGameModels), leagueCode: league.code)
-                let newParlays = try await ParlayViewModel().fetchParlays(games: Array(allGameModels), leagueCode: league.code)
-                DispatchQueue.main.async {
-//                    self.weekGames = alteredGames
-                    for parlay in newParlays {
-                        if parlay.result == .pending  {
-                            BetViewModel().updateParlay(parlay: parlay)
-                        }
-                    }
-
-                    self.allParlays = newParlays
-
-                    for bet in newBets {
-                        let result = bet.game.betResult(for: bet)
-                        if result != .pending {
-                            BetViewModel().updateBetResult(bet: bet, result: result)
-                        } else if result == .push {
-                            BetViewModel().updateBetResult(bet: bet, result: result)
-                        }
-                    }
-
-//                    self.allBets = newBets
-                }
-            }
-
-        } catch {
-            print("Failed update and fetch", error.localizedDescription)
-        }
-    }
     
     func addInitialGames(in context: NSManagedObjectContext) async throws {
         do {
             let fetchedAllGames = try await GameService().fetchGamesFromFirestore()
-            await Board().doThis(games: fetchedAllGames, in: context)
+            await Board().convertToGameModels(games: fetchedAllGames, in: context)
         } catch {
             
         }

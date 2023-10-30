@@ -109,16 +109,10 @@ struct BetView: View {
             }
             .bold()
             
-            HStack {
-                Text(betText)
-                    .font(.subheadline.bold())
-                    .lineLimit(nil)
-                    .fixedSize(horizontal: false, vertical: true)
-                Spacer()
-                Text("[DATE HERE]")
-                    .font(.caption.bold())
-                    .foregroundStyle(.secondary)
-            }
+            Text(betText)
+                .font(.subheadline.bold())
+                .lineLimit(nil)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
     
@@ -356,19 +350,11 @@ struct PlacedBetView: View {
                                 .font(bet.type == "Over" || bet.type == "Under" ? .caption2.bold() : .subheadline.bold())
                             Spacer()
                             Text("\(bet.odds > 0 ? "+": "")\(bet.odds)")
-                                .font(.subheadline.bold())
+                                .font(.headline.bold())
                         }
                         
-                        HStack {
-                            Text(betText)
-                                .font(.subheadline.bold())
-                                .lineLimit(nil)
-                                .fixedSize(horizontal: false, vertical: true)
-                            Spacer()
-                            Text("[DATE HERE]")
-                                .font(.caption.bold())
-                                .foregroundStyle(.secondary)
-                        }
+                        Text(betText)
+                            .font(.subheadline.bold())
                     }
                     
                     

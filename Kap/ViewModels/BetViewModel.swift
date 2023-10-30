@@ -241,7 +241,7 @@ class BetViewModel: ObservableObject {
         }
     }
     
-    func updateBet(bet: Bet) {
+    func updateBet(bet: BetModel) {
         let newbet = db.collection("userBets").document(bet.id)
         newbet.updateData([
             "betString": bet.betString,
@@ -298,60 +298,69 @@ class BetViewModel: ObservableObject {
         }
     }
     
-    func updateParlay(parlay: Parlay) {
-        let newParlay = db.collection("userParlays").document(parlay.id)
-        let parlayBets = parlay.bets
-        if !parlayBets.filter({ $0.game.betResult(for: $0) == .loss }).isEmpty {
-            newParlay.updateData([
-                "result": BetResult.loss.rawValue
-            ]) { err in
-                if let err = err {
-                    print("Error updating LAYYY: \(err)")
-                } else {
-                    print("Document successfully updated. L")
-                }
-            }
-        } else if parlayBets.filter({$0.result == .win}).count == parlayBets.count {
-            newParlay.updateData([
-                "result": BetResult.win.rawValue
-            ]) { err in
-                if let err = err {
-                    print("Error updating LAYYYYY: \(err)")
-                } else {
-                    print("Document successfully updated. DUB.")
-                }
-            }
-        }
-        
-        if parlay.result == .loss {
-            newParlay.updateData([
-                "totalPoints":  -10
-            ]) { err in
-                if let err = err {
-                    print("Error updating LAYYYY: \(err)")
-                } else {
-                    print("Document successfully updated. L POINTS")
-                }
-            }
-        }
-    }
+//    func updateParlay(parlay: ParlayModel) {
+//        let newParlay = db.collection("userParlays").document(parlay.id ?? "")
+//        let parlayBets = parlay.bets
+//        if !parlayBets.filter({ $0.game.betResult(for: $0) == BetResult.loss.rawValue }).isEmpty {
+//            newParlay.updateData([
+//                "result": BetResult.loss.rawValue
+//            ]) { err in
+//                if let err = err {
+//                    print("Error updating LAYYY: \(err)")
+//                } else {
+//                    print("Document successfully updated. L")
+//                }
+//            }
+//        } else if parlayBets.filter({$0.result == BetResult.win.rawValue}).count == parlayBets.count {
+//            newParlay.updateData([
+//                "result": BetResult.win.rawValue
+//            ]) { err in
+//                if let err = err {
+//                    print("Error updating LAYYYYY: \(err)")
+//                } else {
+//                    print("Document successfully updated. DUB.")
+//                }
+//            }
+//        }
+//        
+//        if parlay.result == .loss {
+//            newParlay.updateData([
+//                "totalPoints":  -10
+//            ]) { err in
+//                if let err = err {
+//                    print("Error updating LAYYYY: \(err)")
+//                } else {
+//                    print("Document successfully updated. L POINTS")
+//                }
+//            }
+//        }
+//    }
     
-    func updateBetResult(bet: Bet, result: BetResult) {
-        guard bet.result == .pending else { return }
-        
-        let newbet = db.collection("userBets").document(bet.id)
-        if let newPoints = bet.points {
+    func updateBetResults(bets: [BetModel], in context: NSManagedObjectContext) {
+        for bet in bets {
+            guard bet.result == "Pending" else { return }
+            
+            let newbet = db.collection("userBets").document(bet.id)
+            
+            bet.result = bet.game.betResult(for: bet).rawValue
+            bet.points = bet.result == BetResult.push.rawValue ? 0 : bet.result == BetResult.loss.rawValue ? -10 : bet.points
+            
             newbet.updateData([
-                "result": result.rawValue,
-                "points": result == .push ? 0 : result == .loss ? -10 : newPoints
+                "result": bet.result,
+                "points": bet.result == BetResult.push.rawValue ? 0 : bet.result == BetResult.loss.rawValue ? -10 : bet.points
             ]) { err in
                 if let err = err {
                     print("Error updating BET RESULT: \(err)")
                 } else {
                     print("Bet result successfully updated")
-                    
                 }
             }
+        }
+        do {
+            try context.save()
+            print("\(bets.count) Bet results successfully updated")
+        } catch {
+            
         }
     }
     
