@@ -236,7 +236,6 @@ struct Login: View {
             }
             
             // Generate the league codes based on available leagues and assign them to the 'leagueCodes' property.
-            homeViewModel.leagueCodes = homeViewModel.leagues.map { $0.code }
             
         } catch {
             // If there's an error at any point, it's captured and printed here.
@@ -316,7 +315,7 @@ struct Login: View {
                 if let leaguePlayers = leaguePlayers {
                     homeViewModel.users = homeViewModel.users.filter({ leaguePlayers.contains($0.id!) })
                 }
-                await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets.filter({$0.leagueCode == leagueViewModel.activeLeague!.code}), parlays: homeViewModel.leagueParlays.filter({$0.leagueCode == leagueViewModel.activeLeague!.code}), week: homeViewModel.currentWeek, leagueCode: activeLeague.code)
+                await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets.filter({$0.leagueCode == homeViewModel.activeleagueCode}), parlays: homeViewModel.leagueParlays.filter({$0.leagueCode == homeViewModel.activeleagueCode}), week: homeViewModel.currentWeek, leagueCode: activeLeague.code)
                 
                 homeViewModel.userBets = homeViewModel.leagueBets.filter({ $0.playerID == userID })
                 homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == userID })

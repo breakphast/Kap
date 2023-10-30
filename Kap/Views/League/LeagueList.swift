@@ -80,13 +80,14 @@ struct LeagueList: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                 .padding(.horizontal)
             }
+
             .font(.title.bold())
             .foregroundStyle(.oW)
             .fontDesign(.rounded)
             .navigationBarBackButtonHidden()
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    Text("Leagues")
+                    Text(homeViewModel.userLeagues.isEmpty ? "" : "Leagues")
                         .font(.system(size: 24, weight: .bold, design: .rounded))
                         .foregroundStyle(.oW)
                 }
@@ -147,14 +148,12 @@ struct LeagueList: View {
                 homeViewModel.weekGames = homeViewModel.allGames.filter { $0.week == homeViewModel.currentWeek }
             }
 
-            homeViewModel.leagueCodes = homeViewModel.leagues.map { $0.code }
-
         } catch {
             print("Failed with error: \(error.localizedDescription)")
         }
     }
     
-    func ignitionSequence(userID: String, leagueCode: String) async throws {
+    private func ignitionSequence(userID: String, leagueCode: String) async throws {
         if allGameModels.isEmpty {
             print("No games. Adding now...")
             do {
@@ -192,6 +191,8 @@ struct LeagueList: View {
                 do {
                     try await homeViewModel.addInitialBets(games: homeViewModel.allGames, in: viewContext)
                     homeViewModel.allBetModels = self.allBetModels
+                    homeViewModel.leagueBets = Array(allBetModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
+                    homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
                 } catch {
                     print("League bets are still empty.")
                 }
@@ -199,6 +200,8 @@ struct LeagueList: View {
             if homeViewModel.leagueParlays.isEmpty {
                 do {
                     try await homeViewModel.addInitialParlays(games: homeViewModel.allGames, in: viewContext)
+                    homeViewModel.leagueParlays = Array(allParlayModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
+                    homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == authViewModel.currentUser?.id})
                 } catch {
                     print("League parlays are still empty.")
                 }
@@ -242,7 +245,7 @@ struct LeagueList: View {
             if let leaguePlayers = leaguePlayers {
                 homeViewModel.users = homeViewModel.users.filter({ leaguePlayers.contains($0.id!) })
             }
-            await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets.filter({$0.leagueCode == leagueViewModel.activeLeague!.code}), parlays: homeViewModel.leagueParlays.filter({$0.leagueCode == leagueViewModel.activeLeague!.code}), week: homeViewModel.currentWeek, leagueCode: activeLeague.code)
+            await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets.filter({$0.leagueCode == homeViewModel.activeleagueCode}), parlays: homeViewModel.leagueParlays.filter({$0.leagueCode == homeViewModel.activeleagueCode}), week: homeViewModel.currentWeek, leagueCode: activeLeague.code)
             
             homeViewModel.userBets = homeViewModel.leagueBets.filter({ $0.playerID == userID })
             homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == userID })

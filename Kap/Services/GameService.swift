@@ -31,9 +31,10 @@ struct ScoreElement: Codable {
         formatter.dateFormat = "yyyy-MM-dd"
         let datePart = formatter.string(from: commenceTime)
         
-        guard scores?.count ?? 0 >= 2 else { return datePart }  // Safety check, just in case the scores array is too short
+        guard scores?.count ?? 0 >= 2 else {
+            return datePart
+        }
 
-        // Converting team names to a URL-safe format
         let safeHomeTeam = homeTeam.replacingOccurrences(of: " ", with: "-")
         let safeAwayTeam = awayTeam.replacingOccurrences(of: " ", with: "-")
         
@@ -49,31 +50,38 @@ class GameService {
     let mock = false
     @Environment(\.managedObjectContext) private var viewContext
 
-    func updateGameScore(game: Game) async throws {
+    func updateGameScores(games: [GameModel], in context: NSManagedObjectContext) async throws {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
-
         let scores = try await mock ? loadnflScoresData() : fetchNFLScoresData()
-        
         do {
             let scoresData = try decoder.decode([ScoreElement].self, from: scores)
-            // Filtering out the exact score data that matches the game id
-            if let scoreElement = scoresData.first(where: { $0.documentId == game.documentId }) {
-                game.homeScore = scoreElement.scores?.first(where: { $0.name == game.homeTeam })?.score
-                game.awayScore = scoreElement.scores?.first(where: { $0.name == game.awayTeam })?.score
-                game.completed = scoreElement.completed
-                
-                let querySnapshot = try await db.collection("nflGames").whereField("id", isEqualTo: game.id).getDocuments()
+            for game in games {
+                if let scoreElement = scoresData.first(where: { $0.documentId == game.documentID }) {
+                    game.homeScore = scoreElement.scores?.first(where: { $0.name == game.homeTeam })?.score
+                    game.awayScore = scoreElement.scores?.first(where: { $0.name == game.awayTeam })?.score
+                    game.completed = scoreElement.completed
+                    
+                    let querySnapshot = try await db.collection("nflGames").whereField("id", isEqualTo: game.id ?? "").getDocuments()
 
-                if let newGameDocument = querySnapshot.documents.first {
-                    try await newGameDocument.reference.updateData([
-                        "homeScore": game.homeScore as Any,
-                        "awayScore": game.awayScore as Any,
-                        "completed": game.completed as Bool
-                    ])
-                } else {
-                    print("No matching game found in Firestore")
+                    if let newGameDocument = querySnapshot.documents.first {
+                        try await newGameDocument.reference.updateData([
+                            "homeScore": game.homeScore as Any,
+                            "awayScore": game.awayScore as Any,
+                            "completed": game.completed as Bool
+                        ])
+                        
+                        do {
+                            try context.save()
+                        } catch {
+                            
+                        }
+                        
+                    } else {
+                        print("No matching game found in Firestore")
+                    }
                 }
+
             }
         } catch {
             print("Error decoding scores data:", error)
@@ -220,7 +228,7 @@ class GameService {
         return data
     }
     
-    private func loadnflScoresData() async throws -> Data {
+    func loadnflScoresData() async throws -> Data {
         guard let url = Bundle.main.url(forResource: "nflScores", withExtension: "json") else {
             throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Unable to locate nflScores.json"])
         }
@@ -253,8 +261,8 @@ class GameService {
         return data
     }
     
-    private func fetchNFLScoresData() async throws -> Data {
-        let urlString = "https://api.the-odds-api.com/v4/sports/americanfootball_nfl/scores/?daysFrom=1&apiKey=\(HomeViewModel.keys.randomElement()!)"
+    func fetchNFLScoresData() async throws -> Data {
+        let urlString = "https://api.the-odds-api.com/v4/sports/americanfootball_nfl/scores/?daysFrom=3&apiKey=\(HomeViewModel.keys.randomElement()!)"
         
         guard let url = URL(string: urlString) else {
             throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])

@@ -7,6 +7,9 @@
 
 import SwiftUI
 import CoreData
+import FirebaseFirestore
+import Firebase
+import FirebaseFirestoreSwift
 
 struct Board: View {
     let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 3)
@@ -82,8 +85,11 @@ struct Board: View {
                 .refreshable {
                     Task {
                         do {
+                            // local .. add refresh limit
                             try await updateGameOdds(games: homeViewModel.weekGames, in: viewContext)
                             homeViewModel.allGameModels = allGameModels
+                            // cloud
+//                            try await updateGameScores(games: homeViewModel.weekGames, in: viewContext)
                         } catch {
                             
                         }
@@ -180,18 +186,51 @@ struct Board: View {
         }
     }
     
-    func updateGameAttribute(games: [GameModel], in context: NSManagedObjectContext) {
-        if let game = games.first(where: {$0.documentID == "2023-10-30-Detroit-Lions-vs-Las-Vegas-Raiders"}) {
-            game.week = 8
-            do {
-                try context.save()
-            } catch {
-                print("Error saving context: \(error)")
+    func updateGameScores(games: [GameModel], in context: NSManagedObjectContext) async throws {
+        var db = Firestore.firestore()
+        let mock = false
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let scores = try await mock ? GameService().loadnflScoresData() : GameService().fetchNFLScoresData()
+        
+        do {
+            let scoresData = try decoder.decode([ScoreElement].self, from: scores)
+            print(scoresData.map {$0.homeTeam})
+            print(scoresData.map {$0.scores})
+            
+            for game in games {
+                if let scoreElement = scoresData.first(where: { $0.documentId == game.documentID }) {
+                    game.homeScore = scoreElement.scores?.first(where: { $0.name == game.homeTeam })?.score
+                    game.awayScore = scoreElement.scores?.first(where: { $0.name == game.awayTeam })?.score
+                    game.completed = scoreElement.completed
+                    
+                    let querySnapshot = try await db.collection("nflGames").whereField("id", isEqualTo: game.id ?? "").getDocuments()
+                    
+                    do {
+                        try context.save()
+                    } catch {
+                        
+                    }
+                }
+
             }
+        } catch {
+            print("Error decoding scores data:", error)
+        }
+        do {
+            try context.save()
+            print("Updated \(games.count) game scores.")
+        } catch {
+            print("Error saving context: \(error)")
         }
     }
 
-    func doThis(games: [Game], in context: NSManagedObjectContext) async {
+    
+    func updateGameAttribute(game: GameModel, in context: NSManagedObjectContext) {
+        
+    }
+
+    func convertToGameModels(games: [Game], in context: NSManagedObjectContext) async {
         for game in games {
             let gameModel = GameModel(context: context) // Now we are using the passed-in context
             
