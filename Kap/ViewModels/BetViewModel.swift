@@ -193,6 +193,7 @@ class BetViewModel: ObservableObject {
             let selectedTeam = data["selectedTeam"] as? String ?? ""
             let playerID = data["playerID"] as? String ?? ""
             let week = data["week"] as? Int ?? 0
+            let betString = data["betString"] as? String
             let foundGame = self.findBetGame(games: games, gameID: game)
             let leagueID = data["leagueID"] as? String ?? ""
             let timestamp = data["timestamp"] as? Timestamp
@@ -204,7 +205,7 @@ class BetViewModel: ObservableObject {
             let date4 = GameService().dateFromISOString(date3 ?? "")
             
             let bet = Bet(id: id, betOption: betOption, game: foundGame!, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueID, timestamp: date ?? Date(), deletedTimestamp: date4 ?? Date(), isDeleted: isDeleted)
-            
+            bet.betString = betString ?? ""
             return bet
         }
         return bets

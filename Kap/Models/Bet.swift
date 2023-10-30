@@ -61,7 +61,7 @@ class Bet {
     let odds: Int
     var points: Double?
     let stake = 100.0
-    let betString: String
+    var betString: String
     let selectedTeam: String?
     let playerID: String
     var week: Int
@@ -92,18 +92,18 @@ class Bet {
         
         switch type {
         case .spread:
-            betString = formattedSpread
+            self.betString = formattedSpread
             betOptionString = betString + "\n\(formattedOdds)"
             
         case .moneyline:
-            betString = "\(selectedTeam ?? "") ML"
+            self.betString = "\(selectedTeam ?? "") ML"
             betOptionString = formattedOdds
 
         case .over:
-            betString = "O\(game.over)"
+            self.betString = "O\(game.over)"
             betOptionString = "O \(game.over)\n\(formattedOdds)"
         case .under:
-            betString = "U\(game.under)"
+            self.betString = "U\(game.under)"
             betOptionString = "U \(game.under)\n\(formattedOdds)"
         }
         
