@@ -85,14 +85,21 @@ struct Board: View {
                 .refreshable {
                     Task {
                         do {
-//                            print(Array(allBetModels).map {$0.id})
                             // local .. add refresh limit
-//                            try await updateGameOdds(games: homeViewModel.weekGames, in: viewContext)
-//                            homeViewModel.allGameModels = allGameModels
+                            guard homeViewModel.weekGames.allSatisfy({ $0.date ?? Date(timeIntervalSince1970: 0) >= Date() }) else {
+                                print("Some games have dates that have already passed. Not updating odds.")
+                                // cloud
+                                try await updateGameScores(games: homeViewModel.weekGames, in: viewContext)
+                                try await BetViewModel().updateBetResults(bets: homeViewModel.userBets, in: viewContext)
+                                homeViewModel.allBetModels = allBetModels
+                                return
+                            }
+                            // local .. add refresh limit
+                            try await updateGameOdds(games: homeViewModel.weekGames, in: viewContext)
+                            homeViewModel.allGameModels = allGameModels
                             // cloud
                             try await updateGameScores(games: homeViewModel.weekGames, in: viewContext)
                             try await BetViewModel().updateBetResults(bets: homeViewModel.userBets, in: viewContext)
-                            print("Starting bet assignment...")
                             homeViewModel.allBetModels = allBetModels
                         } catch {
                             
@@ -199,16 +206,11 @@ struct Board: View {
         
         do {
             let scoresData = try decoder.decode([ScoreElement].self, from: scores)
-            print(scoresData.map {$0.homeTeam})
-            print(scoresData.map {$0.scores})
-            
             for game in games {
                 if let scoreElement = scoresData.first(where: { $0.documentId == game.documentID }) {
                     game.homeScore = scoreElement.scores?.first(where: { $0.name == game.homeTeam })?.score
                     game.awayScore = scoreElement.scores?.first(where: { $0.name == game.awayTeam })?.score
                     game.completed = scoreElement.completed
-                    
-                    let querySnapshot = try await db.collection("nflGames").whereField("id", isEqualTo: game.id ?? "").getDocuments()
                     
                     do {
                         try context.save()

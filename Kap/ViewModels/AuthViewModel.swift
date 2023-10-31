@@ -21,12 +21,10 @@ class AuthViewModel: ObservableObject {
     
     func fetchUser() {
         guard let uid = self.userSession?.uid else { return } // always current user
-        print(uid)
         
         service.fetchUser(withUid: uid) { user in
             self.currentUser = user // sets published user to user we fetched from database
         }
-        print(self.currentUser == nil)
     }
     
     func login(withEmail email: String, password: String, completion: @escaping (String?) -> Void) {
