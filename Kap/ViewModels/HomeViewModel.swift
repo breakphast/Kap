@@ -90,7 +90,7 @@ class HomeViewModel: ObservableObject {
     func checkForUpdatedBets(in context: NSManagedObjectContext, timestamp: Date?, games: [GameModel]) async throws {
         if let timestamp {
             if let activeleagueCode {
-                var updatedBets = try await BetViewModel().fetchUpdatedBets(games: games, leagueCode: activeleagueCode, timeStamp: timestamp)
+                var updatedBets = try await BetViewModel().fetchUpdatedBets(games: games, leagueCode: activeleagueCode)
                 
                 if let allBets = self.allBetModels {
                     let localBetIDs = Set(allBets).map {$0.id}
@@ -125,7 +125,7 @@ class HomeViewModel: ObservableObject {
                 let deletedStampedBets = try await BetViewModel().fetchDeletedStampedBets(games: self.weekGames, leagueCode: activeleagueCode, deletedTimestamp: timestamp)
                 if !deletedStampedBets.isEmpty {
                     for bet in deletedStampedBets {
-                        try await BetViewModel().deleteBet(betID: bet.id)
+//                        try await BetViewModel().deleteBet(betID: bet.id)
                         BetViewModel().deleteBetModel(in: context, id: bet.id)
                         if let _ = counter?.timestamp {
                             var timestamp = Date()
@@ -146,6 +146,27 @@ class HomeViewModel: ObservableObject {
             }
         }
     }
+    
+    func updateLocalTimestamp(in context: NSManagedObjectContext, timestamp: Date?) {
+        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: "Counter")
+        fetchRequest.predicate = NSPredicate(format: "attributeName == %@", "attributeValue")
+        
+        let counter = Counter(context: context)
+        if let timestamp {
+            counter.timestamp = timestamp
+            print("Local timestamp:", timestamp)
+        } else {
+            counter.timestamp = nil
+        }
+        
+        do {
+            try context.save()
+            self.counter = counter
+        } catch {
+            print("Error saving context: \(error)")
+        }
+    }
+    
     
     func checkForNewParlays(in context: NSManagedObjectContext, timestamp: Date?) async throws {
         if let timestamp {

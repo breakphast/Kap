@@ -17,7 +17,7 @@ extension Counter {
     }
 
     @NSManaged public var betCount: Int16
-    @NSManaged public var timestamp: Date
+    @NSManaged public var timestamp: Date?
 
 }
 

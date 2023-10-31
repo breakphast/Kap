@@ -209,7 +209,7 @@ struct JoinLeague: View {
                                 print("Current timestamp:", currentTimestamp)
                                 // check for any bets and parlays in the cloud that were placed after your local timestamp
                                 do {
-                                    try await homeViewModel.checkForNewBets(in: viewContext, timestamp: currentTimestamp, games: homeViewModel.weekGames)
+                                    try await homeViewModel.checkForNewBets(in: viewContext, timestamp: currentTimestamp, games: homeViewModel.allGames)
                                     homeViewModel.leagueBets = Array(allBetModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
                                     homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
                                     

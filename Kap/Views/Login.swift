@@ -292,7 +292,7 @@ struct Login: View {
                         homeViewModel.counter?.timestamp = timestamp
                         print("Current timestamp:", timestamp)
                         do {
-                            try await homeViewModel.checkForNewBets(in: viewContext, timestamp: timestamp, games: homeViewModel.weekGames)
+                            try await homeViewModel.checkForNewBets(in: viewContext, timestamp: timestamp, games: homeViewModel.allGames)
                             homeViewModel.leagueBets = Array(allBetModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
                             homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
                             try await homeViewModel.checkForNewParlays(in: viewContext, timestamp: timestamp)
@@ -304,7 +304,7 @@ struct Login: View {
                     }
                 } else {
                     do {
-                        try await homeViewModel.checkForNewBets(in: viewContext, timestamp: nil, games: homeViewModel.weekGames)
+                        try await homeViewModel.checkForNewBets(in: viewContext, timestamp: nil, games: homeViewModel.allGames)
                     } catch {
                         
                     }

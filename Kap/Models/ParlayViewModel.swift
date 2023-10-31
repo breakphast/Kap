@@ -65,7 +65,7 @@ class ParlayViewModel {
             
             return parlay
         }
-        return parlays
+        return parlays.filter({$0.isDeleted == false})
     }
     
     func addParlayToLocalDatabase(parlay: Parlay, playerID: String, in context: NSManagedObjectContext) {
@@ -216,7 +216,7 @@ class ParlayViewModel {
                 parlay.bets = bets
                 return parlay
             }
-            return parlays
+            return parlays.filter({$0.isDeleted == false})
         } else {
             let querySnapshot = try await db.collection("userParlays").getDocuments()
             let parlays = querySnapshot.documents.map { queryDocumentSnapshot -> Parlay in
@@ -270,7 +270,7 @@ class ParlayViewModel {
                 
                 return parlay
             }
-            return parlays
+            return parlays.filter({$0.isDeleted == false})
         }
     }
 
@@ -324,7 +324,7 @@ class ParlayViewModel {
                 
                 return parlay
             }
-            return parlays
+            return parlays.filter({$0.isDeleted == true})
         } else {
             let querySnapshot = try await db.collection("userParlays").getDocuments()
             let parlays = querySnapshot.documents.map { queryDocumentSnapshot -> Parlay in
@@ -374,7 +374,7 @@ class ParlayViewModel {
                 
                 return parlay
             }
-            return parlays
+            return parlays.filter({$0.isDeleted == true})
         }
     }
     
