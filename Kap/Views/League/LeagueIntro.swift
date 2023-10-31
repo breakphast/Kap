@@ -8,15 +8,15 @@
 import SwiftUI
 
 struct LeagueIntro: View {
-    @Binding var loggedIn: Bool
-    
+    @EnvironmentObject var authViewModel: AuthViewModel
+
     var body: some View {
         NavigationStack {
             ZStack {
                 Color.onyx.ignoresSafeArea()
                 
                 VStack(spacing: 12) {
-                    NavigationLink(destination: JoinLeague(loggedIn: $loggedIn)) {
+                    NavigationLink(destination: JoinLeague()) {
                         ZStack {
                             RoundedRectangle(cornerRadius: 20, style: .continuous)
                                 .shadow(radius: 4)

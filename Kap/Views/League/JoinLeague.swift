@@ -17,7 +17,6 @@ struct JoinLeague: View {
     @State private var code = ""
     @State private var validCode: Bool?
     @State private var result: Bool?
-    @Binding var loggedIn: Bool
     @State private var errorText = "Invalid code. Please try again."
     @Environment(\.dismiss) var dismiss
     @Environment(\.managedObjectContext) private var viewContext
@@ -191,37 +190,39 @@ struct JoinLeague: View {
                                 print("League parlays are still empty.")
                             }
                         }
-                        // assign timestamp based on last bet that is not yours
                         var currentTimestamp = Date()
                         let filteredLeagueBets = homeViewModel.leagueBets.filter({$0.playerID != authViewModel.currentUser?.id})
-                        
-                        if let lastBet = filteredLeagueBets.last {
-                            if let betTimestamp = lastBet.timestamp {
-                                currentTimestamp = betTimestamp
-                                if let lastParlay = homeViewModel.leagueParlays.filter({$0.playerID != authViewModel.currentUser?.id}).last {
-                                    if let parlayTimestamp = lastParlay.timestamp {
-                                        if parlayTimestamp > betTimestamp {
-                                            currentTimestamp = parlayTimestamp
-                                            homeViewModel.counter?.timestamp = currentTimestamp
-                                        }
-                                    }
-                                }
-                                print("Current timestamp:", currentTimestamp)
-                                // check for any bets and parlays in the cloud that were placed after your local timestamp
-                                do {
-                                    try await homeViewModel.checkForNewBets(in: viewContext, timestamp: currentTimestamp, games: homeViewModel.allGames)
-                                    homeViewModel.leagueBets = Array(allBetModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
-                                    homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
-                                    
-                                    try await homeViewModel.checkForNewParlays(in: viewContext, timestamp: currentTimestamp)
-                                    homeViewModel.leagueParlays = Array(allParlayModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
-                                    homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == authViewModel.currentUser?.id})
-                                } catch {
-                                    
-                                }
-                            }
+                        if let lastBetTimestamp = filteredLeagueBets.last?.timestamp {
+                            currentTimestamp = lastBetTimestamp
+                        } else {
+                            do {
+                                try await homeViewModel.checkForNewBets(in: viewContext, timestamp: nil, games: homeViewModel.allGames)
+                            } catch { }
                         }
-                        // league stuff
+                        
+                        let filteredLeagueParlays = homeViewModel.leagueParlays.filter({$0.playerID != authViewModel.currentUser?.id})
+                        if let lastParlayTimestamp = filteredLeagueParlays.last?.timestamp, lastParlayTimestamp > currentTimestamp {
+                            currentTimestamp = lastParlayTimestamp
+                        } else {
+                            do {
+                                try await homeViewModel.checkForNewParlays(in: viewContext, timestamp: nil)
+                            } catch { }
+                        }
+                        if filteredLeagueBets.isEmpty && filteredLeagueParlays.isEmpty {
+                            homeViewModel.updateLocalTimestamp(in: viewContext, timestamp: nil)
+                        } else {
+                            homeViewModel.updateLocalTimestamp(in: viewContext, timestamp: currentTimestamp)
+                        }
+                        do {
+                            try await homeViewModel.checkForNewBets(in: viewContext, timestamp: currentTimestamp, games: homeViewModel.allGames)
+                            homeViewModel.leagueBets = Array(allBetModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
+                            homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
+                            
+                            try await homeViewModel.checkForNewParlays(in: viewContext, timestamp: currentTimestamp)
+                            homeViewModel.leagueParlays = Array(allParlayModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
+                            homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == authViewModel.currentUser?.id})
+                        } catch { }
+                        
                         leagueViewModel.points = activeLeague.points ?? [:]
                         let leaguePlayers = homeViewModel.leagues.first(where: { $0.code == activeLeague.code })?.players
                         
@@ -237,7 +238,6 @@ struct JoinLeague: View {
                     }
                     
                     validCode = true
-                    loggedIn = true
                     dismiss()
                 }
             }

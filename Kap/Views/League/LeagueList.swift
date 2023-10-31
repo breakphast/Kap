@@ -17,7 +17,6 @@ struct LeagueList: View {
 
     @Environment(\.dismiss) var dismiss
     @Binding var leagues: [League]
-    @Binding var loggedIn: Bool
     @State private var defaultLeague = true
     @AppStorage("defaultleagueCode") private var defaultleagueCode = ""
     
@@ -66,7 +65,7 @@ struct LeagueList: View {
                     .frame(maxWidth: .infinity, alignment: .trailing)
                     .padding(.leading, 100)
                     Spacer()
-                    NavigationLink(destination: JoinLeague(loggedIn: $loggedIn)) {
+                    NavigationLink(destination: JoinLeague()) {
                         Text("Join League")
                             .font(.title3.bold())
                             .foregroundStyle(.oW)
@@ -251,7 +250,6 @@ struct LeagueList: View {
             homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == userID })
         }
         
-        loggedIn = true
         return
     }
     

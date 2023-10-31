@@ -13,7 +13,6 @@ struct Home: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var leagueViewModel: LeagueViewModel
-    @State private var loggedIn = false
     @State private var date: Date = Date()
     @State private var leagues = 0
     @State private var showingSplashScreen = true
@@ -23,11 +22,12 @@ struct Home: View {
     }
     
     var body: some View {
-        if authViewModel.currentUser == nil || loggedIn == false {
-            Login(loggedIn: $loggedIn)
-//            ContestView()
-        } else if leagueViewModel.activeLeague == nil {
-            LeagueList(leagues: $homeViewModel.userLeagues, loggedIn: $loggedIn)
+        if authViewModel.currentUser == nil {
+            Login()
+        } else if authViewModel.currentUser != nil && homeViewModel.userLeagues.isEmpty {
+            LeagueIntro()
+        } else if authViewModel.currentUser != nil && !homeViewModel.userLeagues.isEmpty && leagueViewModel.activeLeague == nil {
+            LeagueList(leagues: $homeViewModel.userLeagues)
         } else {
             TabView {
                 Board()
@@ -50,7 +50,7 @@ struct Home: View {
                         Label("Guide", systemImage: "text.book.closed.fill")
                     }
                 
-                Profile(loggedIn: $loggedIn)
+                Profile()
                     .tabItem {
                         Label("Profile", systemImage: "person.fill")
                     }

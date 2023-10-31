@@ -25,7 +25,6 @@ struct Login: View {
     @State private var showLeagueList = false
     @State private var showLeagueIntro = false
     @State var loggingIn = false
-    @Binding var loggedIn: Bool
     @Environment(\.managedObjectContext) private var viewContext
     
     @FetchRequest(
@@ -80,10 +79,10 @@ struct Login: View {
             }
         }
         .fullScreenCover(isPresented: $showLeagueList) {
-            LeagueList(leagues: $homeViewModel.userLeagues, loggedIn: $loggedIn)
+            LeagueList(leagues: $homeViewModel.userLeagues)
         }
         .fullScreenCover(isPresented: $showLeagueIntro) {
-            LeagueIntro(loggedIn: $loggedIn)
+            LeagueIntro()
         }
     }
     
@@ -320,8 +319,6 @@ struct Login: View {
                 homeViewModel.userBets = homeViewModel.leagueBets.filter({ $0.playerID == userID })
                 homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == userID })
             }
-            
-            loggedIn = true
             return
         }
         

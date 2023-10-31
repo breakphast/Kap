@@ -13,7 +13,6 @@ struct Profile: View {
     @EnvironmentObject var leagueViewModel: LeagueViewModel
 
     @State var user: User?
-    @Binding var loggedIn: Bool
     @AppStorage("defaultleagueCode") private var defaultleagueCode = ""
     
     var body: some View {
@@ -31,7 +30,6 @@ struct Profile: View {
                 
                 Button("Sign Out") {
                     authViewModel.signOut()
-                    loggedIn = false
                     defaultleagueCode = ""
                     homeViewModel.userBets = []
                     homeViewModel.leagueBets = []
