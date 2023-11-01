@@ -18,6 +18,7 @@ struct Board: View {
     @EnvironmentObject var leagueViewModel: LeagueViewModel
     @Environment(\.dismiss) var dismiss
     @Environment(\.managedObjectContext) private var viewContext
+    let db = Firestore.firestore()
     
     @FetchRequest(
         entity: GameModel.entity(),
@@ -150,8 +151,9 @@ struct Board: View {
         }
     }
     
-    func updateGameOdds(games: [GameModel], in context: NSManagedObjectContext) async throws {
-        let updatedGames = try await GameService().getGames()
+    func updateLocalGameOdds(games: [GameModel], week: Int, in context: NSManagedObjectContext) async throws {
+        // this is locally updating odds to core data
+        let updatedGames = try await GameService().fetchGamesFromFirestore(week: week)
         for game in games {
             if let newGame = updatedGames.first(where: {$0.documentId == game.documentID}) {
                 game.homeSpread = newGame.homeSpread
@@ -165,6 +167,7 @@ struct Board: View {
                 game.overPriceTemp = newGame.overPriceTemp
                 game.underPriceTemp = newGame.underPriceTemp
                 game.betOptions = []
+                
                 for betOption in newGame.betOptions {
                     let betOptionModel = BetOptionModel(context: context)
                     betOptionModel.id = betOption.id
@@ -180,63 +183,55 @@ struct Board: View {
                     betOptionModel.betString = betOption.betString
                     
                     game.addToBetOptions(betOptionModel)
-                    do {
-                        try context.save()
-                        print("Updated game odds.")
-                    } catch {
-                        print("Error saving context: \(error)")
-                    }
                 }
             }
         }
         do {
             try context.save()
-            print("Done.")
+            print("Updated \(games.count) game odds locally..")
         } catch {
             print("Error saving context: \(error)")
         }
     }
-    
+
     func updateGameScores(games: [GameModel], in context: NSManagedObjectContext) async throws {
-        var db = Firestore.firestore()
-        let mock = false
+        let db = Firestore.firestore()
+        let mock = true
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
-        let scores = try await mock ? GameService().loadnflScoresData() : GameService().fetchNFLScoresData()
         
-        do {
-            let scoresData = try decoder.decode([ScoreElement].self, from: scores)
-            for game in games {
-                if let scoreElement = scoresData.first(where: { $0.documentId == game.documentID }) {
-                    game.homeScore = scoreElement.scores?.first(where: { $0.name == game.homeTeam })?.score
-                    game.awayScore = scoreElement.scores?.first(where: { $0.name == game.awayTeam })?.score
-                    game.completed = scoreElement.completed
-                    
-                    do {
-                        try context.save()
-                    } catch {
-                        
-                    }
-                }
+        let scores = try await (mock ? GameService().loadnflScoresData() : GameService().fetchNFLScoresData())
+        let scoresData = try decoder.decode([ScoreElement].self, from: scores)
+        
+        for game in games {
+            if let scoreElement = scoresData.first(where: { $0.documentId == game.documentID }),
+               let documentID = game.documentID {
+                game.homeScore = scoreElement.scores?.first(where: { $0.name == game.homeTeam })?.score
+                game.awayScore = scoreElement.scores?.first(where: { $0.name == game.awayTeam })?.score
+                game.completed = scoreElement.completed
 
+                let newGame = db.collection("nflGames").document(documentID)
+                try await BetViewModel().updateDataAsync(document: newGame, data: [
+                    "homeScore": game.homeScore ?? "",
+                    "awayScore": game.awayScore ?? "",
+                    "completed": game.completed
+                ])
+            } else {
+                print("No score data yet.")
             }
-        } catch {
-            print("Error decoding scores data:", error)
         }
-        do {
-            try context.save()
-            print("Updated \(games.count) game scores.")
-        } catch {
-            print("Error saving context: \(error)")
-        }
+        print("Updated \(games.count) game scores in the cloud.")
+        try context.save()
+        print("Updated \(games.count) game scores locally.")
     }
-
     
     func updateGameAttribute(game: GameModel, in context: NSManagedObjectContext) {
         
     }
 
-    func convertToGameModels(games: [Game], in context: NSManagedObjectContext) async {
+    func convertToGameModels(games: [Game], in context: NSManagedObjectContext) async -> [GameModel] {
+        var gameModels = [GameModel]()
+        
         for game in games {
             let gameModel = GameModel(context: context) // Now we are using the passed-in context
             
@@ -289,12 +284,9 @@ struct Board: View {
                 
                 gameModel.addToBetOptions(betOptionModel)
             }
+            gameModels.append(gameModel)
         }
-        do {
-            try context.save()
-        } catch {
-            print("Error saving context: \(error)")
-        }
+        return gameModels
     }
 
     func deleteAllData(ofEntity entityName: String, completion: @escaping (Result<Void, Error>) -> Void) {

@@ -160,9 +160,9 @@ struct LeagueList: View {
                 homeViewModel.allGameModels = self.allGameModels
                 if let allGames = homeViewModel.allGameModels {
                     do {
-                        try await Board().updateGameOdds(games: Array(allGames).filter({$0.week == homeViewModel.currentWeek}), in: viewContext)
+                        try await Board().updateLocalGameOdds(games: Array(allGames).filter({$0.week == homeViewModel.currentWeek}), week: homeViewModel.currentWeek, in: viewContext)
                         homeViewModel.allGameModels = self.allGameModels
-                        print("Done adding games.")
+                        print("Done adding games locally.")
                     } catch { }
                 }
             } catch {

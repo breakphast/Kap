@@ -25,7 +25,7 @@ class HomeViewModel: ObservableObject {
     @Published var leaderboards: [[User]] = [[]]
     
     @Published var activePlayer: Player?
-    @Published var currentWeek = 7
+    @Published var currentWeek = 9
     @Published var activeLeague: League?
     @Published var currentDate: String = ""
     
@@ -50,7 +50,9 @@ class HomeViewModel: ObservableObject {
     let db = Firestore.firestore()
     
     static let keys = [
-        "ae61283ad9c8818954d09a7ef48c0887"
+        "753dc10555c828e2828d33832e8e0ea3",
+        "823ff29071d3b6ae29ac2463dc53b2b5",
+        "4361370f2df59d9c4aabf5b7ff5fd438"
     ]
     
     let formatter: DateFormatter = {
@@ -125,21 +127,24 @@ class HomeViewModel: ObservableObject {
                 let deletedStampedBets = try await BetViewModel().fetchDeletedStampedBets(games: self.weekGames, leagueCode: activeleagueCode, deletedTimestamp: timestamp)
                 if !deletedStampedBets.isEmpty {
                     for bet in deletedStampedBets {
-//                        try await BetViewModel().deleteBet(betID: bet.id)
-                        BetViewModel().deleteBetModel(in: context, id: bet.id)
-                        if let _ = counter?.timestamp {
-                            var timestamp = Date()
-                            
-                            if let lastTimestamp = leagueBets.last?.timestamp {
-                                timestamp = lastTimestamp
-                            }
-                            if let lastTimestamp = leagueParlays.last?.timestamp {
-                                if lastTimestamp > timestamp {
+                        if let allBetModels {
+                            guard allBetModels.contains(where: { $0.id == bet.id }) else { return }
+                            // try await BetViewModel().deleteBet(betID: bet.id)
+                            BetViewModel().deleteBetModel(in: context, id: bet.id)
+                            if let _ = counter?.timestamp {
+                                var timestamp = Date()
+                                
+                                if let lastTimestamp = leagueBets.last?.timestamp {
                                     timestamp = lastTimestamp
                                 }
+                                if let lastTimestamp = leagueParlays.last?.timestamp {
+                                    if lastTimestamp > timestamp {
+                                        timestamp = lastTimestamp
+                                    }
+                                }
+                                counter?.timestamp = timestamp
+                                print("New timestamp after removing bet.", timestamp)
                             }
-                            counter?.timestamp = timestamp
-                            print("New timestamp after removing bet.", timestamp)
                         }
                     }
                 }
@@ -293,7 +298,22 @@ class HomeViewModel: ObservableObject {
     func addInitialGames(in context: NSManagedObjectContext) async throws {
         do {
             let fetchedAllGames = try await GameService().fetchGamesFromFirestore()
-            await Board().convertToGameModels(games: fetchedAllGames, in: context)
+            _ = await Board().convertToGameModels(games: fetchedAllGames, in: context)
+            do {
+                try context.save()
+            } catch {
+                print("Error saving context: \(error)")
+            }
+        } catch {
+            
+        }
+    }
+    
+    func updateLocalGames(in context: NSManagedObjectContext) async throws {
+        do {
+            if let allGameModels {
+                try await Board().updateLocalGameOdds(games: Array(allGameModels).filter({$0.week == currentWeek}), week: currentWeek, in: context)
+            }
         } catch {
             
         }
@@ -391,31 +411,4 @@ class HomeViewModel: ObservableObject {
             }
         }
     }
-    
-    func updateDate(date: String) {
-        let db = Firestore.firestore()
-        let newbet = db.collection("activeDate").document("NBpRBsY6JHSQj87MdTd5")
-        newbet.updateData([
-            "currentDate": date
-        ]) { err in
-            if let err = err {
-                print("Error updating document: \(err)")
-            } else {
-                print("Document successfully updated")
-            }
-        }
-    }
-    
-    func updateGameWeek(game: Game, week: Int) {
-        let db = Firestore.firestore()
-        let newGame = db.collection("nflGames").document(game.documentId)
-        newGame.updateData([
-            "week": week
-        ]) { err in
-            if let err = err {
-                print("Error updating document: \(err)")
-            }
-        }
-    }
-
 }

@@ -46,7 +46,7 @@ class BetViewModel: ObservableObject {
             
             return bet
         }
-        return bets
+        return bets.filter({$0.isDeleted == false})
     }
     
     func fetchStampedBets(games: [GameModel], leagueCode: String, timeStamp: Date?) async throws -> [Bet] {
@@ -77,7 +77,7 @@ class BetViewModel: ObservableObject {
                 
                 return bet
             }
-            return bets
+            return bets.filter({$0.isDeleted == false})
         } else {
             let querySnapshot = try await db.collection("userBets").whereField("leagueID", isEqualTo: leagueCode).getDocuments()
             let bets = querySnapshot.documents.map { queryDocumentSnapshot -> Bet in
@@ -106,7 +106,7 @@ class BetViewModel: ObservableObject {
                 
                 return bet
             }
-            return bets
+            return bets.filter({$0.isDeleted == false})
         }
     }
     

@@ -128,62 +128,77 @@ class GameService {
         return formatter.string(from: date)
     }
     
-    func fetchGamesFromFirestore() async throws -> [Game] {
+    func fetchGamesFromFirestore(week: Int? = nil) async throws -> [Game] {
         let db = Firestore.firestore()
-        let querySnapshot = try await db.collection("nflGames").getDocuments()
-        
-        var games = querySnapshot.documents.map { queryDocumentSnapshot -> Game in
-            let data = queryDocumentSnapshot.data()
-            let id = data["id"] as? String ?? ""
-            let homeTeam = data["homeTeam"] as? String ?? ""
-            let awayTeam = data["awayTeam"] as? String ?? ""
-            let dateString = data["date"] as? Timestamp
-            let date2 = convertTimestampToISOString(timestamp: dateString ?? Timestamp(date: Date()))
-            let date = dateFromISOString(date2 ?? "")
-            let homeSpread = data["homeSpread"] as? Double ?? 0.0
-            let awaySpread = data["awaySpread"] as? Double ?? 0.0
-            let homeMoneyLine = data["homeMoneyLine"] as? Int ?? 0
-            let awayMoneyLine = data["awayMoneyLine"] as? Int ?? 0
-            let over = data["over"] as? Double ?? 0.0
-            let under = data["under"] as? Double ?? 0.0
-            let completed = data["completed"] as? Bool ?? false
-            let homeScore = data["homeScore"] as? String
-            let awayScore = data["awayScore"] as? String
-            let homeSpreadPriceTemp = data["homeSpreadPriceTemp"] as? Double ?? 0.0
-            let awaySpreadPriceTemp = data["awaySpreadPriceTemp"] as? Double ?? 0.0
-            let overPriceTemp = data["overPriceTemp"] as? Double ?? 0.0
-            let underPriceTemp = data["underPriceTemp"] as? Double ?? 0.0
-            let week = data["week"] as? Int ?? 0
+        let querySnapshot: QuerySnapshot?
 
-            let gameElement = GameElement(id: id, sportKey: .americanfootball_nfl, sportTitle: .NFL, commenceTime: date ?? Date(), completed: completed, homeTeam: homeTeam, awayTeam: awayTeam, bookmakers: nil, scores: [Score(name: homeTeam, score: homeScore ?? ""), Score(name: awayTeam, score: awayScore ?? "")])
-            
-            let game = Game(gameElement: gameElement)
-            game.homeSpread = homeSpread
-            game.awaySpread = awaySpread
-            game.homeMoneyLine = homeMoneyLine
-            game.awayMoneyLine = awayMoneyLine
-            game.over = over
-            game.under = under
-            game.homeSpreadPriceTemp = homeSpreadPriceTemp
-            game.awaySpreadPriceTemp = awaySpreadPriceTemp
-            game.overPriceTemp = overPriceTemp
-            game.underPriceTemp = underPriceTemp
-            game.completed = completed
-            game.week = week
-            
-            if let betOptionsDictionaries = data["betOptions"] as? [[String: Any]] {
-                game.betOptions = betOptionsDictionaries.compactMap {
-                    BetOption.fromDictionary($0, game: game)
-                }
-            }
-            return game
+        if week == nil {
+            querySnapshot = try await db.collection("nflGames").getDocuments()
+        } else if let weekValue = week {
+            querySnapshot = try await db.collection("nflGames").whereField("week", isEqualTo: weekValue).getDocuments()
+        } else {
+            throw NSError(domain: "InvalidArguments", code: 1001, userInfo: [NSLocalizedDescriptionKey: "Either provide both filter and week or just week"])
         }
-        
+
+        guard let documents = querySnapshot?.documents else {
+            return []
+        }
+
+        var games = documents.map(parseGameFromDocument)
+
         games.sort(by: { $0.date < $1.date })
         
         return games
     }
     
+    private func parseGameFromDocument(_ document: QueryDocumentSnapshot) -> Game {
+        let data = document.data()
+
+        let id = data["id"] as? String ?? ""
+        let homeTeam = data["homeTeam"] as? String ?? ""
+        let awayTeam = data["awayTeam"] as? String ?? ""
+        let dateString = data["date"] as? Timestamp
+        let date2 = convertTimestampToISOString(timestamp: dateString ?? Timestamp(date: Date()))
+        let date = dateFromISOString(date2 ?? "")
+        let homeSpread = data["homeSpread"] as? Double ?? 0.0
+        let awaySpread = data["awaySpread"] as? Double ?? 0.0
+        let homeMoneyLine = data["homeMoneyLine"] as? Int ?? 0
+        let awayMoneyLine = data["awayMoneyLine"] as? Int ?? 0
+        let over = data["over"] as? Double ?? 0.0
+        let under = data["under"] as? Double ?? 0.0
+        let completed = data["completed"] as? Bool ?? false
+        let homeScore = data["homeScore"] as? String
+        let awayScore = data["awayScore"] as? String
+        let homeSpreadPriceTemp = data["homeSpreadPriceTemp"] as? Double ?? 0.0
+        let awaySpreadPriceTemp = data["awaySpreadPriceTemp"] as? Double ?? 0.0
+        let overPriceTemp = data["overPriceTemp"] as? Double ?? 0.0
+        let underPriceTemp = data["underPriceTemp"] as? Double ?? 0.0
+        let week = data["week"] as? Int ?? 0
+
+        let gameElement = GameElement(id: id, sportKey: .americanfootball_nfl, sportTitle: .NFL, commenceTime: date ?? Date(), completed: completed, homeTeam: homeTeam, awayTeam: awayTeam, bookmakers: nil, scores: [Score(name: homeTeam, score: homeScore ?? ""), Score(name: awayTeam, score: awayScore ?? "")])
+
+        let game = Game(gameElement: gameElement)
+        game.homeSpread = homeSpread
+        game.awaySpread = awaySpread
+        game.homeMoneyLine = homeMoneyLine
+        game.awayMoneyLine = awayMoneyLine
+        game.over = over
+        game.under = under
+        game.homeSpreadPriceTemp = homeSpreadPriceTemp
+        game.awaySpreadPriceTemp = awaySpreadPriceTemp
+        game.overPriceTemp = overPriceTemp
+        game.underPriceTemp = underPriceTemp
+        game.completed = completed
+        game.week = week
+
+        if let betOptionsDictionaries = data["betOptions"] as? [[String: Any]] {
+            game.betOptions = betOptionsDictionaries.compactMap {
+                BetOption.fromDictionary($0, game: game)
+            }
+        }
+        return game
+    }
+
     func dateFromISOString(_ string: String) -> Date? {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
@@ -193,20 +208,29 @@ class GameService {
     }
     
     
-    func addGames(games: [Game], week: Int) {
+    func addGames(games: [Game], week: Int) async throws {
         let db = Firestore.firestore()
         let ref = db.collection("nflGames")
         
         let sortedGames = games.sorted { $0.date < $1.date }
         
-        for game in sortedGames {
-            let gameId = game.documentId
-            game.week = week
-            ref.document(gameId).setData(game.dictionary) { error in
-                if let error = error {
-                    print("Error adding game: \(error.localizedDescription)")
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            for game in sortedGames {
+                let gameId = game.documentId
+                game.week = week
+                
+                let documentRef = ref.document(gameId)
+                
+                group.addTask {
+                    do {
+                        try await BetViewModel().updateDataAsync(document: documentRef, data: game.dictionary)
+                    } catch {
+                        print("Error adding game: \(error.localizedDescription)")
+                    }
                 }
             }
+            
+            for try await _ in group { }
         }
     }
     
