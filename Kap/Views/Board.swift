@@ -86,21 +86,10 @@ struct Board: View {
                 .refreshable {
                     Task {
                         do {
-                            // local .. add refresh limit
-                            guard homeViewModel.weekGames.allSatisfy({ $0.date ?? Date(timeIntervalSince1970: 0) >= Date() }) else {
-                                print("Some games have dates that have already passed. Not updating odds.")
-                                // cloud
-                                try await updateGameScores(games: homeViewModel.weekGames, in: viewContext)
-                                try await BetViewModel().updateBetResults(bets: homeViewModel.userBets, in: viewContext)
-                                homeViewModel.allBetModels = allBetModels
-                                return
-                            }
-                            // local .. add refresh limit
-                            try await updateGameOdds(games: homeViewModel.weekGames, in: viewContext)
+                            try await homeViewModel.updateLocalGames(in: viewContext)
                             homeViewModel.allGameModels = allGameModels
-                            // cloud
-                            try await updateGameScores(games: homeViewModel.weekGames, in: viewContext)
-                            try await BetViewModel().updateBetResults(bets: homeViewModel.userBets, in: viewContext)
+                            
+                            try await BetViewModel().updateLocalBetResults(games: Array(allGameModels), week: homeViewModel.currentWeek, bets: Array(allBetModels), leagueCode: homeViewModel.activeleagueCode ?? "", in: viewContext)
                             homeViewModel.allBetModels = allBetModels
                         } catch {
                             
@@ -167,7 +156,7 @@ struct Board: View {
                 game.overPriceTemp = newGame.overPriceTemp
                 game.underPriceTemp = newGame.underPriceTemp
                 game.betOptions = []
-                
+
                 for betOption in newGame.betOptions {
                     let betOptionModel = BetOptionModel(context: context)
                     betOptionModel.id = betOption.id
@@ -181,7 +170,7 @@ struct Board: View {
                     betOptionModel.maxBets = Int16(betOption.maxBets ?? 0)
                     betOptionModel.game = game
                     betOptionModel.betString = betOption.betString
-                    
+
                     game.addToBetOptions(betOptionModel)
                 }
             }
@@ -194,6 +183,11 @@ struct Board: View {
         }
     }
 
+    func addGamesToCloud() async throws {
+        let updatedGames = try await GameService().getGames()
+        try await GameService().addGames(games: updatedGames, week: homeViewModel.currentWeek)
+    }
+    
     func updateGameScores(games: [GameModel], in context: NSManagedObjectContext) async throws {
         let db = Firestore.firestore()
         let mock = true

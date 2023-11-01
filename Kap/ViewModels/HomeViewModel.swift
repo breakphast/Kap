@@ -101,8 +101,10 @@ class HomeViewModel: ObservableObject {
                     let updatedLocalBets = Array(allBets).filter { !updatedBetsIDs.contains($0.id) }
 
                     if !updatedLocalBets.isEmpty {
-                        print("New updated bets detected:", updatedBets.count)
-                        try await BetViewModel().updateLocalBetResults(bets: updatedLocalBets, in: context)
+                        if let allBetModels {
+                            print("New updated bets detected:", updatedBets.count)
+                            try await BetViewModel().updateLocalBetResults(games: allGames, week: currentWeek, bets: Array(allBetModels), leagueCode: activeleagueCode, in: context)
+                        }
                     }
                 }
             }
@@ -313,6 +315,16 @@ class HomeViewModel: ObservableObject {
         do {
             if let allGameModels {
                 try await Board().updateLocalGameOdds(games: Array(allGameModels).filter({$0.week == currentWeek}), week: currentWeek, in: context)
+            }
+        } catch {
+            
+        }
+    }
+    
+    func updateLocalBets(in context: NSManagedObjectContext) async throws {
+        do {
+            if let allBetModels {
+                try await BetViewModel().updateLocalBetResults(games: allGames, week: currentWeek, bets: Array(allBetModels), leagueCode: activeleagueCode ?? "", in: context)
             }
         } catch {
             

@@ -47,7 +47,7 @@ struct ScoreElement: Codable {
 class GameService {
     var games: [Game] = []
     private var db = Firestore.firestore()
-    let mock = false
+    let mock = true
     @Environment(\.managedObjectContext) private var viewContext
 
     func updateGameScores(games: [GameModel], in context: NSManagedObjectContext) async throws {
@@ -147,7 +147,6 @@ class GameService {
         var games = documents.map(parseGameFromDocument)
 
         games.sort(by: { $0.date < $1.date })
-        
         return games
     }
     
@@ -207,17 +206,14 @@ class GameService {
         return formatter.date(from: string)
     }
     
-    
     func addGames(games: [Game], week: Int) async throws {
         let db = Firestore.firestore()
         let ref = db.collection("nflGames")
         
         let sortedGames = games.sorted { $0.date < $1.date }
-        
         try await withThrowingTaskGroup(of: Void.self) { group in
             for game in sortedGames {
                 let gameId = game.documentId
-                game.week = week
                 
                 let documentRef = ref.document(gameId)
                 
@@ -240,6 +236,7 @@ class GameService {
         }
         
         let (data, _) = try await URLSession.shared.data(from: url)
+        
         return data
     }
     

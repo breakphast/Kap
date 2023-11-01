@@ -146,10 +146,26 @@ class BetViewModel: ObservableObject {
     }
 
     
-    func fetchBets(games: [GameModel], leagueCode: String) async throws -> [Bet] {
+    func fetchBets(games: [GameModel], week: Int? = nil, leagueCode: String) async throws -> [Bet] {
+        let db = Firestore.firestore()
+            let querySnapshot: QuerySnapshot?
+
+            if week == nil {
+                querySnapshot = try await db.collection("userBets").whereField("leagueID", isEqualTo: leagueCode).getDocuments()
+            } else if let weekValue = week {
+                querySnapshot = try await db.collection("userBets")
+                    .whereField("leagueID", isEqualTo: leagueCode)
+                    .whereField("week", isEqualTo: weekValue)
+                    .getDocuments()
+            } else {
+                throw NSError(domain: "InvalidArguments", code: 1001, userInfo: [NSLocalizedDescriptionKey: "Either provide both games and week or just games"])
+            }
+
+            guard let documents = querySnapshot?.documents else {
+                return []
+            }
         
-        let querySnapshot = try await db.collection("userBets").whereField("leagueID", isEqualTo: leagueCode).getDocuments()
-        let bets = querySnapshot.documents.map { queryDocumentSnapshot -> Bet in
+        let bets = documents.map { queryDocumentSnapshot -> Bet in
             let data = queryDocumentSnapshot.data()
             
             let id = data["id"] as? String ?? ""
@@ -394,21 +410,18 @@ class BetViewModel: ObservableObject {
         }
     }
     
-    func updateLocalBetResults(bets: [BetModel], in context: NSManagedObjectContext) async throws {
+    func updateLocalBetResults(games: [GameModel], week: Int, bets: [BetModel], leagueCode: String, in context: NSManagedObjectContext) async throws {
+        let updatedBets = try await fetchBets(games: games, week: week, leagueCode: leagueCode).filter({ $0.result != .pending })
         print("Starting local result updates...")
-
         for bet in bets {
-            guard bet.result != "Pending" else { return }
-
-            let newbet = db.collection("userBets").document(bet.id)
-
-            bet.result = bet.game.betResult(for: bet).rawValue
-            bet.points = bet.result == BetResult.push.rawValue ? 0 : bet.result == BetResult.loss.rawValue ? -10 : bet.points
+            if let newBet = updatedBets.first(where: {$0.id == bet.id}) {
+                bet.result = newBet.result?.rawValue ?? ""
+                bet.points = newBet.result?.rawValue == BetResult.push.rawValue ? 0 : newBet.result?.rawValue == BetResult.loss.rawValue ? -10 : bet.points
+            }
         }
-
         do {
             try context.save()
-            print("\(bets.count) Bet results successfully updated locally")
+            print("\(updatedBets.count) Bet results successfully updated locally")
         } catch {
             
         }

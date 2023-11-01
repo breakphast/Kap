@@ -95,7 +95,39 @@ class Game {
         self.awaySpreadPriceTemp = awaySpreadPriceTemp
         self.overPriceTemp = overPriceTemp
         self.underPriceTemp = underPriceTemp
+        self.week = Game.nflWeek(for: gameElement.commenceTime) ?? 0
         self.betOptions = createBetOptions()
+    }
+    
+    static let nflWeekSchedule: [NFLWeek] = [
+        NFLWeek(weekNumber: 1, startDate: Date.fromString("2023-09-07")!, endDate: Date.fromString("2023-09-13")!),
+        NFLWeek(weekNumber: 2, startDate: Date.fromString("2023-09-14")!, endDate: Date.fromString("2023-09-20")!),
+        NFLWeek(weekNumber: 3, startDate: Date.fromString("2023-09-21")!, endDate: Date.fromString("2023-09-27")!),
+        NFLWeek(weekNumber: 4, startDate: Date.fromString("2023-09-28")!, endDate: Date.fromString("2023-10-04")!),
+        NFLWeek(weekNumber: 5, startDate: Date.fromString("2023-10-05")!, endDate: Date.fromString("2023-10-11")!),
+        NFLWeek(weekNumber: 6, startDate: Date.fromString("2023-10-12")!, endDate: Date.fromString("2023-10-18")!),
+        NFLWeek(weekNumber: 7, startDate: Date.fromString("2023-10-19")!, endDate: Date.fromString("2023-10-25")!),
+        NFLWeek(weekNumber: 8, startDate: Date.fromString("2023-10-26")!, endDate: Date.fromString("2023-11-01")!),
+        NFLWeek(weekNumber: 9, startDate: Date.fromString("2023-11-02")!, endDate: Date.fromString("2023-11-08")!),
+        NFLWeek(weekNumber: 10, startDate: Date.fromString("2023-11-09")!, endDate: Date.fromString("2023-11-15")!),
+        NFLWeek(weekNumber: 11, startDate: Date.fromString("2023-11-16")!, endDate: Date.fromString("2023-11-22")!),
+        NFLWeek(weekNumber: 12, startDate: Date.fromString("2023-11-23")!, endDate: Date.fromString("2023-11-29")!),
+        NFLWeek(weekNumber: 13, startDate: Date.fromString("2023-11-30")!, endDate: Date.fromString("2023-12-06")!),
+        NFLWeek(weekNumber: 14, startDate: Date.fromString("2023-12-07")!, endDate: Date.fromString("2023-12-13")!),
+        NFLWeek(weekNumber: 15, startDate: Date.fromString("2023-12-14")!, endDate: Date.fromString("2023-12-20")!),
+        NFLWeek(weekNumber: 16, startDate: Date.fromString("2023-12-21")!, endDate: Date.fromString("2023-12-27")!),
+        NFLWeek(weekNumber: 17, startDate: Date.fromString("2023-12-28")!, endDate: Date.fromString("2024-01-03")!),
+        NFLWeek(weekNumber: 18, startDate: Date.fromString("2024-01-04")!, endDate: Date.fromString("2024-01-10")!)
+    ]
+
+
+    static func nflWeek(for date: Date) -> Int? {
+        for week in nflWeekSchedule {
+            if date >= week.startDate && date <= week.endDate {
+                return week.weekNumber
+            }
+        }
+        return nil  // return nil if the date does not fall within any NFL week
     }
     
     func createBetOptions() -> [BetOption] {
@@ -183,6 +215,12 @@ struct Outcome: Codable {
     let name: String
     let price: Int
     let point: Double?
+}
+
+struct NFLWeek {
+    let weekNumber: Int
+    let startDate: Date
+    let endDate: Date
 }
 
 enum Title: String, Codable {
@@ -292,5 +330,13 @@ extension GameModel {
         default:
             return .pending
         }
+    }
+}
+
+extension Date {
+    static func fromString(_ string: String) -> Date? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.date(from: string)
     }
 }
