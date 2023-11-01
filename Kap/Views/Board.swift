@@ -183,12 +183,12 @@ struct Board: View {
         }
     }
 
-    func addGamesToCloud() async throws {
+    func updateCloudGameOdds() async throws {
         let updatedGames = try await GameService().getGames()
         try await GameService().addGames(games: updatedGames, week: homeViewModel.currentWeek)
     }
     
-    func updateGameScores(games: [GameModel], in context: NSManagedObjectContext) async throws {
+    func updateGameScores(games: [GameModel], local: Bool? = false, in context: NSManagedObjectContext) async throws {
         let db = Firestore.firestore()
         let mock = true
         let decoder = JSONDecoder()
@@ -203,20 +203,27 @@ struct Board: View {
                 game.homeScore = scoreElement.scores?.first(where: { $0.name == game.homeTeam })?.score
                 game.awayScore = scoreElement.scores?.first(where: { $0.name == game.awayTeam })?.score
                 game.completed = scoreElement.completed
-
-                let newGame = db.collection("nflGames").document(documentID)
-                try await BetViewModel().updateDataAsync(document: newGame, data: [
-                    "homeScore": game.homeScore ?? "",
-                    "awayScore": game.awayScore ?? "",
-                    "completed": game.completed
-                ])
+                
+                if let local, local {
+                    
+                } else {
+                    let newGame = db.collection("nflGames").document(documentID)
+                    try await BetViewModel().updateDataAsync(document: newGame, data: [
+                        "homeScore": game.homeScore ?? "",
+                        "awayScore": game.awayScore ?? "",
+                        "completed": game.completed
+                    ])
+                }
             } else {
                 print("No score data yet.")
             }
         }
+        
         print("Updated \(games.count) game scores in the cloud.")
-        try context.save()
-        print("Updated \(games.count) game scores locally.")
+        if let local, local {
+            try context.save()
+            print("Updated \(games.count) game scores locally.")
+        }
     }
     
     func updateGameAttribute(game: GameModel, in context: NSManagedObjectContext) {
