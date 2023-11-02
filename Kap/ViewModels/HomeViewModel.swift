@@ -90,7 +90,7 @@ class HomeViewModel: ObservableObject {
     }
     
     func checkForUpdatedBets(in context: NSManagedObjectContext, timestamp: Date?, games: [GameModel]) async throws {
-        if let timestamp {
+        if timestamp != nil {
             if let activeleagueCode {
                 var updatedBets = try await BetViewModel().fetchUpdatedBets(games: games, leagueCode: activeleagueCode)
                 
@@ -305,16 +305,6 @@ class HomeViewModel: ObservableObject {
                 try context.save()
             } catch {
                 print("Error saving context: \(error)")
-            }
-        } catch {
-            
-        }
-    }
-    
-    func updateLocalGames(in context: NSManagedObjectContext) async throws {
-        do {
-            if let allGameModels {
-                try await Board().updateLocalGameOdds(games: Array(allGameModels).filter({$0.week == currentWeek}), week: currentWeek, in: context)
             }
         } catch {
             

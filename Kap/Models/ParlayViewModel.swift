@@ -14,7 +14,7 @@ class ParlayViewModel {
     private let db = Firestore.firestore()
     
     func fetchParlays(games: [GameModel], leagueCode: String) async throws -> [Parlay] {
-        let querySnapshot = try await db.collection("userParlays").whereField("leagueID", isEqualTo: leagueCode).getDocuments()
+        let querySnapshot = try await db.collection("allParlays").whereField("leagueID", isEqualTo: leagueCode).getDocuments()
         let parlays = querySnapshot.documents.compactMap { queryDocumentSnapshot -> Parlay? in
             let data = queryDocumentSnapshot.data()
             guard
@@ -156,14 +156,14 @@ class ParlayViewModel {
         parlay.betString = betString
         parlay.timestamp = Date()
 
-        let _ = try await db.collection("userParlays").document(parlay.id).setData(newParlay)
+        let _ = try await db.collection("allParlays").document(parlay.id).setData(newParlay)
         print("Added parlay to cloud", parlay.id)
         addParlayToLocalDatabase(parlay: parlay, playerID: parlay.playerID, in: context)
     }
     
     func fetchStampedParlays(games: [GameModel], leagueCode: String, timeStamp: Date?) async throws -> [Parlay] {
         if let timeStamp {
-            let querySnapshot = try await db.collection("userParlays").whereField("timestamp", isGreaterThan: Timestamp(date: timeStamp)).getDocuments()
+            let querySnapshot = try await db.collection("allParlays").whereField("timestamp", isGreaterThan: Timestamp(date: timeStamp)).getDocuments()
             let parlays = querySnapshot.documents.map { queryDocumentSnapshot -> Parlay in
                 let data = queryDocumentSnapshot.data()
                 
@@ -218,7 +218,7 @@ class ParlayViewModel {
             }
             return parlays.filter({$0.isDeleted == false})
         } else {
-            let querySnapshot = try await db.collection("userParlays").getDocuments()
+            let querySnapshot = try await db.collection("allParlays").getDocuments()
             let parlays = querySnapshot.documents.map { queryDocumentSnapshot -> Parlay in
                 let data = queryDocumentSnapshot.data()
                 
@@ -275,8 +275,8 @@ class ParlayViewModel {
     }
 
     func fetchDeletedStampedParlays(games: [GameModel], leagueCode: String, deletedTimeStamp: Date?) async throws -> [Parlay] {
-        if let deletedTimeStamp {
-            let querySnapshot = try await db.collection("userParlays").whereField("isDeleted", isEqualTo: true).getDocuments()
+        if deletedTimeStamp != nil {
+            let querySnapshot = try await db.collection("allParlays").whereField("isDeleted", isEqualTo: true).getDocuments()
             let parlays = querySnapshot.documents.map { queryDocumentSnapshot -> Parlay in
                 let data = queryDocumentSnapshot.data()
                 
@@ -326,7 +326,7 @@ class ParlayViewModel {
             }
             return parlays.filter({$0.isDeleted == true})
         } else {
-            let querySnapshot = try await db.collection("userParlays").getDocuments()
+            let querySnapshot = try await db.collection("allParlays").getDocuments()
             let parlays = querySnapshot.documents.map { queryDocumentSnapshot -> Parlay in
                 let data = queryDocumentSnapshot.data()
                 
@@ -380,7 +380,7 @@ class ParlayViewModel {
     
     func deleteParlay(parlayID: String) async throws {
         return try await withCheckedThrowingContinuation { continuation in
-            db.collection("userParlays").document(parlayID).delete() { error in
+            db.collection("allParlays").document(parlayID).delete() { error in
                 if let error = error {
                     continuation.resume(throwing: error)
                 } else {
@@ -415,7 +415,7 @@ class ParlayViewModel {
     }
     
     func updateParlayLeague(parlay: Parlay, leagueCode: String) {
-        let newbet = db.collection("userParlays").document(parlay.id)
+        let newbet = db.collection("allParlays").document(parlay.id)
         newbet.updateData([
             "leagueID": leagueCode,
         ]) { err in

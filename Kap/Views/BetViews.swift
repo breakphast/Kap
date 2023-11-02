@@ -37,15 +37,6 @@ struct BetView: View {
         ]
     ) var allParlayModels: FetchedResults<ParlayModel>
     
-    private func fetchData() async {
-        do {
-            let currentWeek = homeViewModel.currentWeek
-            let bets = homeViewModel.userBets.filter {
-                $0.week == currentWeek
-            }
-        }
-    }
-    
     var body: some View {
         ZStack(alignment: .center) {
             Color("onyxLightish")
@@ -72,7 +63,6 @@ struct BetView: View {
         .padding(.horizontal, 20)
         .shadow(radius: 10)
         .task {
-            await fetchData()
             isValid = homeViewModel.userBets.filter({ $0.week == homeViewModel.currentWeek }).count <= 10 && homeViewModel.userBets.filter({ $0.game.id == bet.game.id }).isEmpty
         }
         .onChange(of: homeViewModel.userBets.count) { newValue in

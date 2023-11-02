@@ -20,7 +20,7 @@ class BetViewModel: ObservableObject {
     let db = Firestore.firestore()
     
     func fetchUpdatedBets(games: [GameModel], leagueCode: String) async throws -> [Bet] {
-        let querySnapshot = try await db.collection("userBets").whereField("result", isNotEqualTo: BetResult.pending.rawValue).getDocuments()
+        let querySnapshot = try await db.collection("allBets").whereField("result", isNotEqualTo: BetResult.pending.rawValue).getDocuments()
         let bets = querySnapshot.documents.map { queryDocumentSnapshot -> Bet in
             let data = queryDocumentSnapshot.data()
             
@@ -51,7 +51,7 @@ class BetViewModel: ObservableObject {
     
     func fetchStampedBets(games: [GameModel], leagueCode: String, timeStamp: Date?) async throws -> [Bet] {
         if let timeStamp {
-            let querySnapshot = try await db.collection("userBets").whereField("timestamp", isGreaterThan: Timestamp(date: timeStamp)).getDocuments()
+            let querySnapshot = try await db.collection("allBets").whereField("timestamp", isGreaterThan: Timestamp(date: timeStamp)).getDocuments()
             let bets = querySnapshot.documents.map { queryDocumentSnapshot -> Bet in
                 let data = queryDocumentSnapshot.data()
                 
@@ -79,7 +79,7 @@ class BetViewModel: ObservableObject {
             }
             return bets.filter({$0.isDeleted == false})
         } else {
-            let querySnapshot = try await db.collection("userBets").whereField("leagueID", isEqualTo: leagueCode).getDocuments()
+            let querySnapshot = try await db.collection("allBets").whereField("leagueID", isEqualTo: leagueCode).getDocuments()
             let bets = querySnapshot.documents.map { queryDocumentSnapshot -> Bet in
                 let data = queryDocumentSnapshot.data()
                 
@@ -112,7 +112,7 @@ class BetViewModel: ObservableObject {
     
     func fetchDeletedStampedBets(games: [GameModel], leagueCode: String, deletedTimestamp: Date?) async throws -> [Bet] {
         if let deletedTimestamp {
-            let querySnapshot = try await db.collection("userBets").whereField("deletedTimestamp", isGreaterThan: Timestamp(date: deletedTimestamp )).getDocuments()
+            let querySnapshot = try await db.collection("allBets").whereField("deletedTimestamp", isGreaterThan: Timestamp(date: deletedTimestamp )).getDocuments()
             let bets = querySnapshot.documents.map { queryDocumentSnapshot -> Bet in
                 let data = queryDocumentSnapshot.data()
                 
@@ -151,9 +151,9 @@ class BetViewModel: ObservableObject {
             let querySnapshot: QuerySnapshot?
 
             if week == nil {
-                querySnapshot = try await db.collection("userBets").whereField("leagueID", isEqualTo: leagueCode).getDocuments()
+                querySnapshot = try await db.collection("allBets").whereField("leagueID", isEqualTo: leagueCode).getDocuments()
             } else if let weekValue = week {
-                querySnapshot = try await db.collection("userBets")
+                querySnapshot = try await db.collection("allBets")
                     .whereField("leagueID", isEqualTo: leagueCode)
                     .whereField("week", isEqualTo: weekValue)
                     .getDocuments()
@@ -258,7 +258,7 @@ class BetViewModel: ObservableObject {
             "timestamp": Timestamp(date: Date())
         ]
         
-        let _ = try await db.collection("userBets").document(bet.id).setData(newBet)
+        let _ = try await db.collection("allBets").document(bet.id).setData(newBet)
         print("Added bet to the cloud.")
         addBetToLocalDatabase(bet: bet, playerID: bet.playerID, in: context)
     }
@@ -293,7 +293,7 @@ class BetViewModel: ObservableObject {
     }
     
     func updateBet(bet: BetModel) {
-        let newbet = db.collection("userBets").document(bet.id)
+        let newbet = db.collection("allBets").document(bet.id)
         newbet.updateData([
             "betString": bet.betString,
             "result": bet.game.betResult(for: bet).rawValue
@@ -307,7 +307,7 @@ class BetViewModel: ObservableObject {
     }
     
     func updateDeletedBet(bet: BetModel) {
-        let newbet = db.collection("userBets").document(bet.id)
+        let newbet = db.collection("allBets").document(bet.id)
         
         newbet.updateData([
             "isDeleted": true,
@@ -322,7 +322,7 @@ class BetViewModel: ObservableObject {
     }
     
     func updateDeletedParlay(parlay: ParlayModel) {
-        let newParlay = db.collection("userParlays").document(parlay.id ?? "")
+        let newParlay = db.collection("allParlays").document(parlay.id ?? "")
         
         newParlay.updateData([
             "isDeleted": true,
@@ -337,7 +337,7 @@ class BetViewModel: ObservableObject {
     }
     
     func updateBetLeague(bet: Bet, leagueCode: String) {
-        let newbet = db.collection("userBets").document(bet.id)
+        let newbet = db.collection("allBets").document(bet.id)
         newbet.updateData([
             "leagueID": leagueCode,
         ]) { err in
@@ -350,7 +350,7 @@ class BetViewModel: ObservableObject {
     }
     
 //    func updateParlay(parlay: ParlayModel) {
-//        let newParlay = db.collection("userParlays").document(parlay.id ?? "")
+//        let newParlay = db.collection("allParlays").document(parlay.id ?? "")
 //        let parlayBets = parlay.bets
 //        if !parlayBets.filter({ $0.game.betResult(for: $0) == BetResult.loss.rawValue }).isEmpty {
 //            newParlay.updateData([
@@ -393,7 +393,7 @@ class BetViewModel: ObservableObject {
         for bet in bets {
             guard bet.result == "Pending" else { return }
 
-            let newbet = db.collection("userBets").document(bet.id)
+            let newbet = db.collection("allBets").document(bet.id)
 
             bet.result = bet.game.betResult(for: bet).rawValue
             bet.points = bet.result == BetResult.push.rawValue ? 0 : bet.result == BetResult.loss.rawValue ? -10 : bet.points
@@ -442,7 +442,7 @@ class BetViewModel: ObservableObject {
     
     func deleteBet(betID: String) async throws {
         return try await withCheckedThrowingContinuation { continuation in
-            db.collection("userBets").document(betID).delete() { error in
+            db.collection("allBets").document(betID).delete() { error in
                 if let error = error {
                     continuation.resume(throwing: error)
                 } else {

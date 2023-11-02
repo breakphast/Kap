@@ -86,7 +86,7 @@ struct Board: View {
                 .refreshable {
                     Task {
                         do {
-                            try await homeViewModel.updateLocalGames(in: viewContext)
+                            try await updateLocalGameOdds(week: homeViewModel.currentWeek, in: viewContext)
                             homeViewModel.allGameModels = allGameModels
                             
                             try await BetViewModel().updateLocalBetResults(games: Array(allGameModels), week: homeViewModel.currentWeek, bets: Array(allBetModels), leagueCode: homeViewModel.activeleagueCode ?? "", in: viewContext)
@@ -140,46 +140,49 @@ struct Board: View {
         }
     }
     
-    func updateLocalGameOdds(games: [GameModel], week: Int, in context: NSManagedObjectContext) async throws {
+    func updateLocalGameOdds(week: Int, in context: NSManagedObjectContext) async throws {
         // this is locally updating odds to core data
         let updatedGames = try await GameService().fetchGamesFromFirestore(week: week)
-        for game in games {
-            if let newGame = updatedGames.first(where: {$0.documentId == game.documentID}) {
-                game.homeSpread = newGame.homeSpread
-                game.awaySpread = newGame.awaySpread
-                game.homeMoneyLine = Int16(newGame.homeMoneyLine)
-                game.awayMoneyLine = Int16(newGame.awayMoneyLine)
-                game.over = newGame.over
-                game.under = newGame.under
-                game.homeSpreadPriceTemp = newGame.homeSpreadPriceTemp
-                game.awaySpreadPriceTemp = newGame.awaySpreadPriceTemp
-                game.overPriceTemp = newGame.overPriceTemp
-                game.underPriceTemp = newGame.underPriceTemp
-                game.betOptions = []
+        if let allGameModels = homeViewModel.allGameModels {
+            let games = Array(allGameModels).filter({$0.week == homeViewModel.currentWeek})
+            for game in games {
+                if let newGame = updatedGames.first(where: {$0.documentId == game.documentID}) {
+                    game.homeSpread = newGame.homeSpread
+                    game.awaySpread = newGame.awaySpread
+                    game.homeMoneyLine = Int16(newGame.homeMoneyLine)
+                    game.awayMoneyLine = Int16(newGame.awayMoneyLine)
+                    game.over = newGame.over
+                    game.under = newGame.under
+                    game.homeSpreadPriceTemp = newGame.homeSpreadPriceTemp
+                    game.awaySpreadPriceTemp = newGame.awaySpreadPriceTemp
+                    game.overPriceTemp = newGame.overPriceTemp
+                    game.underPriceTemp = newGame.underPriceTemp
+                    game.betOptions = []
 
-                for betOption in newGame.betOptions {
-                    let betOptionModel = BetOptionModel(context: context)
-                    betOptionModel.id = betOption.id
-                    betOptionModel.odds = Int16(betOption.odds)
-                    betOptionModel.spread = betOption.spread ?? 0
-                    betOptionModel.over = betOption.over
-                    betOptionModel.under = betOption.under
-                    betOptionModel.betType = betOption.betType.rawValue
-                    betOptionModel.selectedTeam = betOption.selectedTeam
-                    betOptionModel.confirmBet = betOption.confirmBet
-                    betOptionModel.maxBets = Int16(betOption.maxBets ?? 0)
-                    betOptionModel.game = game
-                    betOptionModel.betString = betOption.betString
+                    for betOption in newGame.betOptions {
+                        let betOptionModel = BetOptionModel(context: context)
+                        betOptionModel.id = betOption.id
+                        betOptionModel.odds = Int16(betOption.odds)
+                        betOptionModel.spread = betOption.spread ?? 0
+                        betOptionModel.over = betOption.over
+                        betOptionModel.under = betOption.under
+                        betOptionModel.betType = betOption.betType.rawValue
+                        betOptionModel.selectedTeam = betOption.selectedTeam
+                        betOptionModel.confirmBet = betOption.confirmBet
+                        betOptionModel.maxBets = Int16(betOption.maxBets ?? 0)
+                        betOptionModel.game = game
+                        betOptionModel.betString = betOption.betString
 
-                    game.addToBetOptions(betOptionModel)
+                        game.addToBetOptions(betOptionModel)
+                    }
                 }
             }
-        }
-        do {
-            try context.save()
-            print("Updated \(games.count) game odds locally..")
-        } catch {
-            print("Error saving context: \(error)")
+            do {
+                try context.save()
+                print("Updated \(games.count) game odds locally..")
+            } catch {
+                print("Error saving context: \(error)")
+            }
         }
     }
 
