@@ -63,10 +63,10 @@ struct BetView: View {
         .padding(.horizontal, 20)
         .shadow(radius: 10)
         .task {
-            isValid = homeViewModel.userBets.filter({ $0.week == homeViewModel.currentWeek }).count <= 10 && homeViewModel.userBets.filter({ $0.game.id == bet.game.id }).isEmpty
+            isValid = homeViewModel.userBets.filter({ $0.week == homeViewModel.currentWeek }).count < 10 && homeViewModel.userBets.filter({ $0.game.id == bet.game.id }).isEmpty
         }
         .onChange(of: homeViewModel.userBets.count) { newValue in
-            isValid = homeViewModel.userBets.filter({ $0.week == homeViewModel.currentWeek }).count <= 10 && homeViewModel.userBets.filter({ $0.game.id == bet.game.id }).isEmpty
+            isValid = homeViewModel.userBets.filter({ $0.week == homeViewModel.currentWeek }).count < 10 && homeViewModel.userBets.filter({ $0.game.id == bet.game.id }).isEmpty
         }
     }
     

@@ -149,7 +149,7 @@ struct MyBets: View {
                         }
                     }
                     
-                    ForEach(homeViewModel.userBets.filter{$0.week == week}.sorted(by: { $0.game.date ?? Date() < $1.game.date ?? Date() }), id: \.id) { bet in
+                    ForEach(filteredBets.filter{$0.week == week}.sorted(by: { $0.game.date ?? Date() < $1.game.date ?? Date() }), id: \.id) { bet in
                         PlacedBetView(bet: bet, week: Int16(week))
                     }
                 }
@@ -183,11 +183,11 @@ struct MyBets: View {
                 .padding(.vertical, 8)
                 
                 if settled {
-                    ForEach(homeViewModel.userParlays.filter { $0.result != "Pending" }, id: \.id) { parlay in
+                    ForEach(filteredParlays, id: \.id) { parlay in
                         PlacedParlayView(parlay: parlay)
                     }
                 } else {
-                    ForEach(homeViewModel.userParlays.filter { $0.result == "Pending" }, id: \.id) { parlay in
+                    ForEach(filteredParlays, id: \.id) { parlay in
                         PlacedParlayView(parlay: parlay)
                     }
                 }
