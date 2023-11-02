@@ -50,30 +50,37 @@ struct LeagueList: View {
             ZStack {
                 Color.onyx.ignoresSafeArea()
                 VStack(alignment: .center, spacing: 12) {
-                    ForEach(Array(leagues.enumerated()), id: \.1.id) { index, league in
-                        leagueRow(index: index, league: league)
-                    }
-                    ZStack {
-                        HStack(spacing: 2) {
-                            Text("Set as default")
-                                .font(.title3)
-                                .fontWeight(.semibold)
+                    if homeViewModel.userLeagues.isEmpty {
+                        NavigationLink(destination: JoinLeague()) {
+                            joinLeagueView()
+                                .frame(height: 60)
                         }
-                        Toggle("", isOn: $defaultLeague)
-                            .toggleStyle(.switch).tint(.lion)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                    .padding(.leading, 100)
-                    Spacer()
-                    NavigationLink(destination: JoinLeague()) {
-                        Text("Join League")
-                            .font(.title3.bold())
-                            .foregroundStyle(.oW)
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 8)
-                            .background(.clear)
-                            .cornerRadius(8)
-                            .padding(.top)
+                    } else {
+                        ForEach(Array(leagues.enumerated()), id: \.1.id) { index, league in
+                            leagueRow(index: index, league: league)
+                        }
+                        ZStack {
+                            HStack(spacing: 2) {
+                                Text("Set as default")
+                                    .font(.title3)
+                                    .fontWeight(.semibold)
+                            }
+                            Toggle("", isOn: $defaultLeague)
+                                .toggleStyle(.switch).tint(.lion)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                        .padding(.leading, 100)
+                        Spacer()
+                        NavigationLink(destination: JoinLeague()) {
+                            Text("Join League")
+                                .font(.title3.bold())
+                                .foregroundStyle(.oW)
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 8)
+                                .background(.clear)
+                                .cornerRadius(8)
+                                .padding(.top)
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -285,6 +292,39 @@ struct LeagueList: View {
         .padding(.horizontal)
         .padding(.trailing, index == 0 ? 1 : 0)
         .padding(.vertical, 12)
+    }
+    
+    func joinLeagueView() -> some View {
+        ZStack(alignment: .center) {
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(.oW, lineWidth: 3)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 20)
+                        .foregroundStyle(.lion.opacity(0.0))
+                }
+            HStack(spacing: 12) {
+                Image(.loch)
+                    .resizable()
+                    .scaledToFill()
+                    .clipShape(Circle())
+                    .frame(width: 30)
+                    .shadow(color: .oW, radius: 2)
+                Spacer()
+                Text("Join League")
+                    .fontWeight(.bold)
+                    .font(.title2)
+                    .foregroundStyle(.oW)
+                Spacer()
+                Image(.loch)
+                    .resizable()
+                    .scaledToFill()
+                    .clipShape(Circle())
+                    .frame(width: 30)
+                    .shadow(color: .oW, radius: 2)
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 12)
+        }
     }
 }
 

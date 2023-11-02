@@ -24,9 +24,7 @@ struct Home: View {
     var body: some View {
         if authViewModel.currentUser == nil {
             Login()
-        } else if authViewModel.currentUser != nil && homeViewModel.userLeagues.isEmpty {
-            LeagueIntro()
-        } else if authViewModel.currentUser != nil && !homeViewModel.userLeagues.isEmpty && leagueViewModel.activeLeague == nil {
+        } else if authViewModel.currentUser != nil && leagueViewModel.activeLeague == nil {
             LeagueList(leagues: $homeViewModel.userLeagues)
         } else {
             TabView {
