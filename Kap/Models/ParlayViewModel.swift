@@ -79,7 +79,6 @@ class ParlayViewModel {
             return parlay
         }
 
-        print(parlays.filter({$0.isDeleted == false || $0.isDeleted == nil}).count)
         return parlays.filter({$0.isDeleted == false || $0.isDeleted == nil})
     }
     
