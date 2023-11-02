@@ -160,8 +160,8 @@ struct MyBets: View {
     }
     
     func parlaySection(settled: Bool) -> some View {
-        let filteredParlays = homeViewModel.userParlays.filter { bet in
-            (settled ? bet.result != "Pending" : bet.result == "Pending")
+        let filteredParlays = homeViewModel.userParlays.filter { parlay in
+            (settled ? parlay.result != "Pending" : parlay.result == "Pending")
         }
         return AnyView(
             VStack(alignment: .leading, spacing: 16) {

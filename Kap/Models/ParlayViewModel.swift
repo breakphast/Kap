@@ -13,59 +13,74 @@ import CoreData
 class ParlayViewModel {
     private let db = Firestore.firestore()
     
-    func fetchParlays(games: [GameModel], leagueCode: String) async throws -> [Parlay] {
-        let querySnapshot = try await db.collection("allParlays").whereField("leagueID", isEqualTo: leagueCode).getDocuments()
-        let parlays = querySnapshot.documents.compactMap { queryDocumentSnapshot -> Parlay? in
+    func fetchParlays(games: [GameModel], week: Int? = nil, leagueCode: String) async throws -> [Parlay] {
+        let querySnapshot: QuerySnapshot?
+
+        if week == nil {
+            querySnapshot = try await db.collection("allParlays").whereField("leagueID", isEqualTo: leagueCode).getDocuments()
+        } else if let weekValue = week {
+            querySnapshot = try await db.collection("allParlays")
+                .whereField("leagueID", isEqualTo: leagueCode)
+                .whereField("week", isEqualTo: weekValue)
+                .getDocuments()
+        } else {
+            throw NSError(domain: "InvalidArguments", code: 1001, userInfo: [NSLocalizedDescriptionKey: "Either provide both games and week or just games"])
+        }
+
+        guard let documents = querySnapshot?.documents else {
+            return []
+        }
+                
+        let parlays = documents.compactMap { queryDocumentSnapshot -> Parlay? in
             let data = queryDocumentSnapshot.data()
-            guard
-                let id = data["id"] as? String,
-                let betsData = data["bets"] as? [[String: Any]],
-                let totalOdds = data["totalOdds"] as? Int,
-                let resultString = data["result"] as? String,
-                let result = BetResult(rawValue: resultString),
-                let betString = data["betString"] as? String,
-                let playerID = data["playerID"] as? String,
-                let week = data["week"] as? Int,
-                let leagueCode = data["leagueID"] as? String,
-                let timestamp = data["timestamp"] as? Timestamp,
-                let deletedTimestamp = data["deletedTimestamp"] as? Timestamp,
-                let isDeleted = data["isDeleted"] as? Bool
-            else { 
-                return nil
-            }
+            
+            let id = data["id"] as? String ?? ""
+            let betsData = data["bets"] as? [[String: Any]] ?? []
+            let totalOdds = data["totalOdds"] as? Int ?? 0
+            let resultString = data["result"] as? String ?? ""
+            let result = BetResult(rawValue: resultString) // if BetResult conforms to RawRepresentable with a default case, otherwise provide a default value
+            let betString = data["betString"] as? String ?? ""
+            let playerID = data["playerID"] as? String ?? ""
+            let week = data["week"] as? Int ?? 0
+            let leagueCode = data["leagueID"] as? String ?? ""
+            let timestamp = data["timestamp"] as? Timestamp ?? Timestamp(date: Date())
+            let deletedTimestamp = data["deletedTimestamp"] as? Timestamp ?? Timestamp(date: Date())
+            let isDeleted = data["isDeleted"] as? Bool ?? false
+            
             var bets = [Bet]()
             for betData in betsData {
-                guard
-                    let gameID = betData["game"] as? String,
-                    let betOptionID = betData["betOption"] as? String,
-                    let typeString = betData["type"] as? String,
-                    let type = BetType(rawValue: typeString),
-                    let odds = betData["odds"] as? Int,
-                    let selectedTeam = betData["selectedTeam"] as? String,
-                    let playerID = betData["playerID"] as? String,
-                    let week = betData["week"] as? Int,
-                    let leagueCode = data["leagueID"] as? String,
-                    let timestamp = data["timestamp"] as? Date
-                else {
-                    continue
-                }
+                let gameID = betData["game"] as? String ?? ""
+                let betOptionID = betData["betOption"] as? String ?? ""
+                let typeString = betData["type"] as? String ?? ""
+                let type = BetType(rawValue: typeString) // if BetType conforms to RawRepresentable with a default case, otherwise provide a default value
+                let odds = betData["odds"] as? Int ?? 0
+                let selectedTeam = betData["selectedTeam"] as? String ?? ""
+                let playerID = betData["playerID"] as? String ?? ""
+                let week = betData["week"] as? Int ?? 0
+                let leagueCode = betData["leagueID"] as? String ?? ""
+                let timestamp = betData["timestamp"] as? Date ?? Date()
+                let result = data["result"] as? String ?? ""
+                
                 let foundGame = BetViewModel().findBetGame(games: games, gameID: gameID)
                 if let foundGame = foundGame {
-                    let bet = Bet(id: betOptionID + playerID, betOption: betOptionID, game: foundGame, type: type, result: result, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: timestamp, deletedTimestamp: nil, isDeleted: nil)
+                    let bet = Bet(id: betOptionID + playerID, betOption: betOptionID, game: foundGame, type: type!, result: BetViewModel().stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: timestamp, deletedTimestamp: nil, isDeleted: nil)
                     bets.append(bet)
                 }
             }
+            
             let date2 = GameService().convertTimestampToISOString(timestamp: timestamp)
             let date = GameService().dateFromISOString(date2 ?? "")
             let date3 = GameService().convertTimestampToISOString(timestamp: deletedTimestamp)
             let date4 = GameService().dateFromISOString(date3 ?? "")
-            let parlay = Parlay(id: id, bets: bets, totalOdds: totalOdds, result: result, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: date ?? Date(), deletedTimestamp: date4 ?? Date(), isDeleted: isDeleted)
+            let parlay = Parlay(id: id, bets: bets, totalOdds: totalOdds, result: BetResult(rawValue: (result?.rawValue)!) ?? .pending, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: date ?? Date(), deletedTimestamp: date4 ?? Date(), isDeleted: isDeleted)
             parlay.totalOdds = totalOdds
             parlay.betString = betString
             
             return parlay
         }
-        return parlays.filter({$0.isDeleted == false})
+
+        print(parlays.filter({$0.isDeleted == false || $0.isDeleted == nil}).count)
+        return parlays.filter({$0.isDeleted == false || $0.isDeleted == nil})
     }
     
     func addParlayToLocalDatabase(parlay: Parlay, playerID: String, in context: NSManagedObjectContext) {
@@ -432,17 +447,16 @@ class ParlayViewModel {
         case firebaseError(Error)
     }
 
-    func updateCloudParlayResults(parlays: [ParlayModel], in context: NSManagedObjectContext) async throws {
+    func updateCloudParlayResults(parlays: [ParlayModel]) async throws {
         print("Starting parlay result updates...")
         
         for parlay in parlays {
             guard parlay.result == BetResult.pending.rawValue else { return }
             
-            guard let parlayID = parlay.id else {
+            guard parlay.id != nil else {
                 throw UpdateError.missingParlayID
             }
             
-            let newParlay = db.collection("allParlays").document(parlayID)
             let parlayBets = parlay.bets?.allObjects as? [BetModel] ?? []
             
             if !parlayBets.filter({ $0.game.betResult(for: $0).rawValue == BetResult.loss.rawValue }).isEmpty {
@@ -464,6 +478,25 @@ class ParlayViewModel {
             } else {
                 print("Lay successfully updated")
             }
+        }
+    }
+    
+    func updateLocalParlayResults(games: [GameModel], week: Int, parlays: [ParlayModel], leagueCode: String, in context: NSManagedObjectContext) async throws {
+        let updatedParlays = try await fetchParlays(games: games, week: week, leagueCode: leagueCode).filter({ $0.result != .pending })
+        print("Starting local parlay result updates...")
+        for parlay in parlays {
+            if let newParlay = updatedParlays.first(where: {$0.id == parlay.id}) {
+                parlay.result = newParlay.result.rawValue
+                parlay.totalPoints = newParlay.result.rawValue == BetResult.push.rawValue ? 0 : newParlay.result.rawValue == BetResult.loss.rawValue ? -10 : newParlay.totalPoints
+            }
+        }
+        do {
+            try context.save()
+            if !updatedParlays.isEmpty {
+                print("\(updatedParlays.count) Parlay results successfully updated locally")
+            }
+        } catch {
+            
         }
     }
 }

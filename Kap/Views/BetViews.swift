@@ -485,13 +485,13 @@ struct PlacedParlayView: View {
                             HStack(spacing: 4) {
                                 Text("Points:")
                                     .font(.headline.bold())
-                                Text("\(parlay.result == "Loss" ? "" : "+")\(abs(parlay.totalPoints).oneDecimalString)")
+                                Text("\(abs(parlay.totalPoints).oneDecimalString)")
                                     .font(.title3.bold())
                                     .foregroundStyle(pointsColor(for: BetResult(rawValue: parlay.result ?? "") ?? .pending))
                             }
                             Spacer()
                             
-                            if let betsArray = parlay.bets?.allObjects as? [BetModel] {
+                            if parlay.bets?.allObjects is [BetModel] {
                                 menu
                             }
                         }
