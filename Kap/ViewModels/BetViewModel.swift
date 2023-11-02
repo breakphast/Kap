@@ -387,7 +387,7 @@ class BetViewModel: ObservableObject {
 //        }
 //    }
     
-    func updateBetResults(bets: [BetModel], in context: NSManagedObjectContext) async throws {
+    func updateCloudBetResults(bets: [BetModel]) async throws {
         print("Starting result updates...")
 
         for bet in bets {

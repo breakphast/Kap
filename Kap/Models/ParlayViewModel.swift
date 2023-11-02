@@ -426,4 +426,44 @@ class ParlayViewModel {
             }
         }
     }
+    
+    enum UpdateError: Error {
+        case missingParlayID
+        case firebaseError(Error)
+    }
+
+    func updateCloudParlayResults(parlays: [ParlayModel], in context: NSManagedObjectContext) async throws {
+        print("Starting parlay result updates...")
+        
+        for parlay in parlays {
+            guard parlay.result == BetResult.pending.rawValue else { return }
+            
+            guard let parlayID = parlay.id else {
+                throw UpdateError.missingParlayID
+            }
+            
+            let newParlay = db.collection("allParlays").document(parlayID)
+            let parlayBets = parlay.bets?.allObjects as? [BetModel] ?? []
+            
+            if !parlayBets.filter({ $0.game.betResult(for: $0).rawValue == BetResult.loss.rawValue }).isEmpty {
+                updateCloudParlay(parlay: parlay, result: .loss, points: Int(-parlay.totalPoints))
+            } else if parlayBets.filter({ $0.result == BetResult.win.rawValue }).count == parlayBets.count {
+                updateCloudParlay(parlay: parlay, result: .win, points: Int(parlay.totalPoints))
+            }
+        }
+    }
+    
+    func updateCloudParlay(parlay: ParlayModel, result: BetResult, points: Int) {
+        let newParlay = db.collection("allParlays").document(parlay.id ?? "")
+        newParlay.updateData([
+            "result": result.rawValue,
+            "totalPoints": points
+        ]) { err in
+            if let err = err {
+                print("Error updating LAYYY: \(err)", parlay.id ?? "")
+            } else {
+                print("Lay successfully updated")
+            }
+        }
+    }
 }
