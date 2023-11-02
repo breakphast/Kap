@@ -20,7 +20,6 @@ struct PlayerBetsView: View {
 
     @State private var selectedOption = ""
     @State private var week = 0
-    @State private var missedBets = 0
     @State private var totalPoints: Double = 0
     
     @State private var selectedSegment = 0
@@ -34,7 +33,6 @@ struct PlayerBetsView: View {
         .task {
             week = homeViewModel.currentWeek
             selectedOption = "Week \(week)"
-            missedBets = await UserViewModel().fetchMissedBetsCount(for: userID, week: week == 0 ? homeViewModel.currentWeek : week, leagueCode: leagueViewModel.activeLeague?.code ?? "") ?? 0
         }
     }
 
@@ -61,11 +59,13 @@ struct PlayerBetsView: View {
                 
                 HStack(alignment: .center) {
                     menu
-                    VStack(alignment: .leading) {
-                        Text((calculateWeeklyPoints(pointsWeek: week) + Double(missedBets * -10)).oneDecimalString)
+                    let winsLosses = Utility.countWinsAndLosses(bets: homeViewModel.leagueBets.filter({$0.week == week && $0.playerID == userID}), forWeek: week)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("\(calculateWeeklyPoints(pointsWeek: week).oneDecimalString) Points")
+                            .font(.system(.caption, design: .rounded, weight: .bold))
+                        Text(winsLosses.text)
                             .font(.system(.caption2, design: .rounded, weight: .bold))
-                        Text("Missing Bets: \(missedBets)")
-                            .font(.system(.caption2, design: .rounded, weight: .bold))
+                            .foregroundStyle(winsLosses.color)
                     }
                 }
                 .padding(.bottom, 4)
@@ -175,13 +175,11 @@ struct PlayerBetsView: View {
             Button("Overall") {
                 week = homeViewModel.currentWeek
                 selectedOption = "Overall"
-                updateForWeek(week)
             }
             ForEach(1...homeViewModel.currentWeek, id: \.self) { weekNumber in
                 Button("Week \(weekNumber)", action: {
                     week = weekNumber
                     selectedOption = "Week \(weekNumber)"
-                    updateForWeek(week)
                 })
             }
         } label: {
@@ -196,18 +194,6 @@ struct PlayerBetsView: View {
             .background(RoundedRectangle(cornerRadius: 10).fill(Color("onyxLightish")))
         }
         .zIndex(1000)
-    }
-
-    private func updateForWeek(_ weekNumber: Int) {
-        Task {
-            do {
-                if week == 0 {
-                    missedBets = await UserViewModel().fetchAllMissedBets(for: userID, startingWeek: homeViewModel.currentWeek, leagueCode: leagueViewModel.activeLeague?.code ?? "")
-                } else {
-                    missedBets = await UserViewModel().fetchMissedBetsCount(for: userID, week: week, leagueCode: leagueViewModel.activeLeague?.code ?? "") ?? 0
-                }
-            }
-        }
     }
 
     func isEmptyBets(for result: BetResult) -> Bool {

@@ -47,10 +47,17 @@ struct MyBets: View {
                     
                     HStack {
                         menu
+                        let winsLosses = Utility.countWinsAndLosses(bets: homeViewModel.leagueBets.filter({$0.week == week && $0.playerID == userID}), forWeek: week)
+                        VStack(alignment: .leading) {
+                            Text("Points: \((weeklyPoints ?? 0).oneDecimalString)")
+                                .font(.system(.caption, design: .rounded, weight: .bold))
+                            Text(winsLosses.text)
+                                .font(.system(.caption2, design: .rounded, weight: .bold))
+                                .foregroundStyle(winsLosses.color)
+                        }
                         Spacer()
                         VStack(alignment: .trailing, spacing: 4) {
                             betTracker(leagueCode: leagueCode, userID: userID, filterWeek: week, maxBets: 10)
-                            Text("Points: \((weeklyPoints ?? 0).oneDecimalString)")
                         }
                         .font(.system(.caption, design: .rounded, weight: .bold))
                     }

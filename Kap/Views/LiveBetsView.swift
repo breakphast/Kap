@@ -33,23 +33,25 @@ struct LiveBetsView: View {
                 
                 ScrollView(showsIndicators: false) {
                     ForEach(users) { user in
-                        VStack(alignment: .leading) {
-                            HStack {
-                                Image("avatar\(user.avatar ?? 0)")
-                                    .resizable()
-                                    .scaledToFill()
-                                    .clipShape(Circle())
-                                    .frame(width: 40)
-                                
-                                Text(user.username.uppercased())
-                                    .foregroundStyle(.oW)
-                                    .font(.title3)
-                                    .fontWeight(.black)
-                                    .kerning(0.8)
-                                Spacer()
-                            }
-                            ForEach(bets.filter({ $0.playerID == user.id! }), id: \.id) { bet in
-                                PlacedBetView(bet: bet, week: Int16(homeViewModel.currentWeek))
+                        if !bets.filter({ $0.playerID == user.id! }).isEmpty {
+                            VStack(alignment: .leading) {
+                                HStack {
+                                    Image("avatar\(user.avatar ?? 0)")
+                                        .resizable()
+                                        .scaledToFill()
+                                        .clipShape(Circle())
+                                        .frame(width: 40)
+                                    
+                                    Text(user.username.uppercased())
+                                        .foregroundStyle(.oW)
+                                        .font(.title3)
+                                        .fontWeight(.black)
+                                        .kerning(0.8)
+                                    Spacer()
+                                }
+                                ForEach(bets.filter({ $0.playerID == user.id! }), id: \.id) { bet in
+                                    PlacedBetView(bet: bet, week: Int16(homeViewModel.currentWeek))
+                                }
                             }
                         }
                     }

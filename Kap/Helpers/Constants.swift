@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 let nflTeams = [
     "Miami Dolphins": "MIA Dolphins",
@@ -193,5 +194,33 @@ class DataManager {
             gameModels.append(gameModel)
         }
         return gameModels
+    }
+}
+
+struct Utility {
+    static func countWinsAndLosses(bets: [BetModel], forWeek targetWeek: Int) -> (text: String, color: Color) {
+        var wins = 0
+        var losses = 0
+        
+        for bet in bets where bet.week == targetWeek {
+            switch bet.result {
+            case BetResult.win.rawValue: wins += 1
+            case BetResult.loss.rawValue: losses += 1
+            default: break
+            }
+        }
+        
+        let text = "(\(wins)-\(losses))"
+        
+        let color: Color
+        if wins > losses {
+            color = .lion
+        } else if wins < losses {
+            color = .redd
+        } else {
+            color = .oW
+        }
+        
+        return (text, color)
     }
 }

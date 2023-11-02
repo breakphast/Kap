@@ -127,9 +127,10 @@ struct Leaderboard: View {
     
     func userDetailHStack(for user: User, index: Int) -> some View {
         var points: String = "0"
+        let winsLosses = Utility.countWinsAndLosses(bets: homeViewModel.leagueBets.filter({$0.week == week ?? homeViewModel.currentWeek && $0.playerID == user.id}), forWeek: week ?? homeViewModel.currentWeek)
         
         if let userId = user.id {
-            points = leaderboardViewModel.usersPoints[userId]?[week ?? homeViewModel.currentWeek]?.oneDecimalString ?? "0"
+            points = leaderboardViewModel.usersPoints[userId]?[week ?? homeViewModel.currentWeek]?.oneDecimalString ?? 0.noDecimalString
         }
         
         return HStack {
@@ -145,14 +146,12 @@ struct Leaderboard: View {
                     .fontWeight(.bold)
                 
                 HStack(spacing: 4) {
-                    Text("Points: \(points)")
+                    Text("Points: \(points == "0.0" ? 0.noDecimalString : points)")
                         .font(.caption.bold())
                         .foregroundStyle(.secondary)
-                    if missedCount[user.id ?? ""] ?? 0 > 0 {
-                        Text("(-\(missedCount[user.id ?? ""] ?? 0))")
-                            .foregroundStyle(Color("redd"))
-                            .font(.caption2.bold())
-                    }
+                    Text(winsLosses.text)
+                        .font(.caption2.bold())
+                        .foregroundStyle(winsLosses.color)
                 }
             }
         }
