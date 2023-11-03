@@ -87,14 +87,14 @@ struct Board: View {
                     Task {
                         do {
                             // personal
-                            guard homeViewModel.weekGames.allSatisfy({ $0.date ?? Date(timeIntervalSince1970: 0) >= Date() }) else {
-                                print("Some games have dates that have already passed. Not updating odds.")
-                                // cloud
-                                try await updateGameScores(games: homeViewModel.weekGames, in: viewContext)
-                                try await BetViewModel().updateCloudBetResults(bets: homeViewModel.userBets)
-                                homeViewModel.allBetModels = allBetModels
-                                return
-                            }
+//                            guard homeViewModel.weekGames.allSatisfy({ $0.date ?? Date(timeIntervalSince1970: 0) >= Date() }) else {
+//                                print("Some games have dates that have already passed. Not updating odds.")
+//                                // cloud
+//                                try await updateGameScores(games: homeViewModel.weekGames, in: viewContext)
+//                                try await BetViewModel().updateCloudBetResults(bets: homeViewModel.userBets)
+//                                homeViewModel.allBetModels = allBetModels
+//                                return
+//                            }
                             // cloud odds
                             try await updateCloudGameOdds()
                             try await updateLocalGameOdds(games: homeViewModel.weekGames, week: homeViewModel.currentWeek, in: viewContext)
@@ -205,7 +205,7 @@ struct Board: View {
     
     func updateGameScores(games: [GameModel], local: Bool? = false, in context: NSManagedObjectContext) async throws {
         let db = Firestore.firestore()
-        let mock = true
+        let mock = false
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         
