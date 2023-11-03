@@ -413,15 +413,15 @@ class BetViewModel: ObservableObject {
     func updateLocalBetResults(games: [GameModel], week: Int, bets: [BetModel], leagueCode: String, in context: NSManagedObjectContext) async throws {
         let updatedBets = try await fetchBets(games: games, week: week, leagueCode: leagueCode).filter({ $0.result != .pending })
         print("Starting local result updates...")
-        for bet in bets {
+        for bet in bets.filter({$0.result == BetResult.pending.rawValue}) {
             if let newBet = updatedBets.first(where: {$0.id == bet.id}) {
                 bet.result = newBet.result?.rawValue ?? ""
                 bet.points = newBet.result?.rawValue == BetResult.push.rawValue ? 0 : newBet.result?.rawValue == BetResult.loss.rawValue ? -10 : bet.points
             }
         }
         do {
-            try context.save()
-            print("\(updatedBets.count) Bet results successfully updated locally")
+            try context.save() 
+            print("\(updatedBets.filter({$0.result == .pending}).count) Bet results successfully updated locally")
         } catch {
             
         }

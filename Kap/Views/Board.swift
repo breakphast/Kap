@@ -86,26 +86,16 @@ struct Board: View {
                 .refreshable {
                     Task {
                         do {
-                            // personal
-//                            guard homeViewModel.weekGames.allSatisfy({ $0.date ?? Date(timeIntervalSince1970: 0) >= Date() }) else {
-//                                print("Some games have dates that have already passed. Not updating odds.")
-//                                // cloud
-//                                try await updateGameScores(games: homeViewModel.weekGames, in: viewContext)
-//                                try await BetViewModel().updateCloudBetResults(bets: homeViewModel.userBets)
-//                                homeViewModel.allBetModels = allBetModels
-//                                return
-//                            }
-                            // cloud odds
-                            try await updateCloudGameOdds()
-                            try await updateLocalGameOdds(games: homeViewModel.weekGames, week: homeViewModel.currentWeek, in: viewContext)
-                            homeViewModel.allGameModels = allGameModels
-                            // cloud scores
-                            try await updateGameScores(games: homeViewModel.weekGames, in: viewContext)
-                            // cloud bets and parlays results
-                            try await BetViewModel().updateCloudBetResults(bets: homeViewModel.leagueBets)
+                            if let allGameModels = homeViewModel.allGameModels {
+                                try await updateLocalGameOdds(games: Array(allGameModels).filter({$0.week == homeViewModel.currentWeek}), week: homeViewModel.currentWeek, in: viewContext)
+                                homeViewModel.allGameModels = allGameModels
+                                try await updateGameScores(games: Array(allGameModels).filter({$0.week == homeViewModel.currentWeek}), local: true, in: viewContext)
+                                homeViewModel.allGameModels = allGameModels
+                            }
+                            
+                            try await BetViewModel().updateLocalBetResults(games: Array(allGameModels), week: homeViewModel.currentWeek, bets: Array(allBetModels), leagueCode: homeViewModel.activeleagueCode ?? "", in: viewContext)
                             homeViewModel.allBetModels = allBetModels
-                            try await ParlayViewModel().updateCloudParlayResults(parlays: homeViewModel.leagueParlays)
-                            homeViewModel.allParlayModels = allParlayModels
+                        
                         } catch {
                             
                         }
