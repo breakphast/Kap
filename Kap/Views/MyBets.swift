@@ -74,6 +74,9 @@ struct MyBets: View {
             .gesture(swipeGesture)
         }
         .fontDesign(.rounded)
+        .task {
+            weeklyPoints = await LeaderboardViewModel().getWeeklyPoints(userID: userID, bets: homeViewModel.userBets, parlays: homeViewModel.userParlays, week: week)
+        }
         .onAppear {
             selectedOption = "Week \(homeViewModel.currentWeek)"
             week = homeViewModel.currentWeek

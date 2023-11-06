@@ -57,6 +57,7 @@ struct Leaderboard: View {
                 selectedOption = "Overall"
                 week = nil
                 Task {
+                    weeklyPoints = [:]
                     await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets, parlays: homeViewModel.leagueParlays, week: homeViewModel.currentWeek, leagueCode: leagueViewModel.activeLeague?.code ?? "")
                 }
             })
@@ -65,6 +66,7 @@ struct Leaderboard: View {
                     selectedOption = "Week \(weekNumber)"
                     week = weekNumber
                     Task {
+                        weeklyPoints = [:]
                         await leaderboardViewModel.generateWeeklyUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets.filter({$0.week == weekNumber}), parlays: homeViewModel.leagueParlays.filter({$0.week == weekNumber}), week: weekNumber, leagueCode: leagueViewModel.activeLeague?.code ?? "")
                     }
                 })

@@ -14,16 +14,15 @@ class LeaderboardViewModel: ObservableObject {
 
     func generateUserPoints(users: [User], bets: [BetModel], parlays: [ParlayModel], week: Int, leagueCode: String) async {
         let userBets = Dictionary(grouping: bets, by: { $0.playerID })
-        
         await withTaskGroup(of: Void.self) { group in
             for user in users {
                 group.addTask {
-                    guard let userID = user.id else { return }
-                    
-                    for currentWeek in 1...week {
-                        let points = await self.getWeeklyPoints(userID: userID, bets: userBets[userID] ?? [], parlays: parlays, week: currentWeek)
-                        DispatchQueue.main.async {
-                            self.usersPoints[userID] = [week: points]
+                    if let userID = user.id {
+                        for currentWeek in 1...week {
+                            let points = await self.getWeeklyPoints(userID: userID, bets: userBets[userID] ?? [], parlays: parlays, week: currentWeek)
+                            DispatchQueue.main.async {
+                                self.usersPoints[userID] = [week: points]
+                            }
                         }
                     }
                 }
@@ -51,6 +50,20 @@ class LeaderboardViewModel: ObservableObject {
                 }
             }
         }
+        await withTaskGroup(of: Void.self) { group in
+            for user in users {
+                group.addTask {
+                    if let userID = user.id {
+                        let points = await self.getWeeklyPoints(userID: userID, bets: bets, parlays: parlays, week: week)
+                        DispatchQueue.main.async {
+                            self.usersPoints[userID] = [week: points]
+                        }
+                    }
+                }
+            }
+            await group.waitForAll()
+        }
+        
         DispatchQueue.main.async {
             self.rankedUsers = users.sorted { user1, user2 in
                 let points1 = self.usersPoints[user1.id ?? ""]?[week] ?? 0.0
@@ -63,7 +76,7 @@ class LeaderboardViewModel: ObservableObject {
     func getWeeklyPoints(userID: String, bets: [BetModel], parlays: [ParlayModel], week: Int) async -> Double {
         // Filtering bets
         let filteredBets = bets.filter {
-            $0.week == week && $0.result != "Pending"
+            $0.week == week && $0.result != "Pending" && $0.playerID == userID
         }
         
         // Calculating points from bets
