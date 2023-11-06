@@ -47,11 +47,6 @@ struct Home: View {
                     .tabItem {
                         Label("Guide", systemImage: "text.book.closed.fill")
                     }
-                
-                Profile()
-                    .tabItem {
-                        Label("Profile", systemImage: "person.fill")
-                    }
             }
             .tint(Color("oW"))
             .preferredColorScheme(.dark)

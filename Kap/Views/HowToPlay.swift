@@ -110,10 +110,10 @@ struct InstructionStep: View {
                         Text("Bets Format")
                             .font(.title2)
                             .fontWeight(.black)
-                        Text("Thursday Night Football: 1 Bet\nSunday Afternoon Games: 7 Bets\nSunday Night Football: 1 Bet\nMonday Night Football: 1 Bet")
+                        Text("Thursday Night Football\nSunday Afternoon Games\nSunday Night Football\nMonday Night Football")
                             .foregroundColor(Color("oW"))
-                            .fontWeight(.none)
-                        Text("Players must bet all 10 games in the specified format. Each missed bet will be counted as a loss.")
+                            .fontWeight(.semibold)
+                        Text("Players must place a total of 10 bets per week. Each missed bet will result in a deduction of 10 points.")
                             .fontWeight(.bold)
                         Text("Players also get 1 Parlay Bonus per week. The parlay must be between +400 and +1000. This is optional and can result in a loss (-10 points).")
                     }

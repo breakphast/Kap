@@ -39,7 +39,7 @@ struct BetView: View {
     
     var body: some View {
         ZStack(alignment: .center) {
-            Color(.onyxLightish1)
+            Color(.onyxLightish)
             if isPlaced {
                 Label("Bet placed!", systemImage: "checkmark")
                     .padding()
@@ -232,7 +232,7 @@ struct ParlayView: View {
     
     var body: some View {
         ZStack(alignment: .topLeading) {
-            Color("onyxLightish1")
+            Color("onyxLightish")
             HStack(spacing: 8) {
                 VStack(alignment: .leading, spacing: 12) {
                     VStack(alignment: .leading, spacing: 4) {
@@ -385,7 +385,7 @@ struct PlacedBetView: View {
     
     var body: some View {
         ZStack(alignment: .topLeading) {
-            Color(.onyxLightish1)
+            Color(.onyxLightish)
             HStack(spacing: 8) {
                 VStack(alignment: .leading, spacing: 12) {
                     teamAndType
@@ -496,7 +496,7 @@ struct PlacedParlayView: View {
     
     var body: some View {
         ZStack(alignment: .topLeading) {
-            Color("onyxLightish1")
+            Color("onyxLightish")
             HStack(spacing: 8) {
                 VStack(alignment: .leading) {
                     VStack(alignment: .leading, spacing: 4) {

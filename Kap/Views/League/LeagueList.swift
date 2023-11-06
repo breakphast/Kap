@@ -72,14 +72,33 @@ struct LeagueList: View {
                         .padding(.leading, 100)
                         Spacer()
                         NavigationLink(destination: JoinLeague()) {
-                            Text("Join League")
-                                .font(.title3.bold())
-                                .foregroundStyle(.oW)
-                                .padding(.horizontal, 20)
-                                .padding(.vertical, 8)
-                                .background(.clear)
-                                .cornerRadius(8)
-                                .padding(.top)
+                            VStack {
+                                Text("Join League")
+                                    .font(.title3.bold())
+                                    .foregroundStyle(.oW)
+                                    .padding(.horizontal, 20)
+                                    .padding(.vertical, 8)
+                                    .background(.clear)
+                                    .cornerRadius(8)
+                                    .padding(.top)
+                                
+                                Button("Sign Out") {
+                                    authViewModel.signOut()
+                                    defaultleagueCode = ""
+                                    homeViewModel.userBets = []
+                                    homeViewModel.leagueBets = []
+                                    homeViewModel.userLeagues = []
+                                    homeViewModel.selectedBets = []
+                                    homeViewModel.allParlays = []
+                                    leagueViewModel.activeLeague = nil
+                                    homeViewModel.leagueParlays = []
+                                    homeViewModel.userParlays = []
+                                    homeViewModel.activeParlay = nil
+                                }
+                                .font(.caption)
+                                .bold()
+                                .foregroundStyle(.oW2)
+                            }
                         }
                     }
                 }
