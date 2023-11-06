@@ -223,4 +223,22 @@ struct Utility {
         
         return (text, color)
     }
+    
+    static func dayOfWeek(from date: Date) -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "EEE" // "EEE" is the date format for the abbreviated day of the week
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX") // Use a POSIX locale to ensure consistency
+        return dateFormatter.string(from: date).uppercased()
+    }
+    
+    static func formattedTime(from date: Date) -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "h:mma" // "h:mm a" is the date format for hours:minutes AM/PM
+        dateFormatter.amSymbol = "AM"
+        dateFormatter.pmSymbol = "PM"
+        dateFormatter.timeZone = TimeZone(abbreviation: "ET") // Set timezone to Eastern Time
+
+        let timeString = dateFormatter.string(from: date)
+        return timeString + " ET" // Append "ET" to the formatted string
+    }
 }

@@ -31,9 +31,9 @@ struct Leaderboard: View {
                 menu
             }
             scrollViewContent.padding(.top, 80)
-                .sheet(item: $selectedUserId) { userId in
-                    PlayerBetsView(userID: userId.id)
-                }
+                .fullScreenCover(item: $selectedUserId, content: { userID in
+                    PlayerBetsView(userID: userID.id)
+                })
         }
         .fontDesign(.rounded)
     }

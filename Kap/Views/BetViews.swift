@@ -39,28 +39,28 @@ struct BetView: View {
     
     var body: some View {
         ZStack(alignment: .center) {
-            Color("onyxLightish")
+            Color(.onyxLightish1)
             if isPlaced {
                 Label("Bet placed!", systemImage: "checkmark")
                     .padding()
                     .bold()
             } else {
                 HStack(spacing: 8) {
-                    VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 8) {
                         teamAndType
                         pointsAndButtons
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                    .padding([.horizontal, .top], 24)
-                    .padding(.bottom, 12)
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 14)
                 }
                 .fontDesign(.rounded)
                 .foregroundStyle(.white)
                 .multilineTextAlignment(.leading)
             }
         }
-        .cornerRadius(20)
-        .padding(.horizontal, 20)
+        .cornerRadius(18)
+        .padding(.horizontal, 12)
         .shadow(radius: 10)
         .task {
             isValid = homeViewModel.userBets.filter({ $0.week == homeViewModel.currentWeek }).count < 10 && homeViewModel.userBets.filter({ $0.game.id == bet.game.id }).isEmpty
@@ -72,12 +72,19 @@ struct BetView: View {
     
     var pointsAndButtons: some View {
         VStack(alignment: .leading, spacing: 20) {
-            VStack(alignment: .leading) {
+            HStack(alignment: .center) {
                 Text("Points: \(String(format: "%.1f", bet.points ?? 0))")
-                    .bold()
-                RoundedRectangle(cornerRadius: 1)
-                    .frame(width: 100, height: 2)
-                    .foregroundStyle(.secondary)
+                    .font(.title3)
+                    .fontWeight(.heavy)
+                    .foregroundStyle(.lion)
+                Spacer()
+                HStack(spacing: 4) {
+                    Text(Utility.dayOfWeek(from: bet.game.date ?? Date()))
+                    Text(Utility.formattedTime(from: bet.game.date ?? Date()))
+                }
+                .font(.caption2)
+                .fontWeight(.semibold)
+                .foregroundStyle(.oW2)
             }
             
             buttons
@@ -86,23 +93,36 @@ struct BetView: View {
     }
     
     var teamAndType: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 2) {
             HStack {
                 Text(bet.type == .over || bet.type == .under ? "\(bet.game.awayTeam ?? "") @ \(bet.game.homeTeam ?? "")" : bet.selectedTeam ?? "")
-                    .font(bet.type == .over || bet.type == .under ? .caption2.bold() : .subheadline.bold())
+                    .font(bet.type == .over || bet.type == .under ? .caption2 : .headline)
                     .frame(maxWidth: UIScreen.main.bounds.width / 1.5, alignment: .leading)
                 
                 Spacer()
                 
-                Text("\(bet.odds > 0 ? "+" : "")\(bet.odds)")
-                    .font(.subheadline.bold())
+                Text("\(bet.odds > 0 ? "+" : "")\(bet.odds)".replacingOccurrences(of: ",", with: ""))
             }
             .bold()
             
-            Text(betText)
-                .font(.subheadline.bold())
-                .lineLimit(nil)
-                .fixedSize(horizontal: false, vertical: true)
+            HStack(alignment: .top) {
+                Text(betText)
+                    .font(.subheadline)
+                    .lineLimit(nil)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .fontWidth(.expanded)
+                    .autocapitalization(.allCharacters)
+                    .foregroundStyle(.oW2)
+                Spacer()
+                Text("NFL")
+                    .font(.caption2)
+                    .fontWeight(.semibold)
+                    .foregroundColor(Color("oW"))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 4)
+                    .background(Color("lion"))
+                    .cornerRadius(4)
+            }
         }
     }
     
@@ -152,8 +172,8 @@ struct BetView: View {
                 .overlay {
                     Color("onyxLightish").opacity(isValid ? 0.0 : 0.7).ignoresSafeArea()
                 }
-                .frame(width: 100, height: 50)
-                .cornerRadius(15)
+                .frame(width: UIScreen.main.bounds.width * 0.33, height: 44)
+                .cornerRadius(12)
                 .shadow(radius: 10)
             }
             .zIndex(100)
@@ -175,8 +195,8 @@ struct BetView: View {
                         .foregroundStyle(Color("redd").opacity(0.8))
                         .lineLimit(2)
                 }
-                .frame(width: 100, height: 50)
-                .cornerRadius(15)
+                .frame(width: UIScreen.main.bounds.width * 0.33, height: 44)
+                .cornerRadius(12)
                 .shadow(radius: 10)
             }
             .zIndex(100)
@@ -212,7 +232,7 @@ struct ParlayView: View {
     
     var body: some View {
         ZStack(alignment: .topLeading) {
-            Color("onyxLightish")
+            Color("onyxLightish1")
             HStack(spacing: 8) {
                 VStack(alignment: .leading, spacing: 12) {
                     VStack(alignment: .leading, spacing: 4) {
@@ -246,13 +266,10 @@ struct ParlayView: View {
                         .frame(width: 200, alignment: .leading)
                         
                         HStack {
-                            VStack(alignment: .leading) {
-                                Text("Points: \(String(format: "%.1f", parlay.totalPoints))")
-                                    .bold()
-                                RoundedRectangle(cornerRadius: 1)
-                                    .frame(width: 100, height: 2)
-                                    .foregroundStyle(.secondary)
-                            }
+                            Text("Points: \(String(format: "%.1f", parlay.totalPoints))")
+                                .font(.title3)
+                                .fontWeight(.heavy)
+                                .foregroundStyle(.lion)
                             
                             Spacer()
                             
@@ -262,14 +279,15 @@ struct ParlayView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                .padding(24)
+                .padding(.horizontal, 18)
+                .padding(.vertical, 14)
             }
             .fontDesign(.rounded)
             .foregroundStyle(.white)
             .multilineTextAlignment(.leading)
         }
-        .cornerRadius(20)
-        .padding(.horizontal, 20)
+        .cornerRadius(18)
+        .padding(.horizontal, 12)
         .shadow(radius: 10)
         .onAppear {
             isValid = parlays.count == 0 && parlay.totalOdds <= 1000
@@ -299,9 +317,9 @@ struct ParlayView: View {
             .overlay {
                 Color("onyxLightish").opacity(isValid ? 0.0 : 0.7).ignoresSafeArea()
             }
-            .frame(width: 100, height: 40)
-            .cornerRadius(15)
-            .shadow(radius: 10)
+            .frame(width: 100, height: 44)
+            .cornerRadius(12)
+            .shadow(radius: 12)
         }
         .zIndex(100)
         .disabled(!isValid)
@@ -330,61 +348,84 @@ struct PlacedBetView: View {
         }
     }
     
+    var teamAndType: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack {
+                Text(bet.type == "Over" || bet.type == "Under" ? "\(bet.game.awayTeam ?? "") @ \(bet.game.homeTeam ?? "")" : bet.selectedTeam ?? "")
+                    .font(bet.type == "Over" || bet.type == "Under" ? .caption2 : .headline)
+                    .frame(maxWidth: UIScreen.main.bounds.width / 1.5, alignment: .leading)
+                
+                Spacer()
+                
+                Text("\(bet.odds > 0 ? "+" : "")\(bet.odds)".replacingOccurrences(of: ",", with: ""))
+            }
+            .bold()
+            
+            HStack(alignment: .top) {
+                Text(betText)
+                    .font(.subheadline)
+                    .lineLimit(nil)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .fontWidth(.expanded)
+                    .autocapitalization(.allCharacters)
+                    .foregroundStyle(.oW2)
+                Spacer()
+                Text("NFL")
+                    .font(.caption2)
+                    .fontWeight(.semibold)
+                    .foregroundColor(Color("oW"))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 4)
+                    .background(Color("lion"))
+                    .cornerRadius(4)
+            }
+        }
+    }
+
+    
     var body: some View {
         ZStack(alignment: .topLeading) {
-            Color("onyxLightish")
+            Color(.onyxLightish1)
             HStack(spacing: 8) {
                 VStack(alignment: .leading, spacing: 12) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        HStack {
-                            Text(bet.type == "Over" || bet.type == "Under" ? "\(bet.game.awayTeam ?? "") @ \(bet.game.homeTeam ?? "")" : bet.selectedTeam ?? "")
-                                .font(bet.type == "Over" || bet.type == "Under" ? .caption2.bold() : .subheadline.bold())
-                            Spacer()
-                            Text("\(bet.odds > 0 ? "+": "")\(bet.odds)")
-                                .font(.headline.bold())
-                        }
-                        
-                        Text(betText)
-                            .font(.subheadline.bold())
-                    }
-                    
+                    teamAndType
                     
                     HStack {
                         Text("\(bet.game.awayTeam ?? "") @ \(bet.game.homeTeam ?? "")")
                         Spacer()
-                        Text(convertDateForBetCard(bet.game.date ?? Date()))
+                        HStack(spacing: 4) {
+                            Text(Utility.dayOfWeek(from: bet.game.date ?? Date()))
+                            Text(Utility.formattedTime(from: bet.game.date ?? Date()))
+                        }
+                        .font(.caption2)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.oW2)
                     }
                     .font(.caption2.bold())
                     .lineLimit(1)
                     
                     HStack {
-                        HStack(spacing: 4) {
-                            Text("Points:")
-                                .font(.headline.bold())
-                            Text("\(bet.result != "Pending" ? bet.points < 0 ? "-" : "+" : "")\(abs(bet.result == "Push" ? 0 : bet.points).oneDecimalString)")
-                                .font(.title2.bold())
-                                .foregroundStyle(pointsColor(for: BetResult(rawValue: bet.result) ?? .pending))
-                        }
+                        Text("\(bet.result != "Pending" ? bet.points < 0 ? "-" : "+" : "")\(abs(bet.result == "Push" ? 0 : bet.points).oneDecimalString)")
+                            .font(.title2)
+                            .fontWeight(.heavy)
+                            .foregroundStyle(pointsColor(for: BetResult(rawValue: bet.result) ?? .pending))
                         Spacer()
                         
-                        if let gameDate = bet.game.date, Date() < gameDate && bet.result == "Pending" {
-                            menu
-                        } else if bet.result == "Pending" {
-                            Text("LIVE \(bet.game.awayScore ?? "") - \(bet.game.homeScore ?? "")")
-                                .foregroundStyle(.redd)
-                                .bold()
-                                .font(.caption2)
-                        }
-                        
                         if bet.result != "Pending" {
-                            Image(systemName: bet.result == "Win" ? "checkmark.circle" : "xmark.circle")
-                                .font(.title3.bold())
-                                .foregroundColor(bet.result == "Win" ? Color("bean") : bet.result == "Loss" ? Color("redd") : .secondary)
+                            HStack(spacing: 4) {
+                                Image(systemName: bet.result == "Win" ? "checkmark.circle" : "xmark.circle")
+                                Text(bet.result).autocapitalization(.allCharacters)
+                            }
+                            .font(.title2)
+                            .fontWeight(.heavy)
+                            .foregroundColor(bet.result == "Win" ? Color("bean") : bet.result == "Loss" ? Color("redd") : .oW2)
+                        } else {
+                            menu
                         }
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                .padding(.horizontal, 24)
+                .padding(18)
             }
             .fontDesign(.rounded)
             .multilineTextAlignment(.leading)
@@ -455,10 +496,10 @@ struct PlacedParlayView: View {
     
     var body: some View {
         ZStack(alignment: .topLeading) {
-            Color("onyxLightish")
+            Color("onyxLightish1")
             HStack(spacing: 8) {
                 VStack(alignment: .leading) {
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: 4) {
                         HStack(alignment: .center) {
                             Text("\(Array(parlay.bets ?? []).count) Leg Parlay")
                             Text("(Week \(parlay.week))")
@@ -499,6 +540,8 @@ struct PlacedParlayView: View {
                             
                             if parlay.bets?.allObjects is [BetModel] {
                                 menu
+                            } else {
+                                
                             }
                         }
                         .bold()
@@ -506,7 +549,7 @@ struct PlacedParlayView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                .padding(24)
+                .padding(18)
             }
             .fontDesign(.rounded)
             .foregroundStyle(.white)
@@ -519,8 +562,7 @@ struct PlacedParlayView: View {
                 }
             }
         }
-        .frame(height: 160)
-        .cornerRadius(20)
+        .cornerRadius(18)
         .task {
             formattedBets = parlay.betString?.split(separator: ",").map { String($0.trimmingCharacters(in: .whitespaces))
             } ?? []

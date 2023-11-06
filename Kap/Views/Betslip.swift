@@ -70,7 +70,7 @@ struct Betslip: View {
     }
     
     var contentStack: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 12) {
             ForEach(homeViewModel.selectedBets, id: \.id) { bet in
                 BetView(bet: bet)
             }

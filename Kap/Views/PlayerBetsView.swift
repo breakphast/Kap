@@ -38,10 +38,6 @@ struct PlayerBetsView: View {
 
     var settledBetsTab: some View {
         VStack(spacing: 8) {
-            RoundedRectangle(cornerRadius: 2)
-                .frame(width: 100, height: 4)
-                .foregroundStyle(Color("onyxLightish"))
-            
             VStack(alignment: .leading) {
                 HStack {
                     Image("avatar\(homeViewModel.users.first(where: { $0.id == userID })!.avatar ?? 0)")
@@ -55,6 +51,17 @@ struct PlayerBetsView: View {
                         .font(.title3)
                         .fontWeight(.black)
                         .kerning(0.8)
+                    
+                    Spacer()
+                    
+                    Image(systemName: "xmark")
+                        .font(.system(size: 20, weight: .heavy, design: .rounded))
+                        .foregroundStyle(.oW2)
+                        .onTapGesture {
+                            withAnimation {
+                                dismiss()
+                            }
+                        }
                 }
                 
                 HStack(alignment: .center) {
@@ -80,7 +87,7 @@ struct PlayerBetsView: View {
             }
         }
         .padding(.top, 12)
-        .padding(.horizontal, 20)
+        .padding(.horizontal, 18)
     }
     
     func calculateWeeklyPoints(pointsWeek: Int) -> Double {
@@ -105,7 +112,7 @@ struct PlayerBetsView: View {
 
     func parlaySection(settled: Bool) -> some View {
         return AnyView(
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 8) {
                     Text("PARLAY")
                         .font(.caption.bold())
@@ -147,7 +154,7 @@ struct PlayerBetsView: View {
         
         if !filteredBets.isEmpty {
             return AnyView(
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 12) {
                     Text("NFL")
                         .font(.caption.bold())
                         .foregroundColor(Color("oW"))

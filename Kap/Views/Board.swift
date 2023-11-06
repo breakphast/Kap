@@ -139,6 +139,9 @@ struct Board: View {
     
     func pedestrianRefresh() async throws {
         if let allGameModels = homeViewModel.allGameModels {
+            if let newWeek = try await homeViewModel.fetchCurrentWeek(), newWeek > homeViewModel.currentWeek {
+                homeViewModel.currentWeek = newWeek
+            }
             try await updateLocalGameOdds(games: Array(allGameModels).filter({$0.week == homeViewModel.currentWeek}), week: homeViewModel.currentWeek, in: viewContext)
             homeViewModel.allGameModels = allGameModels
             
