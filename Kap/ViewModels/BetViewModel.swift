@@ -389,23 +389,24 @@ class BetViewModel: ObservableObject {
     
     func updateCloudBetResults(bets: [BetModel]) async throws {
         print("Starting result updates...")
-
         for bet in bets {
-            guard bet.result == "Pending" else { return }
+            if bet.result == "Pending" {
+                let newbet = db.collection("allBets").document(bet.id)
 
-            let newbet = db.collection("allBets").document(bet.id)
+                bet.result = bet.game.betResult(for: bet).rawValue
+                bet.points = bet.result == BetResult.push.rawValue ? 0 : bet.result == BetResult.loss.rawValue ? -10 : bet.points
 
-            bet.result = bet.game.betResult(for: bet).rawValue
-            bet.points = bet.result == BetResult.push.rawValue ? 0 : bet.result == BetResult.loss.rawValue ? -10 : bet.points
-
-            do {
-                try await updateDataAsync(document: newbet, data: [
-                    "result": bet.result,
-                    "points": bet.result == BetResult.push.rawValue ? 0 : bet.result == BetResult.loss.rawValue ? -10 : bet.points
-                ])
-                print("Bet result successfully updated")
-            } catch {
-                print("Error updating BET RESULT: \(error)")
+                do {
+                    try await updateDataAsync(document: newbet, data: [
+                        "result": bet.result,
+                        "points": bet.result == BetResult.push.rawValue ? 0 : bet.result == BetResult.loss.rawValue ? -10 : bet.points
+                    ])
+                    print("Bet result successfully updated")
+                } catch {
+                    print("Error updating BET RESULT: \(error)")
+                }
+            } else {
+                continue
             }
         }
     }

@@ -317,6 +317,7 @@ struct PlacedBetView: View {
     @Namespace var trash
     let bet: BetModel
     let week: Int16
+    let live: Bool
     
     func pointsColor(for result: BetResult) -> Color {
         switch result {
@@ -368,6 +369,11 @@ struct PlacedBetView: View {
                         
                         if let gameDate = bet.game.date, Date() < gameDate && bet.result == "Pending" {
                             menu
+                        } else if bet.result == "Pending" {
+                            Text("LIVE \(bet.game.awayScore ?? "") - \(bet.game.homeScore ?? "")")
+                                .foregroundStyle(.redd)
+                                .bold()
+                                .font(.caption2)
                         }
                         
                         if bet.result != "Pending" {

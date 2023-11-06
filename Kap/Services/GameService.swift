@@ -47,15 +47,16 @@ struct ScoreElement: Codable {
 class GameService {
     var games: [Game] = []
     private var db = Firestore.firestore()
-    let mock = false
+    let mock = true
     @Environment(\.managedObjectContext) private var viewContext
 
-    func updateGameScores(games: [GameModel], in context: NSManagedObjectContext) async throws {
+    func updateCloudGameScores(games: [GameModel]) async throws {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         let scores = try await mock ? loadnflScoresData() : fetchNFLScoresData()
         do {
             let scoresData = try decoder.decode([ScoreElement].self, from: scores)
+            print(scoresData.map {$0.completed})
             for game in games {
                 if let scoreElement = scoresData.first(where: { $0.documentId == game.documentID }) {
                     game.homeScore = scoreElement.scores?.first(where: { $0.name == game.homeTeam })?.score
@@ -70,13 +71,6 @@ class GameService {
                             "awayScore": game.awayScore as Any,
                             "completed": game.completed as Bool
                         ])
-                        
-                        do {
-                            try context.save()
-                        } catch {
-                            
-                        }
-                        
                     } else {
                         print("No matching game found in Firestore")
                     }

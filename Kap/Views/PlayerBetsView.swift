@@ -157,7 +157,7 @@ struct PlayerBetsView: View {
                         .cornerRadius(4)
                     
                     ForEach(filteredBets.sorted(by: { $0.game.date ?? Date() < $1.game.date ?? Date() }), id: \.id) { bet in
-                        PlacedBetView(bet: bet, week: bet.week)
+                        PlacedBetView(bet: bet, week: bet.week, live: bet.game.week == homeViewModel.currentWeek && Date() > bet.game.date ?? Date() && bet.game.completed == false ? true : false)
                     }
                 }
             )

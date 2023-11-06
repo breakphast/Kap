@@ -86,16 +86,8 @@ struct Board: View {
                 .refreshable {
                     Task {
                         do {
-                            if let allGameModels = homeViewModel.allGameModels {
-                                try await updateLocalGameOdds(games: Array(allGameModels).filter({$0.week == homeViewModel.currentWeek}), week: homeViewModel.currentWeek, in: viewContext)
-                                homeViewModel.allGameModels = allGameModels
-                                try await updateGameScores(games: Array(allGameModels).filter({$0.week == homeViewModel.currentWeek}), local: true, in: viewContext)
-                                homeViewModel.allGameModels = allGameModels
-                            }
-                            
-                            try await BetViewModel().updateLocalBetResults(games: Array(allGameModels), week: homeViewModel.currentWeek, bets: Array(allBetModels), leagueCode: homeViewModel.activeleagueCode ?? "", in: viewContext)
-                            homeViewModel.allBetModels = allBetModels
-                        
+                            try await pedestrianRefresh()
+//                            try await personalRefresh()
                         } catch {
                             
                         }
@@ -145,6 +137,34 @@ struct Board: View {
         }
     }
     
+    func pedestrianRefresh() async throws {
+        if let allGameModels = homeViewModel.allGameModels {
+            try await updateLocalGameOdds(games: Array(allGameModels).filter({$0.week == homeViewModel.currentWeek}), week: homeViewModel.currentWeek, in: viewContext)
+            homeViewModel.allGameModels = allGameModels
+            
+            try await BetViewModel().updateLocalBetResults(games: Array(allGameModels), week: homeViewModel.currentWeek, bets: Array(allBetModels), leagueCode: homeViewModel.activeleagueCode ?? "", in: viewContext)
+            homeViewModel.allBetModels = allBetModels
+        }
+    }
+    
+    func personalRefresh() async throws {
+        try await updateCloudGameOdds()
+        try await updateLocalGameOdds(games: homeViewModel.weekGames, week: homeViewModel.currentWeek, in: viewContext)
+        homeViewModel.allGameModels = allGameModels
+        // cloud scores
+        try await GameService().updateCloudGameScores(games: homeViewModel.weekGames)
+        homeViewModel.allGameModels = allGameModels
+        try await updateLocalGameScores(in: viewContext)
+        homeViewModel.allGameModels = allGameModels
+        // cloud bets and parlays results
+        try await BetViewModel().updateCloudBetResults(bets: homeViewModel.leagueBets)
+        homeViewModel.allBetModels = allBetModels
+//        try await ParlayViewModel().updateCloudParlayResults(parlays: homeViewModel.leagueParlays)
+//        homeViewModel.allParlayModels = allParlayModels
+        
+        
+    }
+    
     func updateLocalGameOdds(games: [GameModel], week: Int, in context: NSManagedObjectContext) async throws {
         // this is locally updating odds to core data
         let updatedGames = try await GameService().fetchGamesFromFirestore(week: week)
@@ -161,6 +181,9 @@ struct Board: View {
                 game.overPriceTemp = newGame.overPriceTemp
                 game.underPriceTemp = newGame.underPriceTemp
                 game.betOptions = []
+                game.homeScore = newGame.homeScore
+                game.awayScore = newGame.awayScore
+                game.completed = newGame.completed
 
                 for betOption in newGame.betOptions {
                     let betOptionModel = BetOptionModel(context: context)
@@ -193,48 +216,22 @@ struct Board: View {
         try await GameService().addGames(games: updatedGames, week: homeViewModel.currentWeek)
     }
     
-    func updateGameScores(games: [GameModel], local: Bool? = false, in context: NSManagedObjectContext) async throws {
-        let db = Firestore.firestore()
-        let mock = false
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        
-        let scores = try await (mock ? GameService().loadnflScoresData() : GameService().fetchNFLScoresData())
-        let scoresData = try decoder.decode([ScoreElement].self, from: scores)
-        
-        for game in games {
-            if let scoreElement = scoresData.first(where: { $0.documentId == game.documentID }),
-               let documentID = game.documentID {
-                game.homeScore = scoreElement.scores?.first(where: { $0.name == game.homeTeam })?.score
-                game.awayScore = scoreElement.scores?.first(where: { $0.name == game.awayTeam })?.score
-                game.completed = scoreElement.completed
-                
-                if let local, local {
-                    
-                } else {
-                    let newGame = db.collection("nflGames").document(documentID)
-                    try await BetViewModel().updateDataAsync(document: newGame, data: [
-                        "homeScore": game.homeScore ?? "",
-                        "awayScore": game.awayScore ?? "",
-                        "completed": game.completed
-                    ])
-                }
-            } else {
-                print("No score data yet.")
+    func updateLocalGameScores(in context: NSManagedObjectContext) async throws {
+        let updatedGames = try await GameService().fetchGamesFromFirestore(week: homeViewModel.currentWeek)
+        for game in updatedGames {
+            if let newGame = updatedGames.first(where: {$0.documentId == game.documentId}) {
+                game.completed = newGame.completed
+                game.homeScore = newGame.homeScore
+                game.awayScore = newGame.awayScore
             }
         }
-        
-        print("Updated \(games.count) game scores in the cloud.")
-        if let local, local {
-            try context.save()
-            print("Updated \(games.count) game scores locally.")
-        }
+        try context.save()
     }
     
     func updateGameAttribute(game: GameModel, in context: NSManagedObjectContext) {
         
     }
-
+    
     func convertToGameModels(games: [Game], in context: NSManagedObjectContext) async -> [GameModel] {
         var gameModels = [GameModel]()
         
