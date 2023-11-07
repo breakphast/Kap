@@ -336,6 +336,7 @@ struct PlacedBetView: View {
     let bet: BetModel
     let week: Int16
     let live: Bool
+    let hideMenu: Bool
     
     func pointsColor(for result: BetResult) -> Color {
         switch result {
@@ -419,7 +420,7 @@ struct PlacedBetView: View {
                             .font(.title2)
                             .fontWeight(.heavy)
                             .foregroundColor(bet.result == "Win" ? Color("bean") : bet.result == "Loss" ? Color("redd") : .oW2)
-                        } else {
+                        } else if !hideMenu {
                             menu
                         }
                     }

@@ -63,36 +63,6 @@ class UserViewModel: ObservableObject {
         }
     }
     
-    func fetchMissedBetsCount(for userID: String, week: Int, leagueCode: String) async -> Int? {
-        let weekDocumentID = "week\(week)"
-        let userDocument = db.collection("users").document(userID)
-        do {
-            let document = try await userDocument.collection("missedBets").document(weekDocumentID).getDocument()
-            if let missedBet = try? document.data(as: MissedBet.self) {
-                if missedBet.leagueCode == leagueCode {
-                    return missedBet.missedCount
-                }
-                return nil
-            }
-        } catch {
-            print("Error fetching missed bets for \(weekDocumentID): \(error)")
-        }
-        return nil
-    }
-    
-    func updateMissedBetsCount(for userID: String, week: Int, newValue: Int, leagueCode: String) async {
-        let weekDocumentID = "week\(week)"
-        let userDocument = db.collection("users").document(userID)
-        let missedBetsDocument = userDocument.collection("missedBets").document(weekDocumentID)
-
-        do {
-            try await missedBetsDocument.setData(["missedCount": newValue], merge: true)
-            print("Successfully updated missed bets count")
-        } catch {
-            print("Error updating missed bets count for \(weekDocumentID): \(error)")
-        }
-    }
-    
     func updateAvatar(for userID: String, avatar: Int) async {
         let userDocument = db.collection("users").document(userID)
         do {
@@ -131,15 +101,6 @@ class UserViewModel: ObservableObject {
         }
         
         return nil
-    }
-
-    func fetchAllMissedBets(for userID: String, startingWeek: Int, leagueCode: String) async -> Int {
-        for week in (1...startingWeek).reversed() {
-            if let count = await fetchMissedBetsCount(for: userID, week: week, leagueCode: leagueCode) {
-                return count
-            }
-        }
-        return 0
     }
     
     // Add a new user

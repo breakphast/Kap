@@ -82,6 +82,20 @@ class GameService {
         }
     }
     
+    func addInitialGames(in context: NSManagedObjectContext) async throws {
+        do {
+            let fetchedAllGames = try await GameService().fetchGamesFromFirestore()
+            _ = await Board().convertToGameModels(games: fetchedAllGames, in: context)
+            do {
+                try context.save()
+            } catch {
+                print("Error saving context: \(error)")
+            }
+        } catch {
+            
+        }
+    }
+    
     func updateGame(game: Game) {
         let newGame = db.collection("nflGames").document(game.documentId)
         newGame.updateData([
@@ -262,7 +276,7 @@ class GameService {
     }
     
     func fetchNFLOddsData() async throws -> Data {
-        let urlString = "https://api.the-odds-api.com/v4/sports/americanfootball_nfl/odds/?apiKey=\(HomeViewModel.keys.randomElement()!)&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=fanduel"
+        let urlString = "https://api.the-odds-api.com/v4/sports/americanfootball_nfl/odds/?apiKey=\(Utility.keys.randomElement()!)&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=fanduel"
         
         guard let url = URL(string: urlString) else {
             throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
@@ -277,7 +291,7 @@ class GameService {
     }
     
     func fetchNFLScoresData() async throws -> Data {
-        let urlString = "https://api.the-odds-api.com/v4/sports/americanfootball_nfl/scores/?daysFrom=3&apiKey=\(HomeViewModel.keys.randomElement()!)"
+        let urlString = "https://api.the-odds-api.com/v4/sports/americanfootball_nfl/scores/?daysFrom=3&apiKey=\(Utility.keys.randomElement()!)"
         
         guard let url = URL(string: urlString) else {
             throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])

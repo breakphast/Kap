@@ -86,7 +86,9 @@ struct Board: View {
                 .refreshable {
                     Task {
                         do {
-                            try await pedestrianRefresh()
+                            if let activeleagueCode = homeViewModel.activeleagueCode {
+                                try await homeViewModel.pedestrianRefresh(in: viewContext, games: Array(allGameModels), bets: Array(allBetModels), parlays: Array(allParlayModels), leagueCode: homeViewModel.activeleagueCode ?? "")
+                            }
 //                            try await personalRefresh()
                         } catch {
                             
@@ -137,20 +139,22 @@ struct Board: View {
         }
     }
     
-    func pedestrianRefresh() async throws {
-        if let allGameModels = homeViewModel.allGameModels {
-            if let newWeek = try await homeViewModel.fetchCurrentWeek(), newWeek > homeViewModel.currentWeek {
-                homeViewModel.currentWeek = newWeek
-            }
-            try await updateLocalGameOdds(games: Array(allGameModels).filter({$0.week == homeViewModel.currentWeek}), week: homeViewModel.currentWeek, in: viewContext)
-            homeViewModel.allGameModels = allGameModels
-            
-            try await BetViewModel().updateLocalBetResults(games: Array(allGameModels), week: homeViewModel.currentWeek, bets: Array(allBetModels), leagueCode: homeViewModel.activeleagueCode ?? "", in: viewContext)
-            homeViewModel.allBetModels = allBetModels
-        }
-    }
+//    func pedestrianRefresh() async throws {
+//        if let allGameModels = homeViewModel.allGameModels {
+//            if let newWeek = try await homeViewModel.fetchCurrentWeek(), newWeek > homeViewModel.currentWeek {
+//                homeViewModel.currentWeek = newWeek
+//            }
+//            try await updateLocalGameOdds(games: Array(allGameModels).filter({$0.week == homeViewModel.currentWeek}), week: homeViewModel.currentWeek, in: viewContext)
+//            homeViewModel.allGameModels = allGameModels
+//            
+//            try await BetViewModel().updateLocalBetResults(games: Array(allGameModels), week: homeViewModel.currentWeek, bets: Array(allBetModels), leagueCode: homeViewModel.activeleagueCode ?? "", in: viewContext)
+//            homeViewModel.allBetModels = allBetModels
+//            
+//            try await BetViewModel().checkForNewBets(in: viewContext, leagueCode: activeLeague.code, bets: Array(allBetModels), parlays: Array(allParlayModels), timestamp: currentTimestamp, counter: homeViewModel.counter, games: Array(homeViewModel.allGames))
+//        }
+//    }
     
-    func personalRefresh() async throws {
+    func personalRefresh() async throws { 
         try await updateCloudGameOdds()
         try await updateLocalGameOdds(games: homeViewModel.weekGames, week: homeViewModel.currentWeek, in: viewContext)
         homeViewModel.allGameModels = allGameModels

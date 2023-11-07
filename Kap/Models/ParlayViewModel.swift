@@ -63,7 +63,7 @@ class ParlayViewModel {
                 
                 let foundGame = BetViewModel().findBetGame(games: games, gameID: gameID)
                 if let foundGame = foundGame {
-                    let bet = Bet(id: betOptionID + playerID, betOption: betOptionID, game: foundGame, type: type!, result: BetViewModel().stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: timestamp, deletedTimestamp: nil, isDeleted: nil)
+                    let bet = Bet(id: betOptionID + playerID + "parlayLeg", betOption: betOptionID, game: foundGame, type: type!, result: BetViewModel().stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: timestamp, deletedTimestamp: nil, isDeleted: nil)
                     bets.append(bet)
                 }
             }
@@ -96,7 +96,7 @@ class ParlayViewModel {
         
         for bet in parlay.bets {
             let betModel = BetModel(context: context)
-            betModel.id = bet.id
+            betModel.id = bet.betOption + bet.playerID + "parlayLeg"
             betModel.betOption = bet.betOption
             betModel.game = bet.game
             betModel.type = bet.type.rawValue
@@ -132,6 +132,7 @@ class ParlayViewModel {
             "id": parlay.id,
             "bets": parlay.bets.map { bet in
                 [
+                    "id": bet.betOption + bet.playerID + "parlayLeg",
                     "betOption": bet.betOption,
                     "game": bet.game.documentID ?? "",
                     "type": bet.type.rawValue,
@@ -175,6 +176,86 @@ class ParlayViewModel {
         addParlayToLocalDatabase(parlay: parlay, playerID: parlay.playerID, in: context)
     }
     
+    func checkForNewParlays(in context: NSManagedObjectContext, leagueCode: String, parlays: [ParlayModel], games: [GameModel], counter: Counter?, timestamp: Date?) async throws {
+        if let timestamp {
+            var stampedParlays = try await ParlayViewModel().fetchStampedParlays(games: games, leagueCode: leagueCode, timeStamp: timestamp)
+            
+            let localParlayIDs = Set(parlays).map {$0.id}
+            stampedParlays = stampedParlays.filter { !localParlayIDs.contains($0.id) }
+            
+            if !stampedParlays.isEmpty, let counter {
+                print("New parlays detected:", stampedParlays.count)
+                convertToParlayModels(parlays: stampedParlays, counter: counter, in: context)
+            }
+            
+            var deletedStampedParlays = try await ParlayViewModel().fetchDeletedStampedParlays(games: games, leagueCode: leagueCode, deletedTimeStamp: timestamp)
+            let allParlayModelIDs = parlays.compactMap { $0.id }
+            let idSet = Set(allParlayModelIDs)
+            deletedStampedParlays = deletedStampedParlays.filter { idSet.contains($0.id) }
+            
+            if !deletedStampedParlays.isEmpty {
+                for parlay in deletedStampedParlays {
+                    ParlayViewModel().deleteParlayModel(in: context, id: parlay.id)
+                }
+            }
+        }
+    }
+    
+    func addInitialParlays(games: [GameModel], leagueCode: String, in context: NSManagedObjectContext) async throws {
+        do {
+            let fetchedParlays = try await ParlayViewModel().fetchParlays(games: games, leagueCode: leagueCode)
+            if fetchedParlays.isEmpty {
+                print("No league parlays have been placed yet.")
+            } else {
+                for parlay in fetchedParlays {
+                    ParlayViewModel().addParlayToLocalDatabase(parlay: parlay, playerID: parlay.playerID, in: context)
+                }
+            }
+        } catch {
+            
+        }
+    }
+    
+    func convertToParlayModels(parlays: [Parlay], counter: Counter?, in context: NSManagedObjectContext) {
+        for parlay in parlays {
+            let parlayModel = ParlayModel(context: context)
+            
+            parlayModel.id = parlay.id
+            parlayModel.totalOdds = Int16(parlay.totalOdds)
+            parlayModel.result = parlay.result.rawValue
+            parlayModel.totalPoints = parlay.totalPoints
+            parlayModel.betString = parlay.betString
+            parlayModel.playerID = parlay.playerID
+            parlayModel.week = Int16(parlay.week)
+            parlayModel.leagueCode = parlay.leagueCode
+            parlayModel.timestamp = parlay.timestamp
+            
+            for bet in parlay.bets {
+                let betModel = BetViewModel().createBetModel(from: bet, in: context)
+                parlayModel.addToBets(betModel)
+            }
+            
+            if parlays.last?.id == parlay.id {
+                if let timestamp = parlayModel.timestamp {
+                    if let localTimestamp = counter?.timestamp {
+                        if timestamp > localTimestamp {
+                            counter?.timestamp = timestamp
+                            if let stamp = parlay.timestamp {
+                                print("New timestamp from last parlay added: ", stamp)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        do {
+            try context.save()
+            print("Saved new parlays locally.")
+        } catch {
+            print("Error saving context: \(error)")
+        }
+    }
+    
     func fetchStampedParlays(games: [GameModel], leagueCode: String, timeStamp: Date?) async throws -> [Parlay] {
         if let timeStamp {
             let querySnapshot = try await db.collection("allParlays").whereField("timestamp", isGreaterThan: Timestamp(date: timeStamp)).getDocuments()
@@ -200,6 +281,7 @@ class ParlayViewModel {
                 var bets = [Bet]()
                 for betData in betsData {
                     guard
+                        let id = betData["id"] as? String,
                         let gameID = betData["game"] as? String,
                         let betOptionID = betData["betOption"] as? String,
                         let typeString = betData["type"] as? String,
@@ -219,7 +301,7 @@ class ParlayViewModel {
                         let date2 = GameService().convertTimestampToISOString(timestamp: timestamp)
                         let date = GameService().dateFromISOString(date2 ?? "")
                         
-                        let bet = Bet(id: betOptionID + playerID, betOption: betOptionID, game: foundGame, type: type, result: BetViewModel().stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: date ?? Date(), deletedTimestamp: nil, isDeleted: nil)
+                        let bet = Bet(id: id, betOption: betOptionID, game: foundGame, type: type, result: BetViewModel().stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: date ?? Date(), deletedTimestamp: nil, isDeleted: nil)
                         bets.append(bet)
                     }
                 }
@@ -255,6 +337,7 @@ class ParlayViewModel {
                 var bets = [Bet]()
                 for betData in betsData {
                     guard
+                        let id = betData["id"] as? String,
                         let gameID = betData["game"] as? String,
                         let betOptionID = betData["betOption"] as? String,
                         let typeString = betData["type"] as? String,
@@ -269,7 +352,7 @@ class ParlayViewModel {
                     }
                     let foundGame = BetViewModel().findBetGame(games: games, gameID: gameID)
                     if let foundGame = foundGame {
-                        let bet = Bet(id: betOptionID + playerID, betOption: betOptionID, game: foundGame, type: type, result: BetViewModel().stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: date ?? Date(), deletedTimestamp: nil, isDeleted: nil)
+                        let bet = Bet(id: id, betOption: betOptionID, game: foundGame, type: type, result: BetViewModel().stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: date ?? Date(), deletedTimestamp: nil, isDeleted: nil)
                         bets.append(bet)
                     }
                 }
@@ -313,6 +396,7 @@ class ParlayViewModel {
                 var bets = [Bet]()
                 for betData in betsData {
                     guard
+                        let id = betData["id"] as? String,
                         let gameID = betData["game"] as? String,
                         let betOptionID = betData["betOption"] as? String,
                         let typeString = betData["type"] as? String,
@@ -327,7 +411,7 @@ class ParlayViewModel {
                     }
                     let foundGame = BetViewModel().findBetGame(games: games, gameID: gameID)
                     if let foundGame = foundGame {
-                        let bet = Bet(id: betOptionID + playerID, betOption: betOptionID, game: foundGame, type: type, result: BetViewModel().stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: date ?? Date(), deletedTimestamp: nil, isDeleted: nil)
+                        let bet = Bet(id: id, betOption: betOptionID, game: foundGame, type: type, result: BetViewModel().stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: date ?? Date(), deletedTimestamp: nil, isDeleted: nil)
                         bets.append(bet)
                     }
                 }
@@ -363,6 +447,7 @@ class ParlayViewModel {
                 var bets = [Bet]()
                 for betData in betsData {
                     guard
+                        let id = betData["id"] as? String,
                         let gameID = betData["game"] as? String,
                         let betOptionID = betData["betOption"] as? String,
                         let typeString = betData["type"] as? String,
@@ -378,7 +463,7 @@ class ParlayViewModel {
                     }
                     let foundGame = BetViewModel().findBetGame(games: games, gameID: gameID)
                     if let foundGame = foundGame {
-                        let bet = Bet(id: betOptionID + playerID, betOption: betOptionID, game: foundGame, type: type, result: BetViewModel().stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: timestamp, deletedTimestamp: nil, isDeleted: nil)
+                        let bet = Bet(id: id, betOption: betOptionID, game: foundGame, type: type, result: BetViewModel().stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: timestamp, deletedTimestamp: nil, isDeleted: nil)
                         bets.append(bet)
                     }
                 }

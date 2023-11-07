@@ -107,9 +107,7 @@ class LeaderboardViewModel: ObservableObject {
         var totalPoints = 0.0
         for currentWeek in 1...week {
             let points = await getWeeklyPoints(userID: userID, bets: bets, parlays: parlays, week: currentWeek)
-            let missingBets = leagueType == .weekly ? 0 : await UserViewModel().fetchMissedBetsCount(for: userID, week: currentWeek, leagueCode: leagueCode) ?? 0
-            let pointsWithMissingBets = points + Double(missingBets) * -10.0
-            totalPoints += pointsWithMissingBets
+            totalPoints += points
         }
         return totalPoints
     }

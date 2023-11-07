@@ -34,7 +34,7 @@ class LiveScoreViewModel: ObservableObject {
     func fetchLiveScores() {
         // Here, you'd fetch the JSON data from the desired endpoint.
         // For the sake of this example, I'll use a placeholder URL.
-        guard let url = URL(string: "https://api.sportsdata.io/v3/nfl/scores/json/ScoresByWeek/2023PRE/3?key=\(HomeViewModel.keys.randomElement()!)") else { return }
+        guard let url = URL(string: "https://api.sportsdata.io/v3/nfl/scores/json/ScoresByWeek/2023PRE/3?key=\(Utility.keys.randomElement()!)") else { return }
         
         URLSession.shared.dataTask(with: url) { data, _, error in
             if let data = data {

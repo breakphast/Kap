@@ -49,12 +49,6 @@ class HomeViewModel: ObservableObject {
         
     let db = Firestore.firestore()
     
-    static let keys = [
-        "753dc10555c828e2828d33832e8e0ea3",
-        "823ff29071d3b6ae29ac2463dc53b2b5",
-        "4361370f2df59d9c4aabf5b7ff5fd438"
-    ]
-    
     let formatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "M/d/yyyy"
@@ -75,85 +69,6 @@ class HomeViewModel: ObservableObject {
         case noDocumentsFound
     }
     
-    enum Week: Int {
-        case week1 = 1
-        case week2
-        case week3
-        case week4
-        case week5
-        case week6
-        
-        static func from(dayDifference: Int) -> Week {
-            let currentWeekNumber = (dayDifference / 7) + 1
-            return Week(rawValue: currentWeekNumber) ?? .week1
-        }
-    }
-    
-    func checkForUpdatedBets(in context: NSManagedObjectContext, timestamp: Date?, games: [GameModel]) async throws {
-        if timestamp != nil {
-            if let activeleagueCode {
-                var updatedBets = try await BetViewModel().fetchUpdatedBets(games: games, leagueCode: activeleagueCode)
-                
-                if let allBets = self.allBetModels {
-                    let localBetIDs = Set(allBets).map {$0.id}
-                    updatedBets = updatedBets.filter { !localBetIDs.contains($0.id) }
-                    let updatedBetsIDs = updatedBets.map { $0.id }
-                    let updatedLocalBets = Array(allBets).filter { !updatedBetsIDs.contains($0.id) }
-
-                    if !updatedLocalBets.isEmpty {
-                        if let allBetModels {
-                            print("New updated bets detected:", updatedBets.count)
-                            try await BetViewModel().updateLocalBetResults(games: allGames, week: currentWeek, bets: Array(allBetModels), leagueCode: activeleagueCode, in: context)
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
-    func checkForNewBets(in context: NSManagedObjectContext, timestamp: Date?, games: [GameModel]) async throws {
-        if let timestamp {
-            if let activeleagueCode {
-                var stampedBets = try await BetViewModel().fetchStampedBets(games: games, leagueCode: activeleagueCode, timeStamp: timestamp)
-                
-                if let allBets = self.allBetModels {
-                    let localBetIDs = Set(allBets).map {$0.id}
-                    stampedBets = stampedBets.filter { !localBetIDs.contains($0.id) }
-
-                    if !stampedBets.isEmpty {
-                        print("New bets detected:", stampedBets.count)
-                        convertToBetModels(bets: stampedBets, in: context)
-                    }
-                }
-                
-                let deletedStampedBets = try await BetViewModel().fetchDeletedStampedBets(games: self.weekGames, leagueCode: activeleagueCode, deletedTimestamp: timestamp)
-                if !deletedStampedBets.isEmpty {
-                    for bet in deletedStampedBets {
-                        if let allBetModels {
-                            guard allBetModels.contains(where: { $0.id == bet.id }) else { return }
-                            // try await BetViewModel().deleteBet(betID: bet.id)
-                            BetViewModel().deleteBetModel(in: context, id: bet.id)
-                            if let _ = counter?.timestamp {
-                                var timestamp = Date()
-                                
-                                if let lastTimestamp = leagueBets.last?.timestamp {
-                                    timestamp = lastTimestamp
-                                }
-                                if let lastTimestamp = leagueParlays.last?.timestamp {
-                                    if lastTimestamp > timestamp {
-                                        timestamp = lastTimestamp
-                                    }
-                                }
-                                counter?.timestamp = timestamp
-                                print("New timestamp after removing bet.", timestamp)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
     func updateLocalTimestamp(in context: NSManagedObjectContext, timestamp: Date?) {
         let fetchRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: "Counter")
         fetchRequest.predicate = NSPredicate(format: "attributeName == %@", "attributeValue")
@@ -171,184 +86,6 @@ class HomeViewModel: ObservableObject {
             self.counter = counter
         } catch {
             print("Error saving context: \(error)")
-        }
-    }
-    
-    
-    func checkForNewParlays(in context: NSManagedObjectContext, timestamp: Date?) async throws {
-        if let timestamp {
-            if let activeleagueCode {
-                var stampedParlays = try await ParlayViewModel().fetchStampedParlays(games: self.weekGames, leagueCode: activeleagueCode, timeStamp: timestamp)
-                
-                if let allParlays = self.allParlayModels {
-                    let localParlayIDs = Set(allParlays).map {$0.id}
-                    stampedParlays = stampedParlays.filter { !localParlayIDs.contains($0.id) }
-
-                    if !stampedParlays.isEmpty {
-                        print("New parlays detected:", stampedParlays.count)
-                        print(stampedParlays.map {$0.betString})
-                        convertToParlayModels(parlays: stampedParlays, in: context)
-                    }
-                }
-                
-                var deletedStampedParlays = try await ParlayViewModel().fetchDeletedStampedParlays(games: self.weekGames, leagueCode: activeleagueCode, deletedTimeStamp: timestamp)
-                if let allParlays = self.allParlayModels {
-                    let allParlayModelIDs = allParlays.compactMap { $0.id }
-                    let idSet = Set(allParlayModelIDs)
-                    deletedStampedParlays = deletedStampedParlays.filter { idSet.contains($0.id) }
-                    
-                    if !deletedStampedParlays.isEmpty {
-                        for parlay in deletedStampedParlays {
-                            ParlayViewModel().deleteParlayModel(in: context, id: parlay.id)
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
-    func convertToBetModels(bets: [Bet], in context: NSManagedObjectContext) {
-        for bet in bets.sorted(by: {$0.game.date ?? Date() < $1.game.date ?? Date()}) {
-            let betModel = BetModel(context: context)
-            
-            // Set the attributes on the GameModel from the Game
-            betModel.id = bet.id
-            betModel.betOption = bet.betOption
-            betModel.game = bet.game
-            betModel.type = bet.type.rawValue
-            betModel.result = bet.result?.rawValue ?? "Pending"
-            betModel.odds = Int16(bet.odds)
-            betModel.selectedTeam = bet.selectedTeam
-            betModel.playerID = bet.playerID
-            betModel.week = Int16(bet.week)
-            betModel.leagueCode = bet.leagueCode
-            betModel.stake = 100.0
-            betModel.betString = bet.betString
-            betModel.points = bet.points ?? 0
-            betModel.betOptionString = bet.betOptionString
-            betModel.timestamp = bet.timestamp
-            
-            if bets.last?.id == bet.id {
-                if let timestamp = betModel.timestamp {
-                    self.counter?.timestamp = timestamp
-                    print("New timestamp from last bet added: ", bet.timestamp ?? "")
-                }
-            }
-        }
-        do {
-            try context.save()
-            print("Saved new bets locally.")
-        } catch {
-            print("Error saving context: \(error)")
-        }
-    }
-    
-    func convertToParlayModels(parlays: [Parlay], in context: NSManagedObjectContext) {
-        for parlay in parlays {
-            let parlayModel = ParlayModel(context: context)
-            
-            parlayModel.id = parlay.id
-            parlayModel.totalOdds = Int16(parlay.totalOdds)
-            parlayModel.result = parlay.result.rawValue
-            parlayModel.totalPoints = parlay.totalPoints
-            parlayModel.betString = parlay.betString
-            parlayModel.playerID = parlay.playerID
-            parlayModel.week = Int16(parlay.week)
-            parlayModel.leagueCode = parlay.leagueCode
-            parlayModel.timestamp = parlay.timestamp
-            
-            for bet in parlay.bets {
-                let betModel = BetModel(context: context)
-                betModel.id = bet.id
-                betModel.betOption = bet.betOption
-                betModel.game = bet.game
-                betModel.type = bet.type.rawValue
-                betModel.result = bet.result?.rawValue ?? "Pending"
-                betModel.odds = Int16(bet.odds)
-                betModel.selectedTeam = bet.selectedTeam
-                betModel.playerID = bet.playerID
-                betModel.week = Int16(bet.week)
-                betModel.leagueCode = bet.leagueCode
-                betModel.stake = 100.0
-                betModel.betString = bet.betString
-                betModel.points = bet.points ?? 0
-                betModel.betOptionString = bet.betOptionString
-                betModel.timestamp = bet.timestamp
-                
-                parlayModel.addToBets(betModel)
-            }
-            
-            if parlays.last?.id == parlay.id {
-                if let timestamp = parlayModel.timestamp {
-                    if let localTimestamp = self.counter?.timestamp {
-                        if timestamp > localTimestamp {
-                            self.counter?.timestamp = timestamp
-                            print("New timestamp from last parlay added: ", parlay.timestamp)
-                        }
-                    }
-                }
-            }
-        }
-        do {
-            try context.save()
-            print("Saved new parlays locally.")
-        } catch {
-            print("Error saving context: \(error)")
-        }
-    }
-    
-    func addInitialGames(in context: NSManagedObjectContext) async throws {
-        do {
-            let fetchedAllGames = try await GameService().fetchGamesFromFirestore()
-            _ = await Board().convertToGameModels(games: fetchedAllGames, in: context)
-            do {
-                try context.save()
-            } catch {
-                print("Error saving context: \(error)")
-            }
-        } catch {
-            
-        }
-    }
-    
-    func updateLocalBets(in context: NSManagedObjectContext) async throws {
-        do {
-            if let allBetModels {
-                try await BetViewModel().updateLocalBetResults(games: allGames, week: currentWeek, bets: Array(allBetModels), leagueCode: activeleagueCode ?? "", in: context)
-            }
-        } catch {
-            
-        }
-    }
-    
-    func addInitialBets(games: [GameModel], in context: NSManagedObjectContext) async throws {
-        do {
-            let fetchedBets = try await BetViewModel().fetchBets(games: allGames, leagueCode: activeleagueCode ?? "")
-            print(fetchedBets.map({$0.timestamp}))
-            if fetchedBets.isEmpty {
-                print("No league bets have been placed yet.")
-            } else {
-                for bet in fetchedBets {
-                    BetViewModel().addBetToLocalDatabase(bet: bet, playerID: bet.playerID, in: context)
-                }
-            }
-        } catch {
-            
-        }
-    }
-    
-    func addInitialParlays(games: [GameModel], in context: NSManagedObjectContext) async throws {
-        do {
-            let fetchedParlays = try await ParlayViewModel().fetchParlays(games: games, leagueCode: activeleagueCode ?? "")
-            if fetchedParlays.isEmpty {
-                print("No league parlays have been placed yet.")
-            } else {
-                for parlay in fetchedParlays {
-                    ParlayViewModel().addParlayToLocalDatabase(parlay: parlay, playerID: parlay.playerID, in: context)
-                }
-            }
-        } catch {
-            
         }
     }
     
@@ -375,7 +112,7 @@ class HomeViewModel: ObservableObject {
             return
         }
         
-        currentWeek = Week.from(dayDifference: diffDays).rawValue
+        currentWeek = Utility.Week.from(dayDifference: diffDays).rawValue
     }
     
     func fetchCurrentWeek() async throws -> Int? {
@@ -387,5 +124,18 @@ class HomeViewModel: ObservableObject {
             return document.data()?["week"] as? Int
         }
         return nil
+    }
+    
+    func pedestrianRefresh(in context: NSManagedObjectContext, games: [GameModel], bets: [BetModel], parlays: [ParlayModel], leagueCode: String) async throws {
+        if let newWeek = try await fetchCurrentWeek(), newWeek > currentWeek {
+            currentWeek = newWeek
+        }
+        try await Board().updateLocalGameOdds(games: Array(games).filter({$0.week == currentWeek}), week: currentWeek, in: context)
+//        self.allGameModels = allGameModels
+        
+        try await BetViewModel().updateLocalBetResults(games: Array(games), week: currentWeek, bets: Array(bets), leagueCode: leagueCode, in: context)
+//        self.allBetModels = allBetModels
+        
+        try await BetViewModel().checkForNewBets(in: context, leagueCode: leagueCode, bets: Array(bets), parlays: Array(parlays), timestamp: counter?.timestamp, counter: counter, games: Array(allGames))
     }
 }

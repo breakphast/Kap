@@ -251,4 +251,24 @@ struct Utility {
         let timeString = dateFormatter.string(from: date)
         return timeString + " ET" // Append "ET" to the formatted string
     }
+    
+    static let keys = [
+        "753dc10555c828e2828d33832e8e0ea3",
+        "823ff29071d3b6ae29ac2463dc53b2b5",
+        "4361370f2df59d9c4aabf5b7ff5fd438"
+    ]
+    
+    enum Week: Int {
+        case week1 = 1
+        case week2
+        case week3
+        case week4
+        case week5
+        case week6
+        
+        static func from(dayDifference: Int) -> Week {
+            let currentWeekNumber = (dayDifference / 7) + 1
+            return Week(rawValue: currentWeekNumber) ?? .week1
+        }
+    }
 }
