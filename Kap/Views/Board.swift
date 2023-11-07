@@ -162,6 +162,8 @@ struct Board: View {
         // cloud bets and parlays results
         try await BetViewModel().updateCloudBetResults(bets: homeViewModel.leagueBets)
         homeViewModel.allBetModels = allBetModels
+        try await BetViewModel().updateLocalBetResults(games: Array(allGameModels), week: homeViewModel.currentWeek, bets: Array(allBetModels), leagueCode: homeViewModel.activeleagueCode ?? "", in: viewContext)
+        homeViewModel.allBetModels = allBetModels
 //        try await ParlayViewModel().updateCloudParlayResults(parlays: homeViewModel.leagueParlays)
 //        homeViewModel.allParlayModels = allParlayModels
         
