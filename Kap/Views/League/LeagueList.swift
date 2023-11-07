@@ -270,7 +270,7 @@ struct LeagueList: View {
             if let leaguePlayers = leaguePlayers {
                 homeViewModel.users = homeViewModel.users.filter({ leaguePlayers.contains($0.id!) })
             }
-            await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets.filter({$0.leagueCode == homeViewModel.activeleagueCode}), parlays: homeViewModel.leagueParlays.filter({$0.leagueCode == homeViewModel.activeleagueCode}), week: homeViewModel.currentWeek, leagueCode: activeLeague.code)
+            await leaderboardViewModel.generateWeeklyUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets.filter({$0.week == homeViewModel.currentWeek}), parlays: homeViewModel.leagueParlays.filter({$0.week == homeViewModel.currentWeek}), week: homeViewModel.currentWeek, leagueCode: activeLeague.code)
             
             homeViewModel.userBets = homeViewModel.leagueBets.filter({ $0.playerID == userID })
             homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == userID })

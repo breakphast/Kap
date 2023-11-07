@@ -378,17 +378,6 @@ class HomeViewModel: ObservableObject {
         currentWeek = Week.from(dayDifference: diffDays).rawValue
     }
     
-    func fetchDate() async throws -> String? {
-        let db = Firestore.firestore()
-        let docRef = db.collection("activeDate").document("NBpRBsY6JHSQj87MdTd5")
-        
-        let document = try await docRef.getDocument()
-        if document.exists {
-            return document.data()?["currentDate"] as? String
-        }
-        return nil
-    }
-    
     func fetchCurrentWeek() async throws -> Int? {
         let db = Firestore.firestore()
         let docRef = db.collection("currentWeek").document("currentWeek")
@@ -398,19 +387,5 @@ class HomeViewModel: ObservableObject {
             return document.data()?["week"] as? Int
         }
         return nil
-    }
-    
-    func deleteGame(game: Game) async throws {
-        let db = Firestore.firestore()
-        return try await withCheckedThrowingContinuation { continuation in
-            db.collection("mlbGames").document(game.documentId).delete() { error in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                } else {
-                    continuation.resume()
-                    print("Deleted bet \(game.documentId)")
-                }
-            }
-        }
     }
 }

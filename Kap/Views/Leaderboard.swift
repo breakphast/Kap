@@ -15,12 +15,12 @@ struct Leaderboard: View {
     
     let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 3)
     
-    @State private var selectedOption = "Overall"
+    @State private var selectedOption = ""
     @State private var points: Int = 0
     @State private var weeklyPoints: [String: Double] = [:]
     @State private var missedCount = [String: Int]()
     @State private var selectedUserId: IdentifiableString?
-    @State private var week: Int?
+    @State private var selectedWeek: Int?
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -36,6 +36,12 @@ struct Leaderboard: View {
                 })
         }
         .fontDesign(.rounded)
+        .task {
+            if selectedOption.isEmpty {
+                selectedWeek = homeViewModel.currentWeek
+                selectedOption = "Week \(homeViewModel.currentWeek)"
+            }
+        }
     }
     
     // MARK: - Subviews
@@ -55,7 +61,7 @@ struct Leaderboard: View {
         Menu {
             Button("Overall", action: {
                 selectedOption = "Overall"
-                week = nil
+                selectedWeek = nil
                 Task {
                     weeklyPoints = [:]
                     await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets, parlays: homeViewModel.leagueParlays, week: homeViewModel.currentWeek, leagueCode: leagueViewModel.activeLeague?.code ?? "")
@@ -64,7 +70,7 @@ struct Leaderboard: View {
             ForEach(1...homeViewModel.currentWeek, id: \.self) { weekNumber in
                 Button("Week \(weekNumber)", action: {
                     selectedOption = "Week \(weekNumber)"
-                    week = weekNumber
+                    selectedWeek = weekNumber
                     Task {
                         weeklyPoints = [:]
                         await leaderboardViewModel.generateWeeklyUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets.filter({$0.week == weekNumber}), parlays: homeViewModel.leagueParlays.filter({$0.week == weekNumber}), week: weekNumber, leagueCode: leagueViewModel.activeLeague?.code ?? "")
@@ -129,10 +135,15 @@ struct Leaderboard: View {
     
     func userDetailHStack(for user: User, index: Int) -> some View {
         var points: String = "0"
-        let winsLosses = Utility.countWinsAndLosses(bets: homeViewModel.leagueBets.filter({$0.week == week ?? homeViewModel.currentWeek && $0.playerID == user.id}), forWeek: week ?? homeViewModel.currentWeek)
+        var winsLosses = (text: "", color: Color.black)
+        if selectedWeek != nil {
+            winsLosses = Utility.countWinsAndLosses(bets: homeViewModel.leagueBets.filter({$0.week == selectedWeek ?? homeViewModel.currentWeek && $0.playerID == user.id}), forWeek: selectedWeek ?? homeViewModel.currentWeek)
+        } else {
+            winsLosses = Utility.countWinsAndLosses(bets: homeViewModel.leagueBets.filter({$0.playerID == user.id}), forWeek: nil)
+        }
         
         if let userId = user.id {
-            points = leaderboardViewModel.usersPoints[userId]?[week ?? homeViewModel.currentWeek]?.oneDecimalString ?? 0.noDecimalString
+            points = leaderboardViewModel.usersPoints[userId]?[selectedWeek ?? homeViewModel.currentWeek]?.oneDecimalString ?? 0.noDecimalString
         }
         
         return HStack {

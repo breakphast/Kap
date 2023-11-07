@@ -198,15 +198,25 @@ class DataManager {
 }
 
 struct Utility {
-    static func countWinsAndLosses(bets: [BetModel], forWeek targetWeek: Int) -> (text: String, color: Color) {
+    static func countWinsAndLosses(bets: [BetModel], forWeek targetWeek: Int?) -> (text: String, color: Color) {
         var wins = 0
         var losses = 0
         
-        for bet in bets where bet.week == targetWeek {
-            switch bet.result {
-            case BetResult.win.rawValue: wins += 1
-            case BetResult.loss.rawValue: losses += 1
-            default: break
+        if let targetWeek {
+            for bet in bets where bet.week == targetWeek {
+                switch bet.result {
+                case BetResult.win.rawValue: wins += 1
+                case BetResult.loss.rawValue: losses += 1
+                default: break
+                }
+            }
+        } else {
+            for bet in bets {
+                switch bet.result {
+                case BetResult.win.rawValue: wins += 1
+                case BetResult.loss.rawValue: losses += 1
+                default: break
+                }
             }
         }
         

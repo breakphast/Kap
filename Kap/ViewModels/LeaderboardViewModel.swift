@@ -18,11 +18,13 @@ class LeaderboardViewModel: ObservableObject {
             for user in users {
                 group.addTask {
                     if let userID = user.id {
+                        var points: Double = 0
                         for currentWeek in 1...week {
-                            let points = await self.getWeeklyPoints(userID: userID, bets: userBets[userID] ?? [], parlays: parlays, week: currentWeek)
-                            DispatchQueue.main.async {
-                                self.usersPoints[userID] = [week: points]
-                            }
+                            let newPoints = await self.getWeeklyPoints(userID: userID, bets: userBets[userID] ?? [], parlays: parlays, week: currentWeek)
+                            points += newPoints
+                        }
+                        DispatchQueue.main.async {
+                            self.usersPoints[userID] = [week: points]
                         }
                     }
                 }
