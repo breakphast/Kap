@@ -75,7 +75,7 @@ struct JoinLeague: View {
                                     if newValue.count == 4 {
                                         Task {
                                             if let userID = authViewModel.currentUser?.id {
-                                                try await ignitionSequence(userID: userID, leagueCode: code)
+                                                try await ignitionSequence(userID: userID, leagueCode: code, week: homeViewModel.currentWeek)
                                             }
                                         }
                                     }
@@ -133,7 +133,7 @@ struct JoinLeague: View {
         }
     }
     
-    private func ignitionSequence(userID: String, leagueCode: String) async throws {
+    private func ignitionSequence(userID: String, leagueCode: String, week: Int) async throws {
         guard !homeViewModel.userLeagues.contains(where: {$0.code == code}) else {
             errorText = "You are already in this league.\nPlease enter a new code."
             validCode = false
@@ -223,14 +223,13 @@ struct JoinLeague: View {
                             homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == authViewModel.currentUser?.id})
                         } catch { }
                         
-                        leagueViewModel.points = activeLeague.points ?? [:]
                         let leaguePlayers = homeViewModel.leagues.first(where: { $0.code == activeLeague.code })?.players
                         
                         if let leaguePlayers = leaguePlayers {
                             homeViewModel.users = homeViewModel.users.filter({ leaguePlayers.contains($0.id!) })
                         }
                         
-                        await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets.filter({$0.leagueCode == homeViewModel.activeleagueCode}), parlays: homeViewModel.leagueParlays.filter({$0.leagueCode == homeViewModel.activeleagueCode}), week: homeViewModel.currentWeek, leagueCode: activeLeague.code)
+                        await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets.filter({$0.leagueCode == homeViewModel.activeleagueCode}), parlays: homeViewModel.leagueParlays.filter({$0.leagueCode == homeViewModel.activeleagueCode}), week: week, leagueCode: activeLeague.code)
                         
                         homeViewModel.userBets = homeViewModel.leagueBets.filter({ $0.playerID == userID })
                         homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == userID })

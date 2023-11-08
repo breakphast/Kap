@@ -82,10 +82,134 @@ class GameService {
         }
     }
     
+    func convertToGameModels(games: [Game], in context: NSManagedObjectContext) async -> [GameModel] {
+        var gameModels = [GameModel]()
+        
+        for game in games {
+            let gameModel = GameModel(context: context) // Now we are using the passed-in context
+            
+            // Set the attributes on the GameModel from the Game
+            gameModel.id = game.id
+            gameModel.homeTeam = game.homeTeam
+            gameModel.awayTeam = game.awayTeam
+            gameModel.date = game.date
+            gameModel.homeSpread = game.homeSpread
+            gameModel.awaySpread = game.awaySpread
+            gameModel.homeMoneyLine = Int16(game.homeMoneyLine)
+            gameModel.awayMoneyLine = Int16(game.awayMoneyLine)
+            gameModel.over = game.over
+            gameModel.under = game.under
+            gameModel.completed = game.completed
+            gameModel.homeScore = game.homeScore
+            gameModel.awayScore = game.awayScore
+            gameModel.homeSpreadPriceTemp = game.homeSpreadPriceTemp
+            gameModel.awaySpreadPriceTemp = game.awaySpreadPriceTemp
+            gameModel.overPriceTemp = game.overPriceTemp
+            gameModel.underPriceTemp = game.underPriceTemp
+            gameModel.week = Int16(game.week ?? 0)
+            
+            var documentId: String {
+                let formatter = DateFormatter()
+                formatter.dateFormat = "yyyy-MM-dd"
+                let datePart = formatter.string(from: gameModel.date ?? Date())
+                
+                // Converting team names to a URL-safe format
+                let safeHomeTeam = (gameModel.homeTeam ?? "").replacingOccurrences(of: " ", with: "-")
+                let safeAwayTeam = (gameModel.awayTeam ?? "").replacingOccurrences(of: " ", with: "-")
+                
+                return "\(datePart)-\(safeHomeTeam)-vs-\(safeAwayTeam)"
+            }
+            gameModel.documentID = documentId
+            
+            for betOption in game.betOptions {
+                let betOptionModel = BetOptionModel(context: context)
+                betOptionModel.id = betOption.id
+                betOptionModel.odds = Int16(betOption.odds)
+                betOptionModel.spread = betOption.spread ?? 0
+                betOptionModel.over = betOption.over
+                betOptionModel.under = betOption.under
+                betOptionModel.betType = betOption.betType.rawValue
+                betOptionModel.selectedTeam = betOption.selectedTeam
+                betOptionModel.confirmBet = betOption.confirmBet
+                betOptionModel.maxBets = Int16(betOption.maxBets ?? 0)
+                betOptionModel.game = gameModel
+                betOptionModel.betString = betOption.betString
+                
+                gameModel.addToBetOptions(betOptionModel)
+            }
+            gameModels.append(gameModel)
+        }
+        return gameModels
+    }
+
+    
+    func updateLocalGameScores(in context: NSManagedObjectContext, week: Int) async throws {
+        let updatedGames = try await fetchGamesFromFirestore(week: week)
+        for game in updatedGames {
+            if let newGame = updatedGames.first(where: {$0.documentId == game.documentId}) {
+                game.completed = newGame.completed
+                game.homeScore = newGame.homeScore
+                game.awayScore = newGame.awayScore
+            }
+        }
+        try context.save()
+    }
+    
+    func updateCloudGameOdds(week: Int) async throws {
+        let updatedGames = try await getGames()
+        try await addGames(games: updatedGames, week: week)
+    }
+    
+    func updateLocalGameOdds(games: [GameModel], week: Int, in context: NSManagedObjectContext) async throws {
+        // this is locally updating odds to core data
+        let updatedGames = try await fetchGamesFromFirestore(week: week)
+        for game in games {
+            if let newGame = updatedGames.first(where: {$0.documentId == game.documentID}) {
+                game.homeSpread = newGame.homeSpread
+                game.awaySpread = newGame.awaySpread
+                game.homeMoneyLine = Int16(newGame.homeMoneyLine)
+                game.awayMoneyLine = Int16(newGame.awayMoneyLine)
+                game.over = newGame.over
+                game.under = newGame.under
+                game.homeSpreadPriceTemp = newGame.homeSpreadPriceTemp
+                game.awaySpreadPriceTemp = newGame.awaySpreadPriceTemp
+                game.overPriceTemp = newGame.overPriceTemp
+                game.underPriceTemp = newGame.underPriceTemp
+                game.betOptions = []
+                game.homeScore = newGame.homeScore
+                game.awayScore = newGame.awayScore
+                game.completed = newGame.completed
+
+                for betOption in newGame.betOptions {
+                    let betOptionModel = BetOptionModel(context: context)
+                    betOptionModel.id = betOption.id
+                    betOptionModel.odds = Int16(betOption.odds)
+                    betOptionModel.spread = betOption.spread ?? 0
+                    betOptionModel.over = betOption.over
+                    betOptionModel.under = betOption.under
+                    betOptionModel.betType = betOption.betType.rawValue
+                    betOptionModel.selectedTeam = betOption.selectedTeam
+                    betOptionModel.confirmBet = betOption.confirmBet
+                    betOptionModel.maxBets = Int16(betOption.maxBets ?? 0)
+                    betOptionModel.game = game
+                    betOptionModel.betString = betOption.betString
+
+                    game.addToBetOptions(betOptionModel)
+                }
+            }
+        }
+        do {
+            try context.save()
+            print("Updated \(games.count) game odds locally..")
+        } catch {
+            print("Error saving context: \(error)")
+        }
+    }
+
     func addInitialGames(in context: NSManagedObjectContext) async throws {
         do {
-            let fetchedAllGames = try await GameService().fetchGamesFromFirestore()
-            _ = await Board().convertToGameModels(games: fetchedAllGames, in: context)
+            let fetchedAllGames = try await fetchGamesFromFirestore()
+            _ = await convertToGameModels(games: fetchedAllGames, in: context)
             do {
                 try context.save()
             } catch {

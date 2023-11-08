@@ -198,6 +198,21 @@ class DataManager {
 }
 
 struct Utility {
+    static func deleteAllData(ofEntity entityName: String, in context: NSManagedObjectContext, completion: @escaping (Result<Void, Error>) -> Void) {
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
+        let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+
+        do {
+            try context.execute(batchDeleteRequest)
+            try context.save()
+            print("Deleted all \(entityName) data.")
+            completion(.success(()))
+        } catch {
+            print("Failed to delete all \(entityName) data.")
+            completion(.failure(error))
+        }
+    }
+    
     static func countWinsAndLosses(bets: [BetModel], forWeek targetWeek: Int?) -> (text: String, color: Color) {
         var wins = 0
         var losses = 0
@@ -270,5 +285,54 @@ struct Utility {
             let currentWeekNumber = (dayDifference / 7) + 1
             return Week(rawValue: currentWeekNumber) ?? .week1
         }
+    }
+}
+
+func convertDateToDesiredFormat(_ date: Date) -> String {
+    let dateFormatter = DateFormatter()
+    
+    // Convert to Eastern Time
+    dateFormatter.timeZone = TimeZone(identifier: "America/New_York")
+    dateFormatter.dateFormat = "EEE  h:mma"
+    
+    let resultStr = dateFormatter.string(from: date).uppercased()
+    
+//        // Append 'ET' to the end
+//        resultStr += "  ET"
+    
+    return resultStr
+}
+
+func convertDateForBetCard(_ date: Date) -> String {
+    let dateFormatter = DateFormatter()
+    
+    // Convert to Eastern Time
+    dateFormatter.timeZone = TimeZone(identifier: "America/New_York")
+    
+    // Setting the desired format
+    dateFormatter.dateFormat = "MMM d, h:mma"
+    
+    var resultStr = dateFormatter.string(from: date).uppercased()
+    
+    // Append 'ET' to the end
+    resultStr += " ET"
+    
+    return resultStr
+}
+
+struct TopRoundedRectangle: Shape {
+    var radius: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+
+        path.move(to: CGPoint(x: 0, y: rect.maxY)) // bottom left
+        path.addLine(to: CGPoint(x: 0, y: radius)) // top left
+        path.addArc(center: CGPoint(x: radius, y: radius), radius: radius, startAngle: .degrees(180), endAngle: .degrees(270), clockwise: false)
+        path.addLine(to: CGPoint(x: rect.maxX - radius, y: 0)) // before top right corner
+        path.addArc(center: CGPoint(x: rect.maxX - radius, y: radius), radius: radius, startAngle: .degrees(270), endAngle: .degrees(0), clockwise: false)
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY)) // bottom right
+
+        return path
     }
 }

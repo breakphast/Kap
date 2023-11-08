@@ -124,7 +124,7 @@ struct Login: View {
                     authViewModel.login(withEmail: emailAddy.lowercased(), password: pass) { userID in
                         if let userID {
                             Task {
-                                try await ignitionSequence(userID: userID)
+                                try await loginIgnition(userID: userID, week: homeViewModel.currentWeek)
                             }
                         } else {
                             print("Login failed")
@@ -243,7 +243,7 @@ struct Login: View {
         }
     }
     
-    func ignitionSequence(userID: String) async throws {
+    func loginIgnition(userID: String, week: Int) async throws {
         if allGameModels.isEmpty {
             print("No games. Adding now...")
             do {
@@ -251,7 +251,7 @@ struct Login: View {
                 homeViewModel.allGameModels = self.allGameModels
                 if let allGames = homeViewModel.allGameModels {
                     do {
-                        try await Board().updateLocalGameOdds(games: Array(allGames).filter({$0.week == homeViewModel.currentWeek}), week: homeViewModel.currentWeek, in: viewContext)
+                        try await GameService().updateLocalGameOdds(games: Array(allGames).filter({$0.week == homeViewModel.currentWeek}), week: week, in: viewContext)
                         homeViewModel.allGameModels = self.allGameModels
                         print("Done adding games.")
                     } catch {
@@ -310,7 +310,6 @@ struct Login: View {
                         
                     }
                 }
-                leagueViewModel.points = activeLeague.points ?? [:]
                 let leaguePlayers = homeViewModel.leagues.first(where: { $0.code == activeLeague.code })?.players
                 
                 if let leaguePlayers = leaguePlayers {

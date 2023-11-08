@@ -2,7 +2,6 @@ import Foundation
 import Firebase
 
 class LeagueViewModel: ObservableObject {
-    @Published var points = [String: Double]()
     @Published var activeLeague: League?
     
     private var db = Firestore.firestore()
@@ -60,35 +59,6 @@ class LeagueViewModel: ObservableObject {
                     continuation.resume(throwing: error)
                 } else {
                     continuation.resume()
-                }
-            }
-        }
-    }
-    
-    func addPointsToLeague(leagueCode: String, points: Double, forKey key: String) async throws {
-        return try await withCheckedThrowingContinuation { continuation in
-            let docRef = db.collection("leagues").document(leagueCode)
-            
-            docRef.getDocument { (document, error) in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                
-                guard let document = document, document.exists, var pointsDictionary = document.get("points") as? [String: Double] else {
-                    let error = NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey : "Document does not exist or points dictionary is missing/invalid"])
-                    continuation.resume(throwing: error)
-                    return
-                }
-                
-                pointsDictionary[key, default: 0] += points
-                
-                docRef.updateData(["points": pointsDictionary]) { error in
-                    if let error = error {
-                        continuation.resume(throwing: error)
-                    } else {
-                        continuation.resume()
-                    }
                 }
             }
         }

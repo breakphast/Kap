@@ -87,9 +87,9 @@ struct Board: View {
                     Task {
                         do {
                             if let activeleagueCode = homeViewModel.activeleagueCode {
-                                try await homeViewModel.pedestrianRefresh(in: viewContext, games: Array(allGameModels), bets: Array(allBetModels), parlays: Array(allParlayModels), leagueCode: homeViewModel.activeleagueCode ?? "")
+                                try await homeViewModel.pedestrianRefresh(in: viewContext, games: Array(allGameModels), bets: Array(allBetModels), parlays: Array(allParlayModels), leagueCode: activeleagueCode)
+//                                try await homeViewModel.personalRefresh(in: viewContext, games: Array(allGameModels), bets: Array(allBetModels), parlays: Array(allParlayModels), leagueCode: activeleagueCode)
                             }
-//                            try await personalRefresh()
                         } catch {
                             
                         }
@@ -138,226 +138,12 @@ struct Board: View {
             }
         }
     }
-    
-//    func pedestrianRefresh() async throws {
-//        if let allGameModels = homeViewModel.allGameModels {
-//            if let newWeek = try await homeViewModel.fetchCurrentWeek(), newWeek > homeViewModel.currentWeek {
-//                homeViewModel.currentWeek = newWeek
-//            }
-//            try await updateLocalGameOdds(games: Array(allGameModels).filter({$0.week == homeViewModel.currentWeek}), week: homeViewModel.currentWeek, in: viewContext)
-//            homeViewModel.allGameModels = allGameModels
-//            
-//            try await BetViewModel().updateLocalBetResults(games: Array(allGameModels), week: homeViewModel.currentWeek, bets: Array(allBetModels), leagueCode: homeViewModel.activeleagueCode ?? "", in: viewContext)
-//            homeViewModel.allBetModels = allBetModels
-//            
-//            try await BetViewModel().checkForNewBets(in: viewContext, leagueCode: activeLeague.code, bets: Array(allBetModels), parlays: Array(allParlayModels), timestamp: currentTimestamp, counter: homeViewModel.counter, games: Array(homeViewModel.allGames))
-//        }
-//    }
-    
-    func personalRefresh() async throws { 
-        try await updateCloudGameOdds()
-        try await updateLocalGameOdds(games: homeViewModel.weekGames, week: homeViewModel.currentWeek, in: viewContext)
-        homeViewModel.allGameModels = allGameModels
-        // cloud scores
-        try await GameService().updateCloudGameScores(games: homeViewModel.weekGames)
-        homeViewModel.allGameModels = allGameModels
-        try await updateLocalGameScores(in: viewContext)
-        homeViewModel.allGameModels = allGameModels
-        // cloud bets and parlays results
-        try await BetViewModel().updateCloudBetResults(bets: homeViewModel.leagueBets)
-        homeViewModel.allBetModels = allBetModels
-        try await BetViewModel().updateLocalBetResults(games: Array(allGameModels), week: homeViewModel.currentWeek, bets: Array(allBetModels), leagueCode: homeViewModel.activeleagueCode ?? "", in: viewContext)
-        homeViewModel.allBetModels = allBetModels
-//        try await ParlayViewModel().updateCloudParlayResults(parlays: homeViewModel.leagueParlays)
-//        homeViewModel.allParlayModels = allParlayModels
-        
-        
-    }
-    
-    func updateLocalGameOdds(games: [GameModel], week: Int, in context: NSManagedObjectContext) async throws {
-        // this is locally updating odds to core data
-        let updatedGames = try await GameService().fetchGamesFromFirestore(week: week)
-        for game in games {
-            if let newGame = updatedGames.first(where: {$0.documentId == game.documentID}) {
-                game.homeSpread = newGame.homeSpread
-                game.awaySpread = newGame.awaySpread
-                game.homeMoneyLine = Int16(newGame.homeMoneyLine)
-                game.awayMoneyLine = Int16(newGame.awayMoneyLine)
-                game.over = newGame.over
-                game.under = newGame.under
-                game.homeSpreadPriceTemp = newGame.homeSpreadPriceTemp
-                game.awaySpreadPriceTemp = newGame.awaySpreadPriceTemp
-                game.overPriceTemp = newGame.overPriceTemp
-                game.underPriceTemp = newGame.underPriceTemp
-                game.betOptions = []
-                game.homeScore = newGame.homeScore
-                game.awayScore = newGame.awayScore
-                game.completed = newGame.completed
-
-                for betOption in newGame.betOptions {
-                    let betOptionModel = BetOptionModel(context: context)
-                    betOptionModel.id = betOption.id
-                    betOptionModel.odds = Int16(betOption.odds)
-                    betOptionModel.spread = betOption.spread ?? 0
-                    betOptionModel.over = betOption.over
-                    betOptionModel.under = betOption.under
-                    betOptionModel.betType = betOption.betType.rawValue
-                    betOptionModel.selectedTeam = betOption.selectedTeam
-                    betOptionModel.confirmBet = betOption.confirmBet
-                    betOptionModel.maxBets = Int16(betOption.maxBets ?? 0)
-                    betOptionModel.game = game
-                    betOptionModel.betString = betOption.betString
-
-                    game.addToBetOptions(betOptionModel)
-                }
-            }
-        }
-        do {
-            try context.save()
-            print("Updated \(games.count) game odds locally..")
-        } catch {
-            print("Error saving context: \(error)")
-        }
-    }
-
-    func updateCloudGameOdds() async throws {
-        let updatedGames = try await GameService().getGames()
-        try await GameService().addGames(games: updatedGames, week: homeViewModel.currentWeek)
-    }
-    
-    func updateLocalGameScores(in context: NSManagedObjectContext) async throws {
-        let updatedGames = try await GameService().fetchGamesFromFirestore(week: homeViewModel.currentWeek)
-        for game in updatedGames {
-            if let newGame = updatedGames.first(where: {$0.documentId == game.documentId}) {
-                game.completed = newGame.completed
-                game.homeScore = newGame.homeScore
-                game.awayScore = newGame.awayScore
-            }
-        }
-        try context.save()
-    }
-    
-    func updateGameAttribute(game: GameModel, in context: NSManagedObjectContext) {
-        
-    }
-    
-    func convertToGameModels(games: [Game], in context: NSManagedObjectContext) async -> [GameModel] {
-        var gameModels = [GameModel]()
-        
-        for game in games {
-            let gameModel = GameModel(context: context) // Now we are using the passed-in context
-            
-            // Set the attributes on the GameModel from the Game
-            gameModel.id = game.id
-            gameModel.homeTeam = game.homeTeam
-            gameModel.awayTeam = game.awayTeam
-            gameModel.date = game.date
-            gameModel.homeSpread = game.homeSpread
-            gameModel.awaySpread = game.awaySpread
-            gameModel.homeMoneyLine = Int16(game.homeMoneyLine)
-            gameModel.awayMoneyLine = Int16(game.awayMoneyLine)
-            gameModel.over = game.over
-            gameModel.under = game.under
-            gameModel.completed = game.completed
-            gameModel.homeScore = game.homeScore
-            gameModel.awayScore = game.awayScore
-            gameModel.homeSpreadPriceTemp = game.homeSpreadPriceTemp
-            gameModel.awaySpreadPriceTemp = game.awaySpreadPriceTemp
-            gameModel.overPriceTemp = game.overPriceTemp
-            gameModel.underPriceTemp = game.underPriceTemp
-            gameModel.week = Int16(game.week ?? 0)
-            
-            var documentId: String {
-                let formatter = DateFormatter()
-                formatter.dateFormat = "yyyy-MM-dd"
-                let datePart = formatter.string(from: gameModel.date ?? Date())
-                
-                // Converting team names to a URL-safe format
-                let safeHomeTeam = (gameModel.homeTeam ?? "").replacingOccurrences(of: " ", with: "-")
-                let safeAwayTeam = (gameModel.awayTeam ?? "").replacingOccurrences(of: " ", with: "-")
-                
-                return "\(datePart)-\(safeHomeTeam)-vs-\(safeAwayTeam)"
-            }
-            gameModel.documentID = documentId
-            
-            for betOption in game.betOptions {
-                let betOptionModel = BetOptionModel(context: context)
-                betOptionModel.id = betOption.id
-                betOptionModel.odds = Int16(betOption.odds)
-                betOptionModel.spread = betOption.spread ?? 0
-                betOptionModel.over = betOption.over
-                betOptionModel.under = betOption.under
-                betOptionModel.betType = betOption.betType.rawValue
-                betOptionModel.selectedTeam = betOption.selectedTeam
-                betOptionModel.confirmBet = betOption.confirmBet
-                betOptionModel.maxBets = Int16(betOption.maxBets ?? 0)
-                betOptionModel.game = gameModel
-                betOptionModel.betString = betOption.betString
-                
-                gameModel.addToBetOptions(betOptionModel)
-            }
-            gameModels.append(gameModel)
-        }
-        return gameModels
-    }
-
-    func deleteAllData(ofEntity entityName: String, completion: @escaping (Result<Void, Error>) -> Void) {
-        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
-        let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-
-        do {
-            try viewContext.execute(batchDeleteRequest)
-            try viewContext.save()
-            print("Deleted all \(entityName) data.")
-            completion(.success(()))
-        } catch {
-            print("Failed to delete all \(entityName) data.")
-            completion(.failure(error))
-        }
-    }
-    func deleteFirstOption() {
-        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: "BetModel")
-        fetchRequest.fetchLimit = 1
-        
-        do {
-            let fetchedResults = try viewContext.fetch(fetchRequest) as? [NSManagedObject]
-            if let objectToDelete = fetchedResults?.first {
-                viewContext.delete(objectToDelete)
-                
-                do {
-                    try viewContext.save()
-                } catch {
-                    print("Error saving context after deletion: \(error)")
-                }
-            } else {
-                print("No object to delete")
-            }
-        } catch {
-            print("Error fetching objects: \(error)")
-        }
-    }
 }
 
 struct GameListingView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     let allGameModels: [GameModel]
-    
-    private var thursdayNightGame: [GameModel] {
-        Array(homeViewModel.weekGames.prefix(1))
-    }
-    
-    private var sundayGames: [GameModel] {
-        Array(homeViewModel.weekGames.dropFirst().dropLast(2))
-    }
-    
-    private var sundayNightGame: [GameModel] {
-        Array(homeViewModel.weekGames.suffix(2).prefix(1))
-    }
-    
-    private var mondayNightGame: [GameModel] {
-        Array(homeViewModel.weekGames.suffix(1))
-    }
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             SectionView(title: "NFL", games: allGameModels.sorted(by: {$0.date ?? Date() < $1.date ?? Date()}), first: true)
@@ -411,8 +197,6 @@ struct SectionView: View {
         }
     }
 }
-
-
 
 struct GameRow: View {
     var game: GameModel
@@ -475,55 +259,5 @@ struct GameRow: View {
                 .frame(maxWidth: UIScreen.main.bounds.width / 1.75)
             }
         }
-//        .padding(.bottom, 20)
-    }
-}
-
-func convertDateToDesiredFormat(_ date: Date) -> String {
-    let dateFormatter = DateFormatter()
-    
-    // Convert to Eastern Time
-    dateFormatter.timeZone = TimeZone(identifier: "America/New_York")
-    dateFormatter.dateFormat = "EEE  h:mma"
-    
-    let resultStr = dateFormatter.string(from: date).uppercased()
-    
-//        // Append 'ET' to the end
-//        resultStr += "  ET"
-    
-    return resultStr
-}
-
-func convertDateForBetCard(_ date: Date) -> String {
-    let dateFormatter = DateFormatter()
-    
-    // Convert to Eastern Time
-    dateFormatter.timeZone = TimeZone(identifier: "America/New_York")
-    
-    // Setting the desired format
-    dateFormatter.dateFormat = "MMM d, h:mma"
-    
-    var resultStr = dateFormatter.string(from: date).uppercased()
-    
-    // Append 'ET' to the end
-    resultStr += " ET"
-    
-    return resultStr
-}
-
-struct TopRoundedRectangle: Shape {
-    var radius: CGFloat
-
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-
-        path.move(to: CGPoint(x: 0, y: rect.maxY)) // bottom left
-        path.addLine(to: CGPoint(x: 0, y: radius)) // top left
-        path.addArc(center: CGPoint(x: radius, y: radius), radius: radius, startAngle: .degrees(180), endAngle: .degrees(270), clockwise: false)
-        path.addLine(to: CGPoint(x: rect.maxX - radius, y: 0)) // before top right corner
-        path.addArc(center: CGPoint(x: rect.maxX - radius, y: radius), radius: radius, startAngle: .degrees(270), endAngle: .degrees(0), clockwise: false)
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY)) // bottom right
-
-        return path
     }
 }

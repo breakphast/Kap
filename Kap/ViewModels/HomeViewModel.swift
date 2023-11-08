@@ -18,7 +18,7 @@ class HomeViewModel: ObservableObject {
     @Published var allGames: [GameModel] = []
     @Published var allBets: [BetModel] = []
     @Published var generatedBets: [Bet] = []
-    @Published var allParlays: [Parlay] = []
+    @Published var allParlays: [ParlayModel] = []
     @Published var selectedBets: [Bet] = []
     @Published var activeParlay: Parlay?
     @Published var players: [Player] = []
@@ -89,16 +89,6 @@ class HomeViewModel: ObservableObject {
         }
     }
     
-    func originalFetch(updateScores: Bool, updateGames: Bool, updateLeaderboards: Bool) async {
-        do {
-            let activeDate = self.formatter.string(from: Date())
-            
-            DispatchQueue.main.async {
-                self.currentDate = activeDate
-            }
-        }
-    }
-    
     func setCurrentWeek() {
         let calendar = Calendar.current
         
@@ -128,14 +118,120 @@ class HomeViewModel: ObservableObject {
     
     func pedestrianRefresh(in context: NSManagedObjectContext, games: [GameModel], bets: [BetModel], parlays: [ParlayModel], leagueCode: String) async throws {
         if let newWeek = try await fetchCurrentWeek(), newWeek > currentWeek {
-            currentWeek = newWeek
+            DispatchQueue.main.async {
+                self.currentWeek = newWeek
+            }
         }
-        try await Board().updateLocalGameOdds(games: Array(games).filter({$0.week == currentWeek}), week: currentWeek, in: context)
-//        self.allGameModels = allGameModels
-        
+        try await GameService().updateLocalGameOdds(games: Array(games).filter({$0.week == currentWeek}), week: currentWeek, in: context)
+        fetchEntities(GameModel.self, in: context) { result in
+            switch result {
+            case .success(let games):
+                self.allGames = games
+            case .failure(let error):
+                print("Error \(error)")
+            }
+        }
         try await BetViewModel().updateLocalBetResults(games: Array(games), week: currentWeek, bets: Array(bets), leagueCode: leagueCode, in: context)
-//        self.allBetModels = allBetModels
+        fetchEntities(BetModel.self, in: context) { result in
+            switch result {
+            case .success(let bets):
+                self.allBets = bets
+            case .failure(let error):
+                print("Error \(error)")
+            }
+        }
         
         try await BetViewModel().checkForNewBets(in: context, leagueCode: leagueCode, bets: Array(bets), parlays: Array(parlays), timestamp: counter?.timestamp, counter: counter, games: Array(allGames))
     }
+    
+        func personalRefresh(in context: NSManagedObjectContext, games: [GameModel], bets: [BetModel], parlays: [ParlayModel], leagueCode: String) async throws {
+            try await GameService().updateCloudGameOdds(week: currentWeek)
+            try await GameService().updateLocalGameOdds(games: games, week: currentWeek, in: context)
+            fetchEntities(GameModel.self, in: context) { result in
+                switch result {
+                case .success(let games):
+                    self.allGames = games
+                case .failure(let error):
+                    print("Error \(error)")
+                }
+            }           
+            // cloud scores
+            try await GameService().updateCloudGameScores(games: games)
+            fetchEntities(GameModel.self, in: context) { result in
+                switch result {
+                case .success(let games):
+                    self.allGames = games
+                case .failure(let error):
+                    print("Error \(error)")
+                }
+            }            
+            try await GameService().updateLocalGameScores(in: context, week: currentWeek)
+            fetchEntities(GameModel.self, in: context) { result in
+                switch result {
+                case .success(let games):
+                    self.allGames = games
+                case .failure(let error):
+                    print("Error \(error)")
+                }
+            }            
+            // cloud bets and parlays results
+            try await BetViewModel().updateCloudBetResults(bets: leagueBets)
+            fetchEntities(BetModel.self, in: context) { result in
+                switch result {
+                case .success(let bets):
+                    self.allBets = bets
+                case .failure(let error):
+                    print("Error \(error)")
+                }
+            }            
+            try await BetViewModel().updateLocalBetResults(games: Array(games), week: currentWeek, bets: Array(bets), leagueCode: leagueCode, in: context)
+            fetchEntities(BetModel.self, in: context) { result in
+                switch result {
+                case .success(let bets):
+                    self.allBets = bets
+                case .failure(let error):
+                    print("Error \(error)")
+                }
+            }    
+            //        try await ParlayViewModel().updateCloudParlayResults(parlays: homeViewModel.leagueParlays)
+            //        homeViewModel.allParlayModels = allParlayModels
+        }
+    
+    func fetchEntities<T: NSManagedObject>(_ entity: T.Type, in context: NSManagedObjectContext, completion: @escaping (Result<[T], Error>) -> Void) {
+        let fetchRequest = T.fetchRequest()
+        DispatchQueue.main.async {
+            do {
+                if let results = try context.fetch(fetchRequest) as? [T] {
+                    completion(.success(results))
+                } else {
+                    completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Could not cast fetch results to the expected type."])))
+                }
+            } catch {
+                completion(.failure(error))
+            }
+        }
+    }
+    
+//    func fetchEssentials(updateGames: Bool, updateScores: Bool, league: League, in context: NSManagedObjectContext) async {
+//        do {
+//            guard let leaguePlayers = league.players else {
+//                throw NSError(domain: "HomeViewModel", code: -1, userInfo: [NSLocalizedDescriptionKey: "Error: league players are nil."])
+//            }
+//
+//            let fetchedUsers = try await UserViewModel().fetchAllUsers(leagueUsers: leaguePlayers)
+//            let relevantUsers = fetchedUsers.filter { leaguePlayers.contains($0.id ?? "") }
+//
+//            fetchEntities(GameModel.self, in: context, completion: { result in
+//                switch result {
+//                case .success(let games):
+//                    self.allGames = games
+//                    self.weekGames = games.filter { $0.week == self.currentWeek }
+//                case .failure(let error):
+//                    print("Error \(error)")
+//                }
+//            })
+//        } catch {
+//            print("Failed with error: \(error.localizedDescription)")
+//        }
+//    }
 }

@@ -150,7 +150,7 @@ struct LeagueList: View {
                             clickedLeague = league.code
                         }
                         if let userID = authViewModel.currentUser?.id {
-                            try await ignitionSequence(userID: userID, leagueCode: league.code)
+                            try await ignitionSequence(userID: userID, leagueCode: league.code, week: homeViewModel.currentWeek, in: viewContext)
                         }
                     }
                 }
@@ -168,29 +168,25 @@ struct LeagueList: View {
 
             homeViewModel.users = relevantUsers
 
-            if let allGameModels = homeViewModel.allGameModels {
-                homeViewModel.allGames = Array(allGameModels)
-                homeViewModel.weekGames = homeViewModel.allGames.filter { $0.week == homeViewModel.currentWeek }
-            }
+            homeViewModel.allGames = Array(allGameModels)
+            homeViewModel.weekGames = homeViewModel.allGames.filter { $0.week == homeViewModel.currentWeek }
 
         } catch {
             print("Failed with error: \(error.localizedDescription)")
         }
     }
     
-    private func ignitionSequence(userID: String, leagueCode: String) async throws {
+    private func ignitionSequence(userID: String, leagueCode: String, week: Int, in context: NSManagedObjectContext) async throws {
         if allGameModels.isEmpty {
             print("No games. Adding now...")
             do {
-                try await GameService().addInitialGames(in: viewContext)
-                homeViewModel.allGameModels = self.allGameModels
-                if let allGames = homeViewModel.allGameModels {
-                    do {
-                        try await Board().updateLocalGameOdds(games: Array(allGames).filter({$0.week == homeViewModel.currentWeek}), week: homeViewModel.currentWeek, in: viewContext)
-                        homeViewModel.allGameModels = self.allGameModels
-                        print("Done adding games locally.")
-                    } catch { }
-                }
+                try await GameService().addInitialGames(in: context)
+                homeViewModel.allGames = Array(allGameModels)
+                do {
+                    try await GameService().updateLocalGameOdds(games: Array(allGameModels).filter({$0.week == week}), week: week, in: context)
+                    homeViewModel.allGames = Array(allGameModels)
+                    print("Done adding games locally.")
+                } catch { }
             } catch {
                 
             }
@@ -204,16 +200,21 @@ struct LeagueList: View {
             homeViewModel.allBetModels = self.allBetModels
             homeViewModel.allParlayModels = self.allParlayModels
             
+            homeViewModel.allGames = Array(allGameModels)
+            homeViewModel.allBets = Array(allBetModels)
+            homeViewModel.allParlays = Array(allParlayModels)
+            
             await fetchEssentials(updateGames: false, updateScores: false, league: activeLeague, in: viewContext)
             homeViewModel.leagueBets = Array(allBetModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
             homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
+            
             
             homeViewModel.leagueParlays = Array(allParlayModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
             homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == authViewModel.currentUser?.id})
             if homeViewModel.leagueBets.isEmpty {
                 do {
                     try await BetViewModel().addInitialBets(games: homeViewModel.allGames, leagueCode: activeLeague.code, in: viewContext)
-                    homeViewModel.allBetModels = self.allBetModels
+                    homeViewModel.allBets = Array(allBetModels)
                     homeViewModel.leagueBets = Array(allBetModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
                     homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
                 } catch {
@@ -264,13 +265,12 @@ struct LeagueList: View {
                 
             }
             
-            leagueViewModel.points = activeLeague.points ?? [:]
             let leaguePlayers = homeViewModel.leagues.first(where: { $0.code == activeLeague.code })?.players
             
             if let leaguePlayers = leaguePlayers {
                 homeViewModel.users = homeViewModel.users.filter({ leaguePlayers.contains($0.id!) })
             }
-            await leaderboardViewModel.generateWeeklyUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets.filter({$0.week == homeViewModel.currentWeek}), parlays: homeViewModel.leagueParlays.filter({$0.week == homeViewModel.currentWeek}), week: homeViewModel.currentWeek, leagueCode: activeLeague.code)
+            await leaderboardViewModel.generateWeeklyUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets.filter({$0.week == homeViewModel.currentWeek}), parlays: homeViewModel.leagueParlays.filter({$0.week == homeViewModel.currentWeek}), week: week, leagueCode: activeLeague.code)
             
             homeViewModel.userBets = homeViewModel.leagueBets.filter({ $0.playerID == userID })
             homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == userID })
