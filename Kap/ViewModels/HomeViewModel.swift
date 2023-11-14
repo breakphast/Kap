@@ -25,7 +25,7 @@ class HomeViewModel: ObservableObject {
     @Published var leaderboards: [[User]] = [[]]
     
     @Published var activePlayer: Player?
-    @Published var currentWeek = 9
+    @Published var currentWeek = 11
     @Published var activeLeague: League?
     @Published var currentDate: String = ""
     
@@ -33,7 +33,7 @@ class HomeViewModel: ObservableObject {
     @Published var showingSplashScreen = true
     
     @Published var activeleagueCode: String?
-    @Published var leagueCodes: [String] = ["2222", "5555"]
+    @Published var leagueCodes: [String] = ["2222", "5555", "3214"]
     @Published var userLeagues: [League] = []
     @Published var leagueType: LeagueType = .weekly
     
@@ -193,7 +193,8 @@ class HomeViewModel: ObservableObject {
                     print("Error \(error)")
                 }
             }    
-            //        try await ParlayViewModel().updateCloudParlayResults(parlays: homeViewModel.leagueParlays)
+            try await ParlayViewModel().updateCloudParlayResults(parlays: Array(parlays))
+            try await ParlayViewModel().updateLocalParlayResults(games: Array(games), week: currentWeek, parlays: Array(parlays), leagueCode: leagueCode, in: context)
             //        homeViewModel.allParlayModels = allParlayModels
         }
     

@@ -13,7 +13,7 @@ class UserViewModel: ObservableObject {
     private var db = Firestore.firestore()
     
     func fetchAllUsers(leagueUsers: [String]) async throws -> [User] {
-        guard leagueUsers.count <= 10 else {
+        guard leagueUsers.count <= 16 else {
             throw CustomError.exceededLimit
         }
 

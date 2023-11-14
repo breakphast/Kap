@@ -262,7 +262,7 @@ extension Game {
                 resultScore = awayIntScore - homeIntScore
             }
 
-            if Double(resultScore) < abs(self.homeSpread) {
+            if Double(abs(resultScore)) < abs(self.homeSpread) {
                 return .win
             } else if Double(resultScore) > abs(self.homeSpread) {
                 return .loss
@@ -302,18 +302,26 @@ extension GameModel {
         case BetType.spread.rawValue:
             guard let homeIntScore = Int(homeScore), let awayIntScore = Int(awayScore) else { return .pending }
             
-            let resultScore: Int
-            if bet.selectedTeam == awayTeam {
-                resultScore = homeIntScore - awayIntScore
+            let spread: Double
+            if bet.selectedTeam == homeTeam {
+                spread = self.homeSpread
+                // -3.5
             } else {
-                resultScore = awayIntScore - homeIntScore
+                spread = self.awaySpread
+                // +3.5
             }
-
-            if Double(resultScore) < abs(self.homeSpread) {
+            
+            let resultScore = homeIntScore - awayIntScore
+            // 16 - 13 = 3
+            
+            if Double(resultScore) < spread {
+                // 3 < -3 .. NO
                 return .win
-            } else if Double(resultScore) > abs(self.homeSpread) {
+            } else if Double(resultScore) > spread {
+                // 3 > -3 .. NO
                 return .loss
             } else {
+                // 3 == -3 ... YES
                 return .push
             }
 

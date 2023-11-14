@@ -216,12 +216,14 @@ struct Utility {
     static func countWinsAndLosses(bets: [BetModel], forWeek targetWeek: Int?) -> (text: String, color: Color) {
         var wins = 0
         var losses = 0
+        var pushes = 0
         
         if let targetWeek {
             for bet in bets where bet.week == targetWeek {
                 switch bet.result {
                 case BetResult.win.rawValue: wins += 1
                 case BetResult.loss.rawValue: losses += 1
+                case BetResult.push.rawValue: pushes += 1
                 default: break
                 }
             }
@@ -230,6 +232,7 @@ struct Utility {
                 switch bet.result {
                 case BetResult.win.rawValue: wins += 1
                 case BetResult.loss.rawValue: losses += 1
+                case BetResult.push.rawValue: pushes += 1
                 default: break
                 }
             }

@@ -1,214 +1,289 @@
 [
   {
-    "id": "68afbfc763fee8c6dcabf1c129275c5b",
-    "sport_key": "americanfootball_nfl",
-    "sport_title": "NFL",
-    "commence_time": "2023-11-06T01:22:47Z",
-    "completed": true,
-    "home_team": "Cincinnati Bengals",
-    "away_team": "Buffalo Bills",
-    "scores": [
-      {
-        "name": "Buffalo Bills",
-        "score": "18"
-      },
-      {
-        "name": "Cincinnati Bengals",
-        "score": "24"
-      }
-    ],
-    "last_update": "2023-11-07T09:41:52Z"
-  },
-  {
-    "id": "a0dcb94e3a5fa0633a6a5e013d5d43db",
-    "sport_key": "americanfootball_nfl",
-    "sport_title": "NFL",
-    "commence_time": "2023-11-07T01:16:05Z",
-    "completed": true,
-    "home_team": "New York Jets",
-    "away_team": "Los Angeles Chargers",
-    "scores": [
-      {
-        "name": "Los Angeles Chargers",
-        "score": "27"
-      },
-      {
-        "name": "New York Jets",
-        "score": "6"
-      }
-    ],
-    "last_update": "2023-11-07T09:41:52Z"
-  },
-  {
-    "id": "79846786112c7d5116a2326be9abedcb",
-    "sport_key": "americanfootball_nfl",
-    "sport_title": "NFL",
-    "commence_time": "2023-11-10T01:15:00Z",
-    "completed": false,
-    "home_team": "Chicago Bears",
-    "away_team": "Carolina Panthers",
-    "scores": null,
-    "last_update": null
-  },
-  {
     "id": "b5b610ddb0ca0f0bc3d51e07ecc4c520",
     "sport_key": "americanfootball_nfl",
     "sport_title": "NFL",
-    "commence_time": "2023-11-12T14:30:00Z",
-    "completed": false,
+    "commence_time": "2023-11-12T14:32:57Z",
+    "completed": true,
     "home_team": "New England Patriots",
     "away_team": "Indianapolis Colts",
-    "scores": null,
-    "last_update": null
-  },
-  {
-    "id": "c5eeafee32ce8de348c503a58d42e8d5",
-    "sport_key": "americanfootball_nfl",
-    "sport_title": "NFL",
-    "commence_time": "2023-11-12T18:00:00Z",
-    "completed": false,
-    "home_team": "Baltimore Ravens",
-    "away_team": "Cleveland Browns",
-    "scores": null,
-    "last_update": null
-  },
-  {
-    "id": "98081ab3500423fd829a5b9c1d47fe0c",
-    "sport_key": "americanfootball_nfl",
-    "sport_title": "NFL",
-    "commence_time": "2023-11-12T18:00:00Z",
-    "completed": false,
-    "home_team": "Cincinnati Bengals",
-    "away_team": "Houston Texans",
-    "scores": null,
-    "last_update": null
+    "scores": [
+      {
+        "name": "Indianapolis Colts",
+        "score": "10"
+      },
+      {
+        "name": "New England Patriots",
+        "score": "6"
+      }
+    ],
+    "last_update": "2023-11-14T09:56:04Z"
   },
   {
     "id": "598cba017220362c51b4e9436b864e55",
     "sport_key": "americanfootball_nfl",
     "sport_title": "NFL",
-    "commence_time": "2023-11-12T18:00:00Z",
-    "completed": false,
+    "commence_time": "2023-11-12T18:02:33Z",
+    "completed": true,
     "home_team": "Pittsburgh Steelers",
     "away_team": "Green Bay Packers",
-    "scores": null,
-    "last_update": null
+    "scores": [
+      {
+        "name": "Green Bay Packers",
+        "score": "19"
+      },
+      {
+        "name": "Pittsburgh Steelers",
+        "score": "23"
+      }
+    ],
+    "last_update": "2023-11-14T09:56:04Z"
   },
   {
     "id": "6dbc9e87817daefec0b0657fc11b19f4",
     "sport_key": "americanfootball_nfl",
     "sport_title": "NFL",
-    "commence_time": "2023-11-12T18:00:00Z",
-    "completed": false,
+    "commence_time": "2023-11-12T18:02:42Z",
+    "completed": true,
     "home_team": "Jacksonville Jaguars",
     "away_team": "San Francisco 49ers",
-    "scores": null,
-    "last_update": null
+    "scores": [
+      {
+        "name": "San Francisco 49ers",
+        "score": "34"
+      },
+      {
+        "name": "Jacksonville Jaguars",
+        "score": "3"
+      }
+    ],
+    "last_update": "2023-11-14T09:56:04Z"
+  },
+  {
+    "id": "98081ab3500423fd829a5b9c1d47fe0c",
+    "sport_key": "americanfootball_nfl",
+    "sport_title": "NFL",
+    "commence_time": "2023-11-12T18:02:47Z",
+    "completed": true,
+    "home_team": "Cincinnati Bengals",
+    "away_team": "Houston Texans",
+    "scores": [
+      {
+        "name": "Houston Texans",
+        "score": "30"
+      },
+      {
+        "name": "Cincinnati Bengals",
+        "score": "27"
+      }
+    ],
+    "last_update": "2023-11-14T09:56:04Z"
+  },
+  {
+    "id": "c5eeafee32ce8de348c503a58d42e8d5",
+    "sport_key": "americanfootball_nfl",
+    "sport_title": "NFL",
+    "commence_time": "2023-11-12T18:02:49Z",
+    "completed": true,
+    "home_team": "Baltimore Ravens",
+    "away_team": "Cleveland Browns",
+    "scores": [
+      {
+        "name": "Cleveland Browns",
+        "score": "33"
+      },
+      {
+        "name": "Baltimore Ravens",
+        "score": "31"
+      }
+    ],
+    "last_update": "2023-11-14T09:56:04Z"
   },
   {
     "id": "1ef403b76cec4a4fafa9896083ab1e98",
     "sport_key": "americanfootball_nfl",
     "sport_title": "NFL",
-    "commence_time": "2023-11-12T18:00:00Z",
-    "completed": false,
+    "commence_time": "2023-11-12T18:02:51Z",
+    "completed": true,
     "home_team": "Minnesota Vikings",
     "away_team": "New Orleans Saints",
-    "scores": null,
-    "last_update": null
+    "scores": [
+      {
+        "name": "New Orleans Saints",
+        "score": "19"
+      },
+      {
+        "name": "Minnesota Vikings",
+        "score": "27"
+      }
+    ],
+    "last_update": "2023-11-14T09:56:04Z"
   },
   {
     "id": "07fc4a3bb61dceee5482086876af7ca0",
     "sport_key": "americanfootball_nfl",
     "sport_title": "NFL",
-    "commence_time": "2023-11-12T18:00:00Z",
-    "completed": false,
+    "commence_time": "2023-11-12T18:03:00Z",
+    "completed": true,
     "home_team": "Tampa Bay Buccaneers",
     "away_team": "Tennessee Titans",
-    "scores": null,
-    "last_update": null
-  },
-  {
-    "id": "5879128840c29e3469a6ceb64bab9470",
-    "sport_key": "americanfootball_nfl",
-    "sport_title": "NFL",
-    "commence_time": "2023-11-12T21:05:00Z",
-    "completed": false,
-    "home_team": "Arizona Cardinals",
-    "away_team": "Atlanta Falcons",
-    "scores": null,
-    "last_update": null
+    "scores": [
+      {
+        "name": "Tennessee Titans",
+        "score": "6"
+      },
+      {
+        "name": "Tampa Bay Buccaneers",
+        "score": "20"
+      }
+    ],
+    "last_update": "2023-11-14T09:56:04Z"
   },
   {
     "id": "93ca64cd0a848ea783fffc08d2f520c2",
     "sport_key": "americanfootball_nfl",
     "sport_title": "NFL",
-    "commence_time": "2023-11-12T21:05:00Z",
-    "completed": false,
+    "commence_time": "2023-11-12T21:05:30Z",
+    "completed": true,
     "home_team": "Los Angeles Chargers",
     "away_team": "Detroit Lions",
-    "scores": null,
-    "last_update": null
+    "scores": [
+      {
+        "name": "Detroit Lions",
+        "score": "41"
+      },
+      {
+        "name": "Los Angeles Chargers",
+        "score": "38"
+      }
+    ],
+    "last_update": "2023-11-14T09:56:04Z"
   },
   {
-    "id": "fc007baa989f1a6102c9b6100f2a07f7",
+    "id": "5879128840c29e3469a6ceb64bab9470",
     "sport_key": "americanfootball_nfl",
     "sport_title": "NFL",
-    "commence_time": "2023-11-12T21:25:00Z",
-    "completed": false,
-    "home_team": "Dallas Cowboys",
-    "away_team": "New York Giants",
-    "scores": null,
-    "last_update": null
+    "commence_time": "2023-11-12T21:05:56Z",
+    "completed": true,
+    "home_team": "Arizona Cardinals",
+    "away_team": "Atlanta Falcons",
+    "scores": [
+      {
+        "name": "Atlanta Falcons",
+        "score": "23"
+      },
+      {
+        "name": "Arizona Cardinals",
+        "score": "25"
+      }
+    ],
+    "last_update": "2023-11-14T09:56:04Z"
   },
   {
     "id": "e658ecc30213f84c4b68dc3cf5f3f44c",
     "sport_key": "americanfootball_nfl",
     "sport_title": "NFL",
-    "commence_time": "2023-11-12T21:25:00Z",
-    "completed": false,
+    "commence_time": "2023-11-12T21:26:20Z",
+    "completed": true,
     "home_team": "Seattle Seahawks",
     "away_team": "Washington Commanders",
-    "scores": null,
-    "last_update": null
+    "scores": [
+      {
+        "name": "Washington Commanders",
+        "score": "26"
+      },
+      {
+        "name": "Seattle Seahawks",
+        "score": "29"
+      }
+    ],
+    "last_update": "2023-11-14T09:56:04Z"
+  },
+  {
+    "id": "fc007baa989f1a6102c9b6100f2a07f7",
+    "sport_key": "americanfootball_nfl",
+    "sport_title": "NFL",
+    "commence_time": "2023-11-12T21:26:27Z",
+    "completed": true,
+    "home_team": "Dallas Cowboys",
+    "away_team": "New York Giants",
+    "scores": [
+      {
+        "name": "New York Giants",
+        "score": "17"
+      },
+      {
+        "name": "Dallas Cowboys",
+        "score": "49"
+      }
+    ],
+    "last_update": "2023-11-14T09:56:04Z"
   },
   {
     "id": "93b978585bf0aa7cafb48cc3ef875fc9",
     "sport_key": "americanfootball_nfl",
     "sport_title": "NFL",
-    "commence_time": "2023-11-13T01:20:00Z",
-    "completed": false,
+    "commence_time": "2023-11-13T01:22:57Z",
+    "completed": true,
     "home_team": "Las Vegas Raiders",
     "away_team": "New York Jets",
-    "scores": null,
-    "last_update": null
+    "scores": [
+      {
+        "name": "New York Jets",
+        "score": "12"
+      },
+      {
+        "name": "Las Vegas Raiders",
+        "score": "16"
+      }
+    ],
+    "last_update": "2023-11-14T09:56:04Z"
   },
   {
     "id": "9a9404cf872703411250a88f6c2b7ac6",
     "sport_key": "americanfootball_nfl",
     "sport_title": "NFL",
-    "commence_time": "2023-11-14T01:15:00Z",
-    "completed": false,
+    "commence_time": "2023-11-14T01:16:09Z",
+    "completed": true,
     "home_team": "Buffalo Bills",
     "away_team": "Denver Broncos",
-    "scores": null,
-    "last_update": null
+    "scores": [
+      {
+        "name": "Denver Broncos",
+        "score": "24"
+      },
+      {
+        "name": "Buffalo Bills",
+        "score": "22"
+      }
+    ],
+    "last_update": "2023-11-14T09:56:04Z"
   },
   {
     "id": "ad2140bcb78fd6f6d37bee937bfa4d90",
     "sport_key": "americanfootball_nfl",
     "sport_title": "NFL",
-    "commence_time": "2023-11-17T01:16:00Z",
-    "completed": false,
+    "commence_time": "2023-11-17T01:15:00Z",
+    "completed": true,
     "home_team": "Baltimore Ravens",
     "away_team": "Cincinnati Bengals",
-    "scores": null,
+    "scores": [
+      {
+        "name": "Cincinnati Bengals",
+        "score": "24"
+      },
+      {
+        "name": "Baltimore Ravens",
+        "score": "25"
+      }
+    ],
     "last_update": null
   },
   {
     "id": "e1950715bf70945e95a913a3270cd69c",
     "sport_key": "americanfootball_nfl",
     "sport_title": "NFL",
-    "commence_time": "2023-11-19T18:01:00Z",
+    "commence_time": "2023-11-19T18:00:00Z",
     "completed": false,
     "home_team": "Houston Texans",
     "away_team": "Arizona Cardinals",
@@ -219,7 +294,7 @@
     "id": "3d08e5109caaffbcbe0deb49638886df",
     "sport_key": "americanfootball_nfl",
     "sport_title": "NFL",
-    "commence_time": "2023-11-19T18:01:00Z",
+    "commence_time": "2023-11-19T18:00:00Z",
     "completed": false,
     "home_team": "Carolina Panthers",
     "away_team": "Dallas Cowboys",
@@ -230,7 +305,7 @@
     "id": "725fda19c1793f5a81c16263426788ee",
     "sport_key": "americanfootball_nfl",
     "sport_title": "NFL",
-    "commence_time": "2023-11-19T18:01:00Z",
+    "commence_time": "2023-11-19T18:00:00Z",
     "completed": false,
     "home_team": "Detroit Lions",
     "away_team": "Chicago Bears",
@@ -241,7 +316,7 @@
     "id": "3152f45199a800df6949bedc3667cc56",
     "sport_key": "americanfootball_nfl",
     "sport_title": "NFL",
-    "commence_time": "2023-11-19T18:01:00Z",
+    "commence_time": "2023-11-19T18:00:00Z",
     "completed": false,
     "home_team": "Cleveland Browns",
     "away_team": "Pittsburgh Steelers",
@@ -252,7 +327,7 @@
     "id": "d676d3d58ba5c3b249015c9797c11459",
     "sport_key": "americanfootball_nfl",
     "sport_title": "NFL",
-    "commence_time": "2023-11-19T18:01:00Z",
+    "commence_time": "2023-11-19T18:00:00Z",
     "completed": false,
     "home_team": "Green Bay Packers",
     "away_team": "Los Angeles Chargers",
@@ -263,7 +338,7 @@
     "id": "14322e4bcc697089c189622915db1a04",
     "sport_key": "americanfootball_nfl",
     "sport_title": "NFL",
-    "commence_time": "2023-11-19T18:01:00Z",
+    "commence_time": "2023-11-19T18:00:00Z",
     "completed": false,
     "home_team": "Jacksonville Jaguars",
     "away_team": "Tennessee Titans",
@@ -274,7 +349,7 @@
     "id": "e968a3bb4e60b63f814badcfbf9977ab",
     "sport_key": "americanfootball_nfl",
     "sport_title": "NFL",
-    "commence_time": "2023-11-19T18:01:00Z",
+    "commence_time": "2023-11-19T18:00:00Z",
     "completed": false,
     "home_team": "Miami Dolphins",
     "away_team": "Las Vegas Raiders",
@@ -285,7 +360,7 @@
     "id": "643c0a5da6ec46a44b0b1d5dd3819b9c",
     "sport_key": "americanfootball_nfl",
     "sport_title": "NFL",
-    "commence_time": "2023-11-19T18:01:00Z",
+    "commence_time": "2023-11-19T18:00:00Z",
     "completed": false,
     "home_team": "Washington Commanders",
     "away_team": "New York Giants",
@@ -296,7 +371,7 @@
     "id": "8dcb7c89abe06e78be444bc54284ad95",
     "sport_key": "americanfootball_nfl",
     "sport_title": "NFL",
-    "commence_time": "2023-11-19T21:06:00Z",
+    "commence_time": "2023-11-19T21:05:00Z",
     "completed": false,
     "home_team": "San Francisco 49ers",
     "away_team": "Tampa Bay Buccaneers",
@@ -307,7 +382,7 @@
     "id": "7ffa1ceb2b78914d13f2e894ed2e83bd",
     "sport_key": "americanfootball_nfl",
     "sport_title": "NFL",
-    "commence_time": "2023-11-19T21:26:00Z",
+    "commence_time": "2023-11-19T21:25:00Z",
     "completed": false,
     "home_team": "Buffalo Bills",
     "away_team": "New York Jets",
@@ -318,7 +393,7 @@
     "id": "bc7543ec7bf3dddcc6d71b433ef360d0",
     "sport_key": "americanfootball_nfl",
     "sport_title": "NFL",
-    "commence_time": "2023-11-19T21:26:00Z",
+    "commence_time": "2023-11-19T21:25:00Z",
     "completed": false,
     "home_team": "Los Angeles Rams",
     "away_team": "Seattle Seahawks",
@@ -329,7 +404,7 @@
     "id": "d59ec10420e78737c5fdfb5371c4c8e0",
     "sport_key": "americanfootball_nfl",
     "sport_title": "NFL",
-    "commence_time": "2023-11-20T01:21:00Z",
+    "commence_time": "2023-11-20T01:20:00Z",
     "completed": false,
     "home_team": "Denver Broncos",
     "away_team": "Minnesota Vikings",
@@ -340,7 +415,7 @@
     "id": "7ada5a3ce1269f9c0953a196b5fb4a0c",
     "sport_key": "americanfootball_nfl",
     "sport_title": "NFL",
-    "commence_time": "2023-11-21T01:16:00Z",
+    "commence_time": "2023-11-21T01:15:00Z",
     "completed": false,
     "home_team": "Kansas City Chiefs",
     "away_team": "Philadelphia Eagles",
