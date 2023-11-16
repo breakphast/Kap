@@ -116,7 +116,7 @@ class HomeViewModel: ObservableObject {
         return nil
     }
     
-    func pedestrianRefresh(in context: NSManagedObjectContext, games: [GameModel], bets: [BetModel], parlays: [ParlayModel], leagueCode: String) async throws {
+    func pedestrianRefresh(in context: NSManagedObjectContext, games: [GameModel], bets: [BetModel], parlays: [ParlayModel], leagueCode: String, userID: String) async throws {
         if let newWeek = try await fetchCurrentWeek(), newWeek > currentWeek {
             DispatchQueue.main.async {
                 self.currentWeek = newWeek
@@ -141,7 +141,7 @@ class HomeViewModel: ObservableObject {
             }
         }
         
-        try await BetViewModel().checkForNewBets(in: context, leagueCode: leagueCode, bets: Array(bets), parlays: Array(parlays), timestamp: counter?.timestamp, counter: counter, games: Array(allGames))
+        try await BetViewModel().checkForNewBets(in: context, leagueCode: leagueCode, bets: Array(bets), parlays: Array(parlays), timestamp: counter?.timestamp, counter: counter, games: Array(allGames), userID: userID)
     }
     
         func personalRefresh(in context: NSManagedObjectContext, games: [GameModel], bets: [BetModel], parlays: [ParlayModel], leagueCode: String) async throws {

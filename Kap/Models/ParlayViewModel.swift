@@ -176,7 +176,7 @@ class ParlayViewModel {
         addParlayToLocalDatabase(parlay: parlay, playerID: parlay.playerID, in: context)
     }
     
-    func checkForNewParlays(in context: NSManagedObjectContext, leagueCode: String, parlays: [ParlayModel], games: [GameModel], counter: Counter?, timestamp: Date?) async throws {
+    func checkForNewParlays(in context: NSManagedObjectContext, leagueCode: String, parlays: [ParlayModel], games: [GameModel], counter: Counter?, timestamp: Date?, userID: String) async throws {
         var stampedParlays = try await ParlayViewModel().fetchStampedParlays(games: games, leagueCode: leagueCode, timeStamp: timestamp != nil ? timestamp : nil)
         let localParlayIDs = Set(parlays).map {$0.id}
         stampedParlays = stampedParlays.filter { !localParlayIDs.contains($0.id) }
@@ -189,7 +189,7 @@ class ParlayViewModel {
         var deletedStampedParlays = try await ParlayViewModel().fetchDeletedStampedParlays(games: games, leagueCode: leagueCode, deletedTimeStamp: timestamp)
         let allParlayModelIDs = parlays.compactMap { $0.id + "deleted" }
         let idSet = Set(allParlayModelIDs)
-        deletedStampedParlays = deletedStampedParlays.filter { idSet.contains($0.id) }
+        deletedStampedParlays = deletedStampedParlays.filter { idSet.contains($0.id) && $0.playerID != userID}
         
         if !deletedStampedParlays.isEmpty {
             for parlay in deletedStampedParlays {

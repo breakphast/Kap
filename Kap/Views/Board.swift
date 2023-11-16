@@ -16,6 +16,7 @@ struct Board: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var leagueViewModel: LeagueViewModel
+    @EnvironmentObject var leaderboardViewModel: LeaderboardViewModel
     @Environment(\.dismiss) var dismiss
     @Environment(\.managedObjectContext) private var viewContext
     let db = Firestore.firestore()
@@ -86,9 +87,10 @@ struct Board: View {
                 .refreshable {
                     Task {
                         do {
-                            if let activeleagueCode = homeViewModel.activeleagueCode {
-                                try await homeViewModel.pedestrianRefresh(in: viewContext, games: Array(allGameModels), bets: Array(allBetModels), parlays: Array(allParlayModels), leagueCode: activeleagueCode)
+                            if let activeleagueCode = homeViewModel.activeleagueCode, let userID = authViewModel.currentUser?.id {
+                                try await homeViewModel.pedestrianRefresh(in: viewContext, games: Array(allGameModels), bets: Array(allBetModels), parlays: Array(allParlayModels), leagueCode: activeleagueCode, userID: userID)
 //                                try await homeViewModel.personalRefresh(in: viewContext, games: Array(allGameModels), bets: Array(allBetModels), parlays: Array(allParlayModels), leagueCode: activeleagueCode)
+                                await leaderboardViewModel.generateWeeklyUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets.filter({$0.week == homeViewModel.currentWeek}), parlays: homeViewModel.leagueParlays.filter({$0.week == homeViewModel.currentWeek}), week: homeViewModel.currentWeek, leagueCode: homeViewModel.activeleagueCode ?? "")
                             }
                         } catch {
                             

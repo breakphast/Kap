@@ -292,10 +292,10 @@ struct Login: View {
                         print("Current timestamp:", timestamp)
                         do {
                             if let activeleagueCode = homeViewModel.activeleagueCode {
-                                try await BetViewModel().checkForNewBets(in: viewContext, leagueCode: activeleagueCode, bets: Array(allBetModels), parlays: Array(allParlayModels), timestamp: timestamp, counter: homeViewModel.counter, games: Array(homeViewModel.allGames))
+                                try await BetViewModel().checkForNewBets(in: viewContext, leagueCode: activeleagueCode, bets: Array(allBetModels), parlays: Array(allParlayModels), timestamp: timestamp, counter: homeViewModel.counter, games: Array(homeViewModel.allGames), userID: userID)
                                 homeViewModel.leagueBets = Array(allBetModels).filter({$0.leagueCode == activeleagueCode})
                                 homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
-                                try await ParlayViewModel().checkForNewParlays(in: viewContext, leagueCode: activeleagueCode, parlays: Array(allParlayModels), games: homeViewModel.weekGames, counter: homeViewModel.counter, timestamp: timestamp)
+                                try await ParlayViewModel().checkForNewParlays(in: viewContext, leagueCode: activeleagueCode, parlays: Array(allParlayModels), games: homeViewModel.weekGames, counter: homeViewModel.counter, timestamp: timestamp, userID: userID)
                                 homeViewModel.leagueParlays = Array(allParlayModels).filter({$0.leagueCode == activeleagueCode})
                                 homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == authViewModel.currentUser?.id})
                             }
@@ -305,7 +305,7 @@ struct Login: View {
                     }
                 } else {
                     do {
-                        try await BetViewModel().checkForNewBets(in: viewContext, leagueCode: activeLeague.code, bets: Array(allBetModels), parlays: Array(allParlayModels), timestamp: nil, counter: homeViewModel.counter, games: Array(homeViewModel.allGames))
+                        try await BetViewModel().checkForNewBets(in: viewContext, leagueCode: activeLeague.code, bets: Array(allBetModels), parlays: Array(allParlayModels), timestamp: nil, counter: homeViewModel.counter, games: Array(homeViewModel.allGames), userID: userID)
                     } catch {
                         
                     }

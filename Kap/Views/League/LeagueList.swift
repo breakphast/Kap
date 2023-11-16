@@ -238,11 +238,11 @@ struct LeagueList: View {
                 }
             } else {
                 do {
-                    try await BetViewModel().checkForNewBets(in: viewContext, leagueCode: activeLeague.code, bets: homeViewModel.allBets, parlays: Array(allParlayModels), timestamp: currentTimestampOfficial != nil ? currentTimestampOfficial : nil, counter: homeViewModel.counter, games: Array(homeViewModel.allGames))
+                    try await BetViewModel().checkForNewBets(in: viewContext, leagueCode: activeLeague.code, bets: homeViewModel.allBets, parlays: Array(allParlayModels), timestamp: currentTimestampOfficial != nil ? currentTimestampOfficial : nil, counter: homeViewModel.counter, games: Array(homeViewModel.allGames), userID: userID)
                     homeViewModel.leagueBets = homeViewModel.allBets.filter({$0.leagueCode == homeViewModel.activeleagueCode})
                     homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
                     
-                    try await ParlayViewModel().checkForNewParlays(in: viewContext, leagueCode: activeLeague.code, parlays: Array(allParlayModels), games: Array(homeViewModel.allGames), counter: homeViewModel.counter, timestamp: currentTimestampOfficial != nil ? currentTimestampOfficial : nil)
+                    try await ParlayViewModel().checkForNewParlays(in: viewContext, leagueCode: activeLeague.code, parlays: Array(allParlayModels), games: Array(homeViewModel.allGames), counter: homeViewModel.counter, timestamp: currentTimestampOfficial != nil ? currentTimestampOfficial : nil, userID: userID)
                     homeViewModel.leagueParlays = Array(allParlayModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
                     homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == authViewModel.currentUser?.id})
                 } catch {

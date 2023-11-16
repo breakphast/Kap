@@ -196,7 +196,7 @@ struct JoinLeague: View {
                             currentTimestamp = lastBetTimestamp
                         } else {
                             do {
-                                try await BetViewModel().checkForNewBets(in: viewContext, leagueCode: code, bets: homeViewModel.allBets, parlays: Array(allParlayModels), timestamp: nil, counter: homeViewModel.counter, games: Array(homeViewModel.allGames))
+                                try await BetViewModel().checkForNewBets(in: viewContext, leagueCode: code, bets: homeViewModel.allBets, parlays: Array(allParlayModels), timestamp: nil, counter: homeViewModel.counter, games: Array(homeViewModel.allGames), userID: userID)
                             } catch { }
                         }
                         
@@ -205,7 +205,7 @@ struct JoinLeague: View {
                             currentTimestamp = lastParlayTimestamp
                         } else {
                             do {
-                                try await ParlayViewModel().checkForNewParlays(in: viewContext, leagueCode: leagueCode, parlays: Array(allParlayModels), games: homeViewModel.weekGames, counter: homeViewModel.counter, timestamp: nil)
+                                try await ParlayViewModel().checkForNewParlays(in: viewContext, leagueCode: leagueCode, parlays: Array(allParlayModels), games: homeViewModel.weekGames, counter: homeViewModel.counter, timestamp: nil, userID: userID)
                             } catch { }
                         }
                         if filteredLeagueBets.isEmpty && filteredLeagueParlays.isEmpty {
@@ -214,11 +214,11 @@ struct JoinLeague: View {
                             homeViewModel.updateLocalTimestamp(in: viewContext, timestamp: currentTimestamp)
                         }
                         do {
-                            try await BetViewModel().checkForNewBets(in: viewContext, leagueCode: code, bets: homeViewModel.allBets, parlays: Array(allParlayModels), timestamp: currentTimestamp, counter: homeViewModel.counter, games: Array(homeViewModel.allGames))
+                            try await BetViewModel().checkForNewBets(in: viewContext, leagueCode: code, bets: homeViewModel.allBets, parlays: Array(allParlayModels), timestamp: currentTimestamp, counter: homeViewModel.counter, games: Array(homeViewModel.allGames), userID: userID)
                             homeViewModel.leagueBets = homeViewModel.allBets.filter({$0.leagueCode == homeViewModel.activeleagueCode})
                             homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
                             
-                            try await ParlayViewModel().checkForNewParlays(in: viewContext, leagueCode: leagueCode, parlays: Array(allParlayModels), games: homeViewModel.weekGames, counter: homeViewModel.counter, timestamp: currentTimestamp)
+                            try await ParlayViewModel().checkForNewParlays(in: viewContext, leagueCode: leagueCode, parlays: Array(allParlayModels), games: homeViewModel.weekGames, counter: homeViewModel.counter, timestamp: currentTimestamp, userID: userID)
                             homeViewModel.leagueParlays = Array(allParlayModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
                             homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == authViewModel.currentUser?.id})
                         } catch { }

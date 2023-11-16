@@ -524,18 +524,23 @@ struct PlacedParlayView: View {
                         
                         HStack {
                             HStack(spacing: 4) {
-                                Text("Points:")
-                                    .font(.headline.bold())
-                                Text("\(abs(parlay.totalPoints).oneDecimalString)")
-                                    .font(.title3.bold())
+                                Text("\(parlay.totalPoints < 0 ? "-" : "+")\(abs(parlay.totalPoints).oneDecimalString)")
+                                    .font(.title3)
+                                    .fontWeight(.heavy)
                                     .foregroundStyle(pointsColor(for: BetResult(rawValue: parlay.result) ?? .pending))
                             }
                             Spacer()
                             
-                            if parlay.bets.allObjects is [BetModel] {
+                            if parlay.bets.allObjects is [BetModel] && parlay.result == "Pending" {
                                 menu
                             } else {
-                                
+                                HStack(spacing: 4) {
+                                    Image(systemName: parlay.result == "Win" ? "checkmark.circle" : "xmark.circle")
+                                    Text(parlay.result).autocapitalization(.allCharacters)
+                                }
+                                .font(.title2)
+                                .fontWeight(.heavy)
+                                .foregroundColor(parlay.result == "Win" ? Color("bean") : parlay.result == "Loss" ? Color("redd") : .oW2)
                             }
                         }
                         .bold()

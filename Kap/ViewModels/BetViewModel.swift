@@ -413,7 +413,7 @@ class BetViewModel: ObservableObject {
         }
     }
     
-    func checkForNewBets(in context: NSManagedObjectContext, leagueCode: String, bets: [BetModel], parlays: [ParlayModel], timestamp: Date?, counter: Counter?, games: [GameModel]) async throws {
+    func checkForNewBets(in context: NSManagedObjectContext, leagueCode: String, bets: [BetModel], parlays: [ParlayModel], timestamp: Date?, counter: Counter?, games: [GameModel], userID: String) async throws {
         var stampedBets = try await BetViewModel().fetchStampedBets(games: games, leagueCode: leagueCode, timeStamp: timestamp != nil ? timestamp : nil)
         
         let localBetIDs = Set(bets).map {$0.id}
@@ -427,7 +427,7 @@ class BetViewModel: ObservableObject {
         let deletedStampedBets = try await BetViewModel().fetchDeletedStampedBets(games: games, leagueCode: leagueCode, deletedTimestamp: timestamp)
         if !deletedStampedBets.isEmpty {
             for bet in deletedStampedBets {
-                guard bets.contains(where: { $0.id + "deleted" == bet.id }) else { return }
+                guard bets.contains(where: { $0.id + "deleted" == bet.id }) && bet.playerID != userID else { return }
                 BetViewModel().deleteBetModel(in: context, id: String(bet.id.dropLast(7)))
                 if let _ = counter?.timestamp {
                     var timestamp = Date()
@@ -458,7 +458,7 @@ class BetViewModel: ObservableObject {
         }
         do {
             try context.save() 
-            print("\(updatedBets.filter({$0.result == .pending}).count) Bet results successfully updated locally")
+            print("\(updatedBets.filter({$0.result != .pending}).count) Bet results successfully updated locally")
         } catch {
             
         }

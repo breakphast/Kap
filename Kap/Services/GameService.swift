@@ -47,7 +47,7 @@ struct ScoreElement: Codable {
 class GameService {
     var games: [Game] = []
     private var db = Firestore.firestore()
-    let mock = true
+    let mock = false
     @Environment(\.managedObjectContext) private var viewContext
 
     func updateCloudGameScores(games: [GameModel]) async throws {
@@ -200,7 +200,7 @@ class GameService {
         }
         do {
             try context.save()
-            print("Updated \(games.count) game odds locally..")
+            print("Updated \(updatedGames.count) game odds locally..")
         } catch {
             print("Error saving context: \(error)")
         }

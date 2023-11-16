@@ -243,7 +243,7 @@ extension Game {
             return .pending
         }
         switch bet.type {
-        case .moneyline:
+        case BetType.moneyline:
             guard let homeIntScore = Int(homeScore), let awayIntScore = Int(awayScore) else { return .pending }
             
             if bet.selectedTeam == homeTeam {
@@ -252,34 +252,38 @@ extension Game {
                 return awayIntScore > homeIntScore ? .win : .loss
             }
             
-        case .spread:
+        case BetType.spread:
             guard let homeIntScore = Int(homeScore), let awayIntScore = Int(awayScore) else { return .pending }
             
-            let resultScore: Int
-            if bet.selectedTeam == awayTeam {
-                resultScore = homeIntScore - awayIntScore
+            let spread: Double
+            if bet.selectedTeam == homeTeam {
+                spread = self.homeSpread
             } else {
-                resultScore = awayIntScore - homeIntScore
+                spread = self.awaySpread
             }
-
-            if Double(abs(resultScore)) < abs(self.homeSpread) {
+            
+            let resultScore = homeIntScore - awayIntScore
+            
+            if Double(resultScore) < spread {
                 return .win
-            } else if Double(resultScore) > abs(self.homeSpread) {
+            } else if Double(resultScore) > spread {
                 return .loss
             } else {
                 return .push
             }
 
             
-        case .over:
+        case BetType.over:
             guard let homeIntScore = Int(homeScore), let awayIntScore = Int(awayScore) else { return .pending }
+            let total = Double(homeIntScore + awayIntScore)
+            let result = total < bet.game.over ? BetResult.loss : total == bet.game.over ? BetResult.push : BetResult.win
+            return result
             
-            return Double(homeIntScore + awayIntScore) > bet.game.over ? .win : .loss
-            
-        case .under:
+        case BetType.under:
             guard let homeIntScore = Int(homeScore), let awayIntScore = Int(awayScore) else { return .pending }
-            
-            return Double(homeIntScore + awayIntScore) < bet.game.under ? .win : .loss
+            let total = Double(homeIntScore + awayIntScore)
+            let result = total > bet.game.under ? BetResult.loss : total == bet.game.under ? BetResult.push : BetResult.win
+            return result
         }
     }
 }
@@ -305,38 +309,33 @@ extension GameModel {
             let spread: Double
             if bet.selectedTeam == homeTeam {
                 spread = self.homeSpread
-                // -3.5
             } else {
                 spread = self.awaySpread
-                // +3.5
             }
             
             let resultScore = homeIntScore - awayIntScore
-            // 16 - 13 = 3
             
             if Double(resultScore) < spread {
-                // 3 < -3 .. NO
                 return .win
             } else if Double(resultScore) > spread {
-                // 3 > -3 .. NO
                 return .loss
             } else {
-                // 3 == -3 ... YES
                 return .push
             }
-
             
         case BetType.over.rawValue:
             guard let homeIntScore = Int(homeScore), let awayIntScore = Int(awayScore) else { return .pending }
-            
-            return Double(homeIntScore + awayIntScore) > bet.game.over ? .win : .loss
+            let total = Double(homeIntScore + awayIntScore)
+            let result = total < bet.game.over ? BetResult.loss : total == bet.game.over ? BetResult.push : BetResult.win
+            return result
             
         case BetType.under.rawValue:
             guard let homeIntScore = Int(homeScore), let awayIntScore = Int(awayScore) else { return .pending }
-            
-            return Double(homeIntScore + awayIntScore) < bet.game.under ? .win : .loss
+            let total = Double(homeIntScore + awayIntScore)
+            let result = total > bet.game.under ? BetResult.loss : total == bet.game.under ? BetResult.push : BetResult.win
+            return result
         default:
-            return .pending
+            return .push
         }
     }
 }
