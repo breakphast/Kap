@@ -177,26 +177,23 @@ class ParlayViewModel {
     }
     
     func checkForNewParlays(in context: NSManagedObjectContext, leagueCode: String, parlays: [ParlayModel], games: [GameModel], counter: Counter?, timestamp: Date?) async throws {
-        if let timestamp {
-            var stampedParlays = try await ParlayViewModel().fetchStampedParlays(games: games, leagueCode: leagueCode, timeStamp: timestamp)
-            
-            let localParlayIDs = Set(parlays).map {$0.id}
-            stampedParlays = stampedParlays.filter { !localParlayIDs.contains($0.id) }
-            
-            if !stampedParlays.isEmpty, let counter {
-                print("New parlays detected:", stampedParlays.count)
-                convertToParlayModels(parlays: stampedParlays, counter: counter, in: context)
-            }
-            
-            var deletedStampedParlays = try await ParlayViewModel().fetchDeletedStampedParlays(games: games, leagueCode: leagueCode, deletedTimeStamp: timestamp)
-            let allParlayModelIDs = parlays.compactMap { $0.id }
-            let idSet = Set(allParlayModelIDs)
-            deletedStampedParlays = deletedStampedParlays.filter { idSet.contains($0.id) }
-            
-            if !deletedStampedParlays.isEmpty {
-                for parlay in deletedStampedParlays {
-                    ParlayViewModel().deleteParlayModel(in: context, id: parlay.id)
-                }
+        var stampedParlays = try await ParlayViewModel().fetchStampedParlays(games: games, leagueCode: leagueCode, timeStamp: timestamp != nil ? timestamp : nil)
+        let localParlayIDs = Set(parlays).map {$0.id}
+        stampedParlays = stampedParlays.filter { !localParlayIDs.contains($0.id) }
+        
+        if !stampedParlays.isEmpty {
+            print("New parlays detected:", stampedParlays.count)
+            convertToParlayModels(parlays: stampedParlays, counter: counter, in: context)
+        }
+        
+        var deletedStampedParlays = try await ParlayViewModel().fetchDeletedStampedParlays(games: games, leagueCode: leagueCode, deletedTimeStamp: timestamp)
+        let allParlayModelIDs = parlays.compactMap { $0.id + "deleted" }
+        let idSet = Set(allParlayModelIDs)
+        deletedStampedParlays = deletedStampedParlays.filter { idSet.contains($0.id) }
+        
+        if !deletedStampedParlays.isEmpty {
+            for parlay in deletedStampedParlays {
+                ParlayViewModel().deleteParlayModel(in: context, id: String(parlay.id.dropLast(7)))
             }
         }
     }
@@ -356,10 +353,6 @@ class ParlayViewModel {
                         bets.append(bet)
                     }
                 }
-//                let deletedTimestamp = data["deletedTimestamp"] as? Timestamp
-//                let date3 = GameService().convertTimestampToISOString(timestamp: deletedTimestamp ?? Timestamp(date: Date()))
-//                let date4 = GameService().dateFromISOString(date3 ?? "")
-//                let isDeleted = data["isDeleted"] as? Bool ?? false
                 
                 let parlay = Parlay(id: id, bets: bets, totalOdds: totalOdds, result: BetViewModel().stringToBetResult(result)!, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: date ?? Date(), deletedTimestamp: date4 ?? Date(), isDeleted: isDeleted)
                 parlay.totalOdds = totalOdds
@@ -501,10 +494,10 @@ class ParlayViewModel {
                 try context.save()
                 print("Deleted parlay in local:", id)
             } else {
-                // Entity with the specified attribute value not found
+                print("Parlay not found.")
             }
         } catch {
-            // Handle error
+
         }
     }
 
@@ -526,6 +519,88 @@ class ParlayViewModel {
         }
     }
     
+    func createParlayModel(from parlay: Parlay, in context: NSManagedObjectContext) -> ParlayModel {
+        let parlayModel = ParlayModel(context: context)
+        
+        parlayModel.id = parlay.id
+        parlayModel.totalOdds = Int16(parlay.totalOdds)
+        parlayModel.result = parlay.result.rawValue
+        parlayModel.totalPoints = parlay.totalPoints
+        parlayModel.betString = parlay.betString
+        parlayModel.playerID = parlay.playerID
+        parlayModel.week = Int16(parlay.week)
+        parlayModel.leagueCode = parlay.leagueCode
+        parlayModel.timestamp = parlay.timestamp
+        
+        for bet in parlay.bets {
+            let betModel = BetModel(context: context)
+            betModel.id = bet.betOption + bet.playerID + "parlayLeg"
+            betModel.betOption = bet.betOption
+            betModel.game = bet.game
+            betModel.type = bet.type.rawValue
+            betModel.result = bet.result?.rawValue ?? "Pending"
+            betModel.odds = Int16(bet.odds)
+            betModel.selectedTeam = bet.selectedTeam
+            betModel.playerID = bet.playerID
+            betModel.week = Int16(bet.week)
+            betModel.leagueCode = bet.leagueCode
+            betModel.stake = 100.0
+            betModel.betString = bet.betString
+            betModel.points = bet.points ?? 0
+            betModel.betOptionString = bet.betOptionString
+            betModel.timestamp = bet.timestamp
+            
+            parlayModel.addToBets(betModel)
+        }
+        
+        return parlayModel
+    }
+    
+    func recreateParlay(parlay: ParlayModel, games: [GameModel], playerID: String, in context: NSManagedObjectContext) {
+        func transformBetToDictionary(bet: BetModel) -> [String: Any] {
+            return [
+                "id": bet.betOption + bet.playerID + "parlayLeg",
+                "betOption": bet.betOption,
+                "game": bet.game.documentID ?? "",
+                "type": bet.type,
+                "odds": bet.odds,
+                "result": bet.result,
+                "selectedTeam": bet.selectedTeam ?? "",
+                "week": parlay.week,
+                "playerID": parlay.playerID,
+                "leagueID": parlay.leagueCode,
+                "timestamp": Timestamp(date: Date())
+            ]
+        }
+        var newLayData = [String: Any]()
+        if let betsArray = parlay.bets.allObjects as? [BetModel] {
+            let betsDictionaryArray = betsArray.map(transformBetToDictionary)
+            newLayData = [
+                "isDeleted": true,
+                "deletedTimestamp": Date(),
+                "id": parlay.id + "deleted",
+                "bets": betsDictionaryArray,
+                "result": parlay.result,
+                "totalOdds": parlay.totalOdds,
+                "totalPoints": parlay.totalPoints,
+                "playerID": parlay.playerID,
+                "week": parlay.week,
+                "leagueID": parlay.leagueCode,
+                "timestamp": Timestamp(date: Date())
+            ]
+            let newLayID = parlay.id + "deleted"
+            let newLay = self.db.collection("allParlays").document(newLayID)
+            newLay.setData(newLayData) { err in
+                if let err = err {
+                    print("Error creating new parlay document: \(err)")
+                } else {
+                    print("Document successfully created with new ID")
+                    print("Added new deleted parlay to cloud.")
+                }
+            }
+        }
+    }
+    
     enum UpdateError: Error {
         case missingParlayID
         case firebaseError(Error)
@@ -537,11 +612,7 @@ class ParlayViewModel {
         for parlay in parlays {
             guard parlay.result == BetResult.pending.rawValue else { return }
             
-            guard parlay.id != nil else {
-                throw UpdateError.missingParlayID
-            }
-            
-            let parlayBets = parlay.bets?.allObjects as? [BetModel] ?? []
+            let parlayBets = parlay.bets.allObjects as? [BetModel] ?? []
             
             if !parlayBets.filter({ $0.game.betResult(for: $0).rawValue == BetResult.loss.rawValue }).isEmpty {
                 updateCloudParlay(parlay: parlay, result: .loss, points: Int(-parlay.totalPoints))
@@ -552,13 +623,13 @@ class ParlayViewModel {
     }
     
     func updateCloudParlay(parlay: ParlayModel, result: BetResult, points: Int) {
-        let newParlay = db.collection("allParlays").document(parlay.id ?? "")
+        let newParlay = db.collection("allParlays").document(parlay.id)
         newParlay.updateData([
             "result": result.rawValue,
             "totalPoints": points
         ]) { err in
             if let err = err {
-                print("Error updating LAYYY: \(err)", parlay.id ?? "")
+                print("Error updating LAYYY: \(err)", parlay.id)
             } else {
                 print("Lay successfully updated")
             }

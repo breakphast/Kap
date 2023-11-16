@@ -162,7 +162,7 @@ class GameService {
     
     func updateLocalGameOdds(games: [GameModel], week: Int, in context: NSManagedObjectContext) async throws {
         // this is locally updating odds to core data
-        let updatedGames = try await fetchGamesFromFirestore(week: week)
+        let updatedGames = try await fetchGamesFromFirestore(week: week).filter({$0.week == week})
         for game in games {
             if let newGame = updatedGames.first(where: {$0.documentId == game.documentID}) {
                 game.homeSpread = newGame.homeSpread
@@ -213,7 +213,7 @@ class GameService {
             do {
                 try context.save()
             } catch {
-                print("Error saving context: \(error)")
+                print("INITIAL Error saving context: \(error)")
             }
         } catch {
             

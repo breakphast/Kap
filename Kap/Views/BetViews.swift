@@ -6,6 +6,10 @@
 //
 
 import SwiftUI
+import FirebaseFirestoreSwift
+import FirebaseFirestore
+import Firebase
+import CoreData
 
 struct BetView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
@@ -337,6 +341,7 @@ struct PlacedBetView: View {
     let week: Int16
     let live: Bool
     let hideMenu: Bool
+    let db = Firestore.firestore()
     
     func pointsColor(for result: BetResult) -> Color {
         switch result {
@@ -441,25 +446,11 @@ struct PlacedBetView: View {
                 withAnimation {
                     deleteActive.toggle()
                     Task {
-                        BetViewModel().updateDeletedBet(bet: bet)
+                        try await BetViewModel().deleteBet(betID: bet.id)
                         BetViewModel().deleteBetModel(in: viewContext, id: bet.id)
+                        homeViewModel.allBets.removeAll(where: { $0.id == bet.id })
                         homeViewModel.userBets.removeAll(where: { $0.id == bet.id })
                         homeViewModel.leagueBets.removeAll(where: { $0.id == bet.id })
-                        
-                        if let _ = homeViewModel.counter?.timestamp {
-                            var timestamp = Date()
-                            
-                            if let lastTimestamp = homeViewModel.leagueBets.last?.timestamp {
-                                timestamp = lastTimestamp
-                            }
-                            if let lastTimestamp = homeViewModel.leagueParlays.last?.timestamp {
-                                if lastTimestamp > timestamp {
-                                    timestamp = lastTimestamp
-                                }
-                            }
-                            homeViewModel.counter?.timestamp = timestamp
-                            print("New timestamp after removing bet.", timestamp)
-                        }
                     }
                 }
             } label: {
@@ -488,6 +479,7 @@ struct PlacedBetView: View {
 
 struct PlacedParlayView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
+    @EnvironmentObject var authViewModel: AuthViewModel
     @State var deleteActive = false
     @Namespace var trash
     let parlay: ParlayModel
@@ -502,7 +494,7 @@ struct PlacedParlayView: View {
                 VStack(alignment: .leading) {
                     VStack(alignment: .leading, spacing: 4) {
                         HStack(alignment: .center) {
-                            Text("\(Array(parlay.bets ?? []).count) Leg Parlay")
+                            Text("\(Array(parlay.bets).count) Leg Parlay")
                             Text("(Week \(parlay.week))")
                                 .font(.caption2)
                             Spacer()
@@ -535,11 +527,11 @@ struct PlacedParlayView: View {
                                     .font(.headline.bold())
                                 Text("\(abs(parlay.totalPoints).oneDecimalString)")
                                     .font(.title3.bold())
-                                    .foregroundStyle(pointsColor(for: BetResult(rawValue: parlay.result ?? "") ?? .pending))
+                                    .foregroundStyle(pointsColor(for: BetResult(rawValue: parlay.result) ?? .pending))
                             }
                             Spacer()
                             
-                            if parlay.bets?.allObjects is [BetModel] {
+                            if parlay.bets.allObjects is [BetModel] {
                                 menu
                             } else {
                                 
@@ -556,7 +548,7 @@ struct PlacedParlayView: View {
             .foregroundStyle(.white)
             .multilineTextAlignment(.leading)
             
-            if let betsArray = parlay.bets?.allObjects as? [Bet],
+            if let betsArray = parlay.bets.allObjects as? [Bet],
                betsArray.filter({ Date() > ($0.game.date ?? Date()) }).isEmpty {
                 if deleteActive {
                     
@@ -576,27 +568,12 @@ struct PlacedParlayView: View {
                 withAnimation {
                     deleteActive.toggle()
                     Task {
-                        BetViewModel().updateDeletedParlay(parlay: parlay)
-                        ParlayViewModel().deleteParlayModel(in: viewContext, id: parlay.id ?? "")
+                        try await ParlayViewModel().deleteParlay(parlayID: parlay.id)
+                        ParlayViewModel().deleteParlayModel(in: viewContext, id: parlay.id)
+                        
+                        homeViewModel.allParlays.removeAll(where: { $0.id == parlay.id })
                         homeViewModel.userParlays.removeAll(where: { $0.id == parlay.id })
                         homeViewModel.leagueParlays.removeAll(where: { $0.id == parlay.id })
-                        
-                        if let _ = homeViewModel.counter?.timestamp {
-                            var timestamp = Date()
-                            
-                            if let lastTimestamp = homeViewModel.leagueParlays.last?.timestamp {
-                                homeViewModel.counter?.timestamp = lastTimestamp
-                                timestamp = lastTimestamp
-                                print("New timestamp after removing parlay.")
-                            }
-                            if let lastTimestamp = homeViewModel.leagueBets.last?.timestamp {
-                                homeViewModel.counter?.timestamp = lastTimestamp
-                                if lastTimestamp > timestamp {
-                                    timestamp = lastTimestamp
-                                }
-                                print("New timestamp after removing parlay.")
-                            }
-                        }
                     }
                 }
             } label: {

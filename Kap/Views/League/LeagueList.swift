@@ -177,6 +177,7 @@ struct LeagueList: View {
     }
     
     private func ignitionSequence(userID: String, leagueCode: String, week: Int, in context: NSManagedObjectContext) async throws {
+        var currentTimestampOfficial: Date?
         if allGameModels.isEmpty {
             print("No games. Adding now...")
             do {
@@ -201,26 +202,54 @@ struct LeagueList: View {
             homeViewModel.allParlayModels = self.allParlayModels
             
             homeViewModel.allGames = Array(allGameModels)
-            homeViewModel.allBets = Array(allBetModels)
+            homeViewModel.allBets = Array(allBetModels).filter({!$0.id.contains("parlayLeg")})
             homeViewModel.allParlays = Array(allParlayModels)
             
             await fetchEssentials(updateGames: false, updateScores: false, league: activeLeague, in: viewContext)
-            homeViewModel.leagueBets = Array(allBetModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
+            homeViewModel.leagueBets = homeViewModel.allBets.filter({$0.leagueCode == homeViewModel.activeleagueCode})
             homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
-            
             
             homeViewModel.leagueParlays = Array(allParlayModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
             homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == authViewModel.currentUser?.id})
+            
+            if let last = Array(homeViewModel.leagueBets).filter({$0.playerID != userID}).last {
+                if let timestamp = last.timestamp {
+                    homeViewModel.updateLocalTimestamp(in: viewContext, timestamp: timestamp)
+                    currentTimestampOfficial = timestamp
+                    print("Current timestamp:", timestamp)
+                }
+            }
+            
             if homeViewModel.leagueBets.isEmpty {
                 do {
                     try await BetViewModel().addInitialBets(games: homeViewModel.allGames, leagueCode: activeLeague.code, in: viewContext)
-                    homeViewModel.allBets = Array(allBetModels)
-                    homeViewModel.leagueBets = Array(allBetModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
+                    homeViewModel.allBets = Array(allBetModels).filter({!$0.id.contains("parlayLeg")})
+                    homeViewModel.leagueBets = homeViewModel.allBets.filter({$0.leagueCode == homeViewModel.activeleagueCode})
                     homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
+                    var currentTimestamp = Date()
+                    let filteredLeagueBets = homeViewModel.leagueBets.filter({$0.playerID != authViewModel.currentUser?.id})
+                    print(filteredLeagueBets.count)
+                    if let lastBetTimestamp = filteredLeagueBets.last?.timestamp {
+                        currentTimestamp = lastBetTimestamp
+                        homeViewModel.updateLocalTimestamp(in: viewContext, timestamp: currentTimestamp)
+                    }
                 } catch {
                     print("League bets are still empty.")
                 }
+            } else {
+                do {
+                    try await BetViewModel().checkForNewBets(in: viewContext, leagueCode: activeLeague.code, bets: homeViewModel.allBets, parlays: Array(allParlayModels), timestamp: currentTimestampOfficial != nil ? currentTimestampOfficial : nil, counter: homeViewModel.counter, games: Array(homeViewModel.allGames))
+                    homeViewModel.leagueBets = homeViewModel.allBets.filter({$0.leagueCode == homeViewModel.activeleagueCode})
+                    homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
+                    
+                    try await ParlayViewModel().checkForNewParlays(in: viewContext, leagueCode: activeLeague.code, parlays: Array(allParlayModels), games: Array(homeViewModel.allGames), counter: homeViewModel.counter, timestamp: currentTimestampOfficial != nil ? currentTimestampOfficial : nil)
+                    homeViewModel.leagueParlays = Array(allParlayModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
+                    homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == authViewModel.currentUser?.id})
+                } catch {
+                    
+                }
             }
+            
             if homeViewModel.leagueParlays.isEmpty {
                 do {
                     try await ParlayViewModel().addInitialParlays(games: homeViewModel.allGames, leagueCode: activeLeague.code, in: viewContext)
@@ -230,39 +259,12 @@ struct LeagueList: View {
                     print("League parlays are still empty.")
                 }
             }
-            var currentTimestamp = Date()
-            let filteredLeagueBets = homeViewModel.leagueBets.filter({$0.playerID != authViewModel.currentUser?.id})
-            if let lastBetTimestamp = filteredLeagueBets.last?.timestamp {
-                currentTimestamp = lastBetTimestamp
-            } else {
-                do {
-                    try await BetViewModel().checkForNewBets(in: viewContext, leagueCode: activeLeague.code, bets: Array(allBetModels), parlays: Array(allParlayModels), timestamp: nil, counter: homeViewModel.counter, games: Array(homeViewModel.allGames))
-                } catch { }
-            }
             
             let filteredLeagueParlays = homeViewModel.leagueParlays.filter({$0.playerID != authViewModel.currentUser?.id})
-            if let lastParlayTimestamp = filteredLeagueParlays.last?.timestamp, lastParlayTimestamp > currentTimestamp {
-                currentTimestamp = lastParlayTimestamp
-            } else {
-                do {
-                    try await ParlayViewModel().checkForNewParlays(in: viewContext, leagueCode: leagueCode, parlays: Array(allParlayModels), games: homeViewModel.weekGames, counter: homeViewModel.counter, timestamp: nil)
-                } catch { }
-            }
-            if filteredLeagueBets.isEmpty && filteredLeagueParlays.isEmpty {
-                homeViewModel.updateLocalTimestamp(in: viewContext, timestamp: nil)
-            } else {
-                homeViewModel.updateLocalTimestamp(in: viewContext, timestamp: currentTimestamp)
-            }
-            do {
-                try await BetViewModel().checkForNewBets(in: viewContext, leagueCode: activeLeague.code, bets: Array(allBetModels), parlays: Array(allParlayModels), timestamp: currentTimestamp, counter: homeViewModel.counter, games: Array(homeViewModel.allGames))
-                homeViewModel.leagueBets = Array(allBetModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
-                homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
-                
-                try await ParlayViewModel().checkForNewParlays(in: viewContext, leagueCode: leagueCode, parlays: Array(allParlayModels), games: homeViewModel.weekGames, counter: homeViewModel.counter, timestamp: currentTimestamp)
-                homeViewModel.leagueParlays = Array(allParlayModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
-                homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == authViewModel.currentUser?.id})
-            } catch {
-                
+            if let lastParlayTimestamp = filteredLeagueParlays.last?.timestamp, let currentTimestampOfficial, lastParlayTimestamp > currentTimestampOfficial {
+                homeViewModel.updateLocalTimestamp(in: viewContext, timestamp: lastParlayTimestamp)
+            } else if let lastParlayTimestamp = filteredLeagueParlays.last?.timestamp, currentTimestampOfficial == nil {
+                homeViewModel.updateLocalTimestamp(in: viewContext, timestamp: lastParlayTimestamp)
             }
             
             let leaguePlayers = homeViewModel.leagues.first(where: { $0.code == activeLeague.code })?.players

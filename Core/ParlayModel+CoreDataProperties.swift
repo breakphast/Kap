@@ -17,14 +17,14 @@ extension ParlayModel {
     }
 
     @NSManaged public var betString: String?
-    @NSManaged public var id: String?
-    @NSManaged public var leagueCode: String?
-    @NSManaged public var playerID: String?
-    @NSManaged public var result: String?
+    @NSManaged public var id: String
+    @NSManaged public var leagueCode: String
+    @NSManaged public var playerID: String
+    @NSManaged public var result: String
     @NSManaged public var totalOdds: Int16
     @NSManaged public var totalPoints: Double
     @NSManaged public var week: Int16
-    @NSManaged public var bets: NSSet?
+    @NSManaged public var bets: NSSet
     @NSManaged public var timestamp: Date?
 
 }

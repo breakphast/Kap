@@ -134,7 +134,7 @@ struct Board: View {
 //                deleteAllData(ofEntity: "BetOptionModel") { result in }
 //                deleteAllData(ofEntity: "Counter") { result in }
 //                deleteAllData(ofEntity: "BetModel") { result in }
-//                deleteAllData(ofEntity: "ParlayModel") { result in }
+//                Utility.deleteAllData(ofEntity: "ParlayModel", in: viewContext) { result in }
             }
         }
     }
