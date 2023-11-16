@@ -414,7 +414,6 @@ class BetViewModel: ObservableObject {
     }
     
     func checkForNewBets(in context: NSManagedObjectContext, leagueCode: String, bets: [BetModel], parlays: [ParlayModel], timestamp: Date?, counter: Counter?, games: [GameModel]) async throws {
-        print("SDJNJ")
         var stampedBets = try await BetViewModel().fetchStampedBets(games: games, leagueCode: leagueCode, timeStamp: timestamp != nil ? timestamp : nil)
         
         let localBetIDs = Set(bets).map {$0.id}

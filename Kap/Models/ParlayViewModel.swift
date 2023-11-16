@@ -63,7 +63,7 @@ class ParlayViewModel {
                 
                 let foundGame = BetViewModel().findBetGame(games: games, gameID: gameID)
                 if let foundGame = foundGame {
-                    let bet = Bet(id: betOptionID + playerID + "parlayLeg", betOption: betOptionID, game: foundGame, type: type!, result: BetViewModel().stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: timestamp, deletedTimestamp: nil, isDeleted: nil)
+                    let bet = Bet(id: betOptionID + playerID + id + "parlayLeg", betOption: betOptionID, game: foundGame, type: type!, result: BetViewModel().stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueCode, timestamp: timestamp, deletedTimestamp: nil, isDeleted: nil)
                     bets.append(bet)
                 }
             }
@@ -96,7 +96,7 @@ class ParlayViewModel {
         
         for bet in parlay.bets {
             let betModel = BetModel(context: context)
-            betModel.id = bet.betOption + bet.playerID + "parlayLeg"
+            betModel.id = bet.betOption + bet.playerID + parlay.id + "parlayLeg"
             betModel.betOption = bet.betOption
             betModel.game = bet.game
             betModel.type = bet.type.rawValue
@@ -132,7 +132,7 @@ class ParlayViewModel {
             "id": parlay.id,
             "bets": parlay.bets.map { bet in
                 [
-                    "id": bet.betOption + bet.playerID + "parlayLeg",
+                    "id": bet.betOption + bet.playerID + parlay.id + "parlayLeg",
                     "betOption": bet.betOption,
                     "game": bet.game.documentID ?? "",
                     "type": bet.type.rawValue,
@@ -534,7 +534,7 @@ class ParlayViewModel {
         
         for bet in parlay.bets {
             let betModel = BetModel(context: context)
-            betModel.id = bet.betOption + bet.playerID + "parlayLeg"
+            betModel.id = bet.betOption + bet.playerID + parlay.id + "parlayLeg"
             betModel.betOption = bet.betOption
             betModel.game = bet.game
             betModel.type = bet.type.rawValue
@@ -559,7 +559,7 @@ class ParlayViewModel {
     func recreateParlay(parlay: ParlayModel, games: [GameModel], playerID: String, in context: NSManagedObjectContext) {
         func transformBetToDictionary(bet: BetModel) -> [String: Any] {
             return [
-                "id": bet.betOption + bet.playerID + "parlayLeg",
+                "id": bet.betOption + bet.playerID + parlay.id + "parlayLeg",
                 "betOption": bet.betOption,
                 "game": bet.game.documentID ?? "",
                 "type": bet.type,

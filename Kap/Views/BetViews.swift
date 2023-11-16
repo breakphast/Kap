@@ -447,6 +447,7 @@ struct PlacedBetView: View {
                     deleteActive.toggle()
                     Task {
                         try await BetViewModel().deleteBet(betID: bet.id)
+                        BetViewModel().recreateBet(bet: bet, games: homeViewModel.allGames, playerID: bet.playerID, in: viewContext)
                         BetViewModel().deleteBetModel(in: viewContext, id: bet.id)
                         homeViewModel.allBets.removeAll(where: { $0.id == bet.id })
                         homeViewModel.userBets.removeAll(where: { $0.id == bet.id })
@@ -569,11 +570,16 @@ struct PlacedParlayView: View {
                     deleteActive.toggle()
                     Task {
                         try await ParlayViewModel().deleteParlay(parlayID: parlay.id)
+                        ParlayViewModel().recreateParlay(parlay: parlay, games: homeViewModel.allGames, playerID: parlay.playerID, in: viewContext)
                         ParlayViewModel().deleteParlayModel(in: viewContext, id: parlay.id)
                         
                         homeViewModel.allParlays.removeAll(where: { $0.id == parlay.id })
                         homeViewModel.userParlays.removeAll(where: { $0.id == parlay.id })
                         homeViewModel.leagueParlays.removeAll(where: { $0.id == parlay.id })
+                        
+                        homeViewModel.allBets.removeAll(where: {$0.id.contains(parlay.id)})
+                        homeViewModel.userBets.removeAll(where: {$0.id.contains(parlay.id)})
+                        homeViewModel.leagueBets.removeAll(where: {$0.id.contains(parlay.id)})
                     }
                 }
             } label: {
