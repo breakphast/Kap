@@ -145,8 +145,8 @@ class HomeViewModel: ObservableObject {
     }
     
         func personalRefresh(in context: NSManagedObjectContext, games: [GameModel], bets: [BetModel], parlays: [ParlayModel], leagueCode: String) async throws {
-            try await GameService().updateCloudGameOdds(week: currentWeek)
-            try await GameService().updateLocalGameOdds(games: games, week: currentWeek, in: context)
+//            try await GameService().updateCloudGameOdds(week: currentWeek)
+//            try await GameService().updateLocalGameOdds(games: games, week: currentWeek, in: context)
             fetchEntities(GameModel.self, in: context) { result in
                 switch result {
                 case .success(let games):

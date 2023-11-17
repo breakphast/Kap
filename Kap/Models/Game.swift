@@ -261,13 +261,12 @@ extension Game {
             } else {
                 spread = self.awaySpread
             }
-            
-            let resultScore = homeIntScore - awayIntScore
-            
-            if Double(resultScore) < spread {
-                return .win
-            } else if Double(resultScore) > spread {
-                return .loss
+            let resultScore = abs(homeIntScore - awayIntScore)
+
+            if Double(resultScore) < abs(spread) {
+                return spread > 0 ? .win : .loss
+            } else if Double(resultScore) > abs(spread) {
+                return spread > 0 ? .loss : .win
             } else {
                 return .push
             }
@@ -312,13 +311,12 @@ extension GameModel {
             } else {
                 spread = self.awaySpread
             }
-            
-            let resultScore = homeIntScore - awayIntScore
-            
-            if Double(resultScore) < spread {
-                return .win
-            } else if Double(resultScore) > spread {
-                return .loss
+            let resultScore = abs(homeIntScore - awayIntScore)
+
+            if Double(resultScore) < abs(spread) {
+                return spread > 0 ? .win : .loss
+            } else if Double(resultScore) > abs(spread) {
+                return spread > 0 ? .loss : .win
             } else {
                 return .push
             }
