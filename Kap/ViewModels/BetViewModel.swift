@@ -447,26 +447,34 @@ class BetViewModel: ObservableObject {
         }
     }
     
-    func updateLocalBetResults(games: [GameModel], week: Int, bets: [BetModel], leagueCode: String, in context: NSManagedObjectContext) async throws {
-        let updatedBets = try await fetchBets(games: games, week: week, leagueCode: leagueCode).filter({ $0.result != .pending })
+    func updateLocalBetResults(games: [GameModel], bets: [BetModel], leagueCode: String, in context: NSManagedObjectContext) async throws {
+        var updateCount = 0
+        let updatedBets = try await fetchBets(games: games, leagueCode: leagueCode).filter({ $0.result != .pending })
         print("Starting local result updates...")
         for bet in bets.filter({$0.result == BetResult.pending.rawValue}) {
             if let newBet = updatedBets.first(where: {$0.id == bet.id}) {
                 bet.result = newBet.result?.rawValue ?? ""
+                if bet.result != "Pending" {
+                    updateCount += 1
+                }
                 bet.points = newBet.result?.rawValue == BetResult.push.rawValue ? 0 : newBet.result?.rawValue == BetResult.loss.rawValue ? -10 : bet.points
             }
         }
         do {
             try context.save() 
-            print("\(updatedBets.filter({$0.result != .pending}).count) Bet results successfully updated locally")
+            if updateCount > 0 {
+                print("\(updateCount) Bet results successfully updated locally")
+            } else {
+                print("No bets updated.")
+            }
         } catch {
             
         }
     }
     
-    func updateLocalBets(games: [GameModel], week: Int, bets: [BetModel], leagueCode: String, in context: NSManagedObjectContext) async throws {
+    func updateLocalBets(games: [GameModel], bets: [BetModel], leagueCode: String, in context: NSManagedObjectContext) async throws {
         do {
-            try await BetViewModel().updateLocalBetResults(games: games, week: week, bets: Array(bets), leagueCode: leagueCode, in: context)
+            try await BetViewModel().updateLocalBetResults(games: games, bets: Array(bets), leagueCode: leagueCode, in: context)
         } catch {
             
         }

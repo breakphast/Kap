@@ -260,7 +260,7 @@ struct ParlayView: View {
                         ScrollView(showsIndicators: false) {
                             VStack(alignment: .leading) {
                                 ForEach(parlay.bets, id: \.id) { bet in
-                                    Text(bet.type == .spread ? "\(bet.selectedTeam ?? "") \(bet.betString)" : bet.betString)
+                                    Text(bet.type == .spread ? "\(bet.selectedTeam ?? "") \(bet.betString)" : (bet.type == .over || bet.type == .under) ? "\(bet.game.awayTeam ?? "") @ \(bet.game.homeTeam ?? "") \(bet.betString)" : bet.betString)
                                         .lineLimit(1)
                                 }
                             }
@@ -487,6 +487,18 @@ struct PlacedParlayView: View {
     @Environment(\.managedObjectContext) private var viewContext
     
     @State private var formattedBets = [String]()
+    func betText(bet: BetModel) -> String {
+        switch bet.type {
+        case "Spread":
+            return "\(bet.selectedTeam ?? "") \(bet.betString)"
+        case "Over":
+            return "\(bet.game.awayTeam ?? "") @ \(bet.game.homeTeam ?? "") \(bet.betString)"
+        case "Under":
+            return "\(bet.game.awayTeam ?? "") @ \(bet.game.homeTeam ?? "") \(bet.betString)"
+        default:
+            return bet.betString
+        }
+    }
     
     var body: some View {
         ZStack(alignment: .topLeading) {
@@ -507,8 +519,9 @@ struct PlacedParlayView: View {
                         HStack(alignment: .top) {
                             ScrollView(showsIndicators: false) {
                                 VStack(alignment: .leading) {
-                                    ForEach(formattedBets, id: \.self) { bet in
-                                        Text(bet).lineLimit(1)
+                                    ForEach(Array(parlay.bets) as! [BetModel], id: \.id) { bet in
+                                        Text(betText(bet: bet))
+                                            .lineLimit(1)
                                     }
                                 }
                                 .font(.caption2)
@@ -576,7 +589,9 @@ struct PlacedParlayView: View {
                     Task {
                         try await ParlayViewModel().deleteParlay(parlayID: parlay.id)
                         ParlayViewModel().recreateParlay(parlay: parlay, games: homeViewModel.allGames, playerID: parlay.playerID, in: viewContext)
-                        ParlayViewModel().deleteParlayModel(in: viewContext, id: parlay.id)
+                        if let timestamp = parlay.timestamp {
+                            ParlayViewModel().deleteParlayModel(in: viewContext, id: parlay.id, timestamp: timestamp)
+                        }
                         
                         homeViewModel.allParlays.removeAll(where: { $0.id == parlay.id })
                         homeViewModel.userParlays.removeAll(where: { $0.id == parlay.id })

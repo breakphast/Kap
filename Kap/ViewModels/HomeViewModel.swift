@@ -131,7 +131,7 @@ class HomeViewModel: ObservableObject {
                 print("Error \(error)")
             }
         }
-        try await BetViewModel().updateLocalBetResults(games: Array(games), week: currentWeek, bets: Array(bets), leagueCode: leagueCode, in: context)
+        try await BetViewModel().updateLocalBetResults(games: Array(games), bets: Array(bets), leagueCode: leagueCode, in: context)
         fetchEntities(BetModel.self, in: context) { result in
             switch result {
             case .success(let bets):
@@ -184,7 +184,7 @@ class HomeViewModel: ObservableObject {
                     print("Error \(error)")
                 }
             }            
-            try await BetViewModel().updateLocalBetResults(games: Array(games), week: currentWeek, bets: Array(bets), leagueCode: leagueCode, in: context)
+            try await BetViewModel().updateLocalBetResults(games: Array(games), bets: Array(bets), leagueCode: leagueCode, in: context)
             fetchEntities(BetModel.self, in: context) { result in
                 switch result {
                 case .success(let bets):
@@ -193,8 +193,8 @@ class HomeViewModel: ObservableObject {
                     print("Error \(error)")
                 }
             }    
-            try await ParlayViewModel().updateCloudParlayResults(parlays: Array(parlays))
-            try await ParlayViewModel().updateLocalParlayResults(games: Array(games), week: currentWeek, parlays: Array(parlays), leagueCode: leagueCode, in: context)
+            try await ParlayViewModel().updateCloudParlayResults(parlays: Array(leagueParlays))
+            try await ParlayViewModel().updateLocalParlayResults(games: Array(games), parlays: Array(parlays), leagueCode: leagueCode, in: context)
             //        homeViewModel.allParlayModels = allParlayModels
         }
     

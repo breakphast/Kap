@@ -193,7 +193,9 @@ class ParlayViewModel {
         
         if !deletedStampedParlays.isEmpty {
             for parlay in deletedStampedParlays {
-                ParlayViewModel().deleteParlayModel(in: context, id: String(parlay.id.dropLast(7)))
+                if let timestamp = parlay.timestamp {
+                    ParlayViewModel().deleteParlayModel(in: context, id: String(parlay.id.dropLast(7)), timestamp: timestamp)
+                }
             }
         }
     }
@@ -309,7 +311,7 @@ class ParlayViewModel {
                 parlay.bets = bets
                 return parlay
             }
-            return parlays.filter({$0.isDeleted == false})
+            return parlays.filter({$0.isDeleted == false && $0.leagueCode == leagueCode})
         } else {
             let querySnapshot = try await db.collection("allParlays").getDocuments()
             let parlays = querySnapshot.documents.map { queryDocumentSnapshot -> Parlay in
@@ -360,7 +362,7 @@ class ParlayViewModel {
                 
                 return parlay
             }
-            return parlays.filter({$0.isDeleted == false})
+            return parlays.filter({$0.isDeleted == false && $0.leagueCode == leagueCode})
         }
     }
 
@@ -483,18 +485,18 @@ class ParlayViewModel {
         }
     }
     
-    func deleteParlayModel(in context: NSManagedObjectContext, id: String) {
+    func deleteParlayModel(in context: NSManagedObjectContext, id: String, timestamp: Date) {
         let fetchRequest: NSFetchRequest<ParlayModel> = ParlayModel.fetchRequest()
         
         do {
             let entities = try context.fetch(fetchRequest)
-            if let entityToDelete = entities.first(where: {$0.id == id}) {
+            if let entityToDelete = entities.first(where: {$0.id == id && $0.timestamp == timestamp}) {
                 context.delete(entityToDelete)
                 
                 try context.save()
                 print("Deleted parlay in local:", id)
             } else {
-                print("Parlay not found.")
+                print("Parlay not found or has been deleted.")
             }
         } catch {
 
@@ -636,8 +638,8 @@ class ParlayViewModel {
         }
     }
     
-    func updateLocalParlayResults(games: [GameModel], week: Int, parlays: [ParlayModel], leagueCode: String, in context: NSManagedObjectContext) async throws {
-        let updatedParlays = try await fetchParlays(games: games, week: week, leagueCode: leagueCode).filter({ $0.result != .pending })
+    func updateLocalParlayResults(games: [GameModel], parlays: [ParlayModel], leagueCode: String, in context: NSManagedObjectContext) async throws {
+        let updatedParlays = try await fetchParlays(games: games, leagueCode: leagueCode).filter({ $0.result != .pending })
         print("Starting local parlay result updates...")
         for parlay in parlays {
             if let newParlay = updatedParlays.first(where: {$0.id == parlay.id}) {

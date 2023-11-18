@@ -151,6 +151,7 @@ struct LeagueList: View {
                         }
                         if let userID = authViewModel.currentUser?.id {
                             try await ignitionSequence(userID: userID, leagueCode: league.code, week: homeViewModel.currentWeek, in: viewContext)
+                            try await homeViewModel.pedestrianRefresh(in: viewContext, games: Array(allGameModels), bets: Array(allBetModels), parlays: Array(allParlayModels), leagueCode: league.code, userID: userID)
                         }
                     }
                 }

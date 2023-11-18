@@ -47,7 +47,7 @@ struct ScoreElement: Codable {
 class GameService {
     var games: [Game] = []
     private var db = Firestore.firestore()
-    let mock = true
+    let mock = false
     @Environment(\.managedObjectContext) private var viewContext
 
     func updateCloudGameScores(games: [GameModel]) async throws {
