@@ -311,16 +311,20 @@ extension GameModel {
             } else {
                 spread = self.awaySpread
             }
-            let resultScore = abs(homeIntScore - awayIntScore)
 
-            if Double(resultScore) < abs(spread) {
-                return spread > 0 ? .win : .loss
-            } else if Double(resultScore) > abs(spread) {
-                return spread > 0 ? .loss : .win
+            let adjustedScore = (bet.selectedTeam == homeTeam) ? (Double(homeIntScore) + spread) : (Double(awayIntScore) + spread)
+
+            let opposingScore = (bet.selectedTeam == homeTeam) ? Double(awayIntScore) : Double(homeIntScore)
+
+            if adjustedScore > opposingScore {
+                return .win
+            } else if adjustedScore < opposingScore {
+                return .loss
             } else {
                 return .push
             }
-            
+
+                        
         case BetType.over.rawValue:
             guard let homeIntScore = Int(homeScore), let awayIntScore = Int(awayScore) else { return .pending }
             let total = Double(homeIntScore + awayIntScore)
