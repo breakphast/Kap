@@ -241,13 +241,7 @@ struct Utility {
         let text = "(\(wins)-\(losses))"
         
         let color: Color
-        if wins > losses {
-            color = .lion
-        } else if wins < losses {
-            color = .redd
-        } else {
-            color = .oW
-        }
+        color = .oW
         
         return (text, color)
     }

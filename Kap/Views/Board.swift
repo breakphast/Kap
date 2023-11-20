@@ -51,7 +51,7 @@ struct Board: View {
                     GameListingView(allGameModels: homeViewModel.weekGames)
                         .navigationBarBackButtonHidden()
                         .toolbar {
-                            ToolbarItem(placement: .navigationBarLeading) {
+                            ToolbarItem(placement: .topBarLeading) {
                                 HStack {
                                     Text(leagueViewModel.activeLeague?.name ?? "Loch Sports")
                                         .font(.system(size: 16, weight: .bold, design: .rounded))
@@ -64,8 +64,27 @@ struct Board: View {
                                     leagueViewModel.activeLeague = nil
                                 }
                             }
-                            
-                            ToolbarItem(placement: .navigationBarTrailing) {
+                            #if DEBUG
+                            ToolbarItem(placement: .automatic) {
+                                Button("UPDATE SCORES") {
+                                    Task {
+                                        try await homeViewModel.personalRefresh(in: viewContext, games: Array(allGameModels), bets: Array(allBetModels), parlays: Array(allParlayModels), leagueCode: homeViewModel.activeleagueCode ?? "")
+                                        await leaderboardViewModel.generateWeeklyUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets.filter({$0.week == homeViewModel.currentWeek}), parlays: homeViewModel.leagueParlays.filter({$0.week == homeViewModel.currentWeek}), games: Array(allGameModels), week: homeViewModel.currentWeek, leagueCode: homeViewModel.activeleagueCode ?? "", currentWeek: homeViewModel.currentWeek)
+                                    }
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .foregroundStyle(.black)
+                            }
+                            ToolbarItem(placement: .topBarTrailing) {
+                                Button("UPDATE ODDS") {
+                                    Task {
+                                        try await homeViewModel.updateOdds(context: viewContext)
+                                    }                                }
+                                .buttonStyle(.borderedProminent)
+                                .foregroundStyle(.black)
+                            }
+                            #endif
+                            ToolbarItem(placement: .topBarTrailing) {
                                 if homeViewModel.selectedBets.count > 2 && calculateParlayOdds(bets: homeViewModel.selectedBets) >= 400 {
                                     HStack(spacing: 2) {
                                         Image(systemName: "gift.fill")
@@ -88,10 +107,10 @@ struct Board: View {
                     Task {
                         do {
                             if let activeleagueCode = homeViewModel.activeleagueCode, let userID = authViewModel.currentUser?.id {
+                                #if !DEBUG
                                 try await homeViewModel.pedestrianRefresh(in: viewContext, games: Array(allGameModels), bets: Array(allBetModels), parlays: Array(allParlayModels), leagueCode: activeleagueCode, userID: userID)
-//                                try await homeViewModel.personalRefresh(in: viewContext, games: Array(allGameModels), bets: Array(allBetModels), parlays: Array(allParlayModels), leagueCode: activeleagueCode)
-                                await leaderboardViewModel.generateWeeklyUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets.filter({$0.week == homeViewModel.currentWeek}), parlays: homeViewModel.leagueParlays.filter({$0.week == homeViewModel.currentWeek}), week: homeViewModel.currentWeek, leagueCode: homeViewModel.activeleagueCode ?? "")
-                            }
+                                #endif
+                                await leaderboardViewModel.generateWeeklyUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets.filter({$0.week == homeViewModel.currentWeek}), parlays: homeViewModel.leagueParlays.filter({$0.week == homeViewModel.currentWeek}), games: Array(allGameModels), week: homeViewModel.currentWeek, leagueCode: homeViewModel.activeleagueCode ?? "", currentWeek: homeViewModel.currentWeek)                            }
                         } catch {
                             
                         }

@@ -315,7 +315,7 @@ struct Login: View {
                 if let leaguePlayers = leaguePlayers {
                     homeViewModel.users = homeViewModel.users.filter({ leaguePlayers.contains($0.id!) })
                 }
-                await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets.filter({$0.leagueCode == homeViewModel.activeleagueCode}), parlays: homeViewModel.leagueParlays.filter({$0.leagueCode == homeViewModel.activeleagueCode}), week: homeViewModel.currentWeek, leagueCode: activeLeague.code)
+                await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets.filter({$0.leagueCode == homeViewModel.activeleagueCode}), parlays: homeViewModel.leagueParlays.filter({$0.leagueCode == homeViewModel.activeleagueCode}), games: homeViewModel.allGames, currentWeek: homeViewModel.currentWeek, week: homeViewModel.currentWeek, leagueCode: activeLeague.code)
                 
                 homeViewModel.userBets = homeViewModel.leagueBets.filter({ $0.playerID == userID })
                 homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == userID })

@@ -229,7 +229,7 @@ struct JoinLeague: View {
                             homeViewModel.users = homeViewModel.users.filter({ leaguePlayers.contains($0.id!) })
                         }
                         
-                        await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets.filter({$0.leagueCode == homeViewModel.activeleagueCode}), parlays: homeViewModel.leagueParlays.filter({$0.leagueCode == homeViewModel.activeleagueCode}), week: week, leagueCode: activeLeague.code)
+                        await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets.filter({$0.leagueCode == homeViewModel.activeleagueCode}), parlays: homeViewModel.leagueParlays.filter({$0.leagueCode == homeViewModel.activeleagueCode}), games: homeViewModel.allGames, currentWeek: homeViewModel.currentWeek, week: week, leagueCode: activeLeague.code)
                         
                         homeViewModel.userBets = homeViewModel.leagueBets.filter({ $0.playerID == userID })
                         homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == userID })

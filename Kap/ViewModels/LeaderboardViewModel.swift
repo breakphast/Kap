@@ -12,16 +12,18 @@ class LeaderboardViewModel: ObservableObject {
     @Published var usersPoints: [String: [Int: Double]] = [:]
     @Published var leagueType: LeagueType = .season
 
-    func generateUserPoints(users: [User], bets: [BetModel], parlays: [ParlayModel], week: Int, leagueCode: String) async {
+    func generateUserPoints(users: [User], bets: [BetModel], parlays: [ParlayModel], games: [GameModel], currentWeek: Int, week: Int, leagueCode: String) async {
         let userBets = Dictionary(grouping: bets, by: { $0.playerID })
         await withTaskGroup(of: Void.self) { group in
             for user in users {
                 group.addTask {
                     if let userID = user.id {
                         var points: Double = 0
-                        for currentWeek in 1...week {
+                        let missedBets = self.calculateMissingBets(user: user, games: games, bets: bets, currentWeek: currentWeek)
+                        for currentWeek in 11...week {
                             let newPoints = await self.getWeeklyPoints(userID: userID, bets: userBets[userID] ?? [], parlays: parlays, week: currentWeek)
                             points += newPoints
+                            points -= Double(missedBets) * 10
                         }
                         DispatchQueue.main.async {
                             self.usersPoints[userID] = [week: points]
@@ -41,24 +43,32 @@ class LeaderboardViewModel: ObservableObject {
         }
     }
     
-    func generateWeeklyUserPoints(users: [User], bets: [BetModel], parlays: [ParlayModel], week: Int, leagueCode: String) async {
-        for user in users {
-            if let userID = user.id {
-                let points = await getWeeklyPoints(userID: userID, bets: bets, parlays: parlays, week: week)
+    func calculateMissingBets(user: User, games: [GameModel], bets: [BetModel], week: Int? = nil, currentWeek: Int) -> Int {
+        let userId = user.id ?? ""
 
-                
-                DispatchQueue.main.async {
-                    self.usersPoints[userID] = [week: points]
-                }
+        if let week = week {
+            if games.contains(where: { $0.week == week && !$0.completed }) {
+                return 0
+            } else {
+                return 10 - bets.filter({ $0.week == week && $0.playerID == userId }).count
             }
+        } else {
+            let weeksCompleted = (currentWeek - 1) - 10
+            let totalBets = weeksCompleted * 10
+            let actualBets = bets.filter({ $0.playerID == userId && $0.game.week != currentWeek}).count
+            return totalBets - actualBets
         }
+    }
+    
+    func generateWeeklyUserPoints(users: [User], bets: [BetModel], parlays: [ParlayModel], games: [GameModel], week: Int, leagueCode: String, currentWeek: Int) async {
         await withTaskGroup(of: Void.self) { group in
             for user in users {
                 group.addTask {
                     if let userID = user.id {
                         let points = await self.getWeeklyPoints(userID: userID, bets: bets, parlays: parlays, week: week)
                         DispatchQueue.main.async {
-                            self.usersPoints[userID] = [week: points]
+                            let missedBets = self.calculateMissingBets(user: user, games: games, bets: bets, week: week, currentWeek: currentWeek)
+                            self.usersPoints[userID] = [week: (points - (Double(missedBets) * 10))]
                         }
                     }
                 }

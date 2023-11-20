@@ -273,7 +273,7 @@ struct LeagueList: View {
             if let leaguePlayers = leaguePlayers {
                 homeViewModel.users = homeViewModel.users.filter({ leaguePlayers.contains($0.id!) })
             }
-            await leaderboardViewModel.generateWeeklyUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets.filter({$0.week == homeViewModel.currentWeek}), parlays: homeViewModel.leagueParlays.filter({$0.week == homeViewModel.currentWeek}), week: week, leagueCode: activeLeague.code)
+            await leaderboardViewModel.generateWeeklyUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets.filter({$0.week == homeViewModel.currentWeek}), parlays: homeViewModel.leagueParlays.filter({$0.week == homeViewModel.currentWeek}), games: Array(allGameModels), week: homeViewModel.currentWeek, leagueCode: homeViewModel.activeleagueCode ?? "", currentWeek: homeViewModel.currentWeek)
             
             homeViewModel.userBets = homeViewModel.leagueBets.filter({ $0.playerID == userID })
             homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == userID })

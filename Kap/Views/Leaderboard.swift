@@ -64,7 +64,7 @@ struct Leaderboard: View {
                 selectedWeek = nil
                 Task {
                     weeklyPoints = [:]
-                    await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets, parlays: homeViewModel.leagueParlays, week: homeViewModel.currentWeek, leagueCode: leagueViewModel.activeLeague?.code ?? "")
+                    await leaderboardViewModel.generateUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets, parlays: homeViewModel.leagueParlays, games: homeViewModel.allGames, currentWeek: homeViewModel.currentWeek, week: homeViewModel.currentWeek, leagueCode: leagueViewModel.activeLeague?.code ?? "")
                 }
             })
             ForEach(1...homeViewModel.currentWeek, id: \.self) { weekNumber in
@@ -73,7 +73,7 @@ struct Leaderboard: View {
                     selectedWeek = weekNumber
                     Task {
                         weeklyPoints = [:]
-                        await leaderboardViewModel.generateWeeklyUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets.filter({$0.week == weekNumber}), parlays: homeViewModel.leagueParlays.filter({$0.week == weekNumber}), week: weekNumber, leagueCode: leagueViewModel.activeLeague?.code ?? "")
+                        await leaderboardViewModel.generateWeeklyUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets.filter({$0.week == weekNumber}), parlays: homeViewModel.leagueParlays.filter({$0.week == weekNumber}), games: homeViewModel.allGames.filter({$0.week == weekNumber}), week: weekNumber, leagueCode: leagueViewModel.activeLeague?.code ?? "", currentWeek: homeViewModel.currentWeek)
                     }
                 })
             }
@@ -116,7 +116,11 @@ struct Leaderboard: View {
     func userDetailZStack(index: Int, user: User) -> some View {
         ZStack(alignment: .leading) {
             userDetailStrokeRoundedRectangle(for: user)
-            userDetailHStack(for: user, index: index)
+            if let selectedWeek {
+                userDetailHStack(for: user, index: index, missingBets: leaderboardViewModel.calculateMissingBets(user: user, games: homeViewModel.allGames, bets: homeViewModel.leagueBets, week: selectedWeek, currentWeek: homeViewModel.currentWeek))
+            } else {
+                userDetailHStack(for: user, index: index, missingBets: leaderboardViewModel.calculateMissingBets(user: user, games: homeViewModel.allGames, bets: homeViewModel.leagueBets, currentWeek: homeViewModel.currentWeek))
+            }
         }
     }
     
@@ -133,7 +137,7 @@ struct Leaderboard: View {
         return Color("onyxLightish")
     }
     
-    func userDetailHStack(for user: User, index: Int) -> some View {
+    func userDetailHStack(for user: User, index: Int, missingBets: Int = 0) -> some View {
         var points: String = "0"
         var winsLosses = (text: "", color: Color.black)
         if selectedWeek != nil {
@@ -165,6 +169,14 @@ struct Leaderboard: View {
                     Text(winsLosses.text)
                         .font(.caption2.bold())
                         .foregroundStyle(winsLosses.color)
+                    if missingBets > 0 {
+                        HStack(spacing: 2) {
+                            Image(systemName: "xmark.circle")
+                            Text("\(missingBets)")
+                        }
+                        .foregroundStyle(.redd)
+                        .font(.caption2.bold())
+                    }
                 }
             }
         }
