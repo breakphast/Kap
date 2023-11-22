@@ -111,7 +111,7 @@ class GameService {
             var documentId: String {
                 let formatter = DateFormatter()
                 formatter.dateFormat = "yyyy-MM-dd"
-                let datePart = formatter.string(from: gameModel.date ?? Date())
+                let datePart = formatter.string(from: gameModel.date)
                 
                 // Converting team names to a URL-safe format
                 let safeHomeTeam = (gameModel.homeTeam ?? "").replacingOccurrences(of: " ", with: "-")

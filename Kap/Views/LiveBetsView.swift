@@ -50,7 +50,7 @@ struct LiveBetsView: View {
                                     Spacer()
                                 }
                                 ForEach(bets.filter({ $0.playerID == user.id! }), id: \.id) { bet in
-                                    PlacedBetView(bet: bet, week: Int16(homeViewModel.currentWeek), live: bet.game.week == homeViewModel.currentWeek && Date() > bet.game.date ?? Date() && bet.game.completed == false ? true : false, hideMenu: true)
+                                    PlacedBetView(bet: bet, week: Int16(homeViewModel.currentWeek), live: bet.game.week == homeViewModel.currentWeek && Date() > bet.game.date && bet.game.completed == false ? true : false, hideMenu: true)
                                 }
                             }
                         }

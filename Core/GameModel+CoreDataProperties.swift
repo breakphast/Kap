@@ -20,7 +20,7 @@ extension GameModel {
     @NSManaged public var documentID: String?
     @NSManaged public var homeTeam: String?
     @NSManaged public var awayTeam: String?
-    @NSManaged public var date: Date?
+    @NSManaged public var date: Date
     @NSManaged public var homeSpread: Double
     @NSManaged public var awaySpread: Double
     @NSManaged public var homeMoneyLine: Int16

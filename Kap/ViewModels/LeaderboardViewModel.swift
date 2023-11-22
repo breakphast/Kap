@@ -19,8 +19,9 @@ class LeaderboardViewModel: ObservableObject {
                 group.addTask {
                     if let userID = user.id {
                         var points: Double = 0
+                        var uncomplete = games.contains(where: {$0.completed == false})
                         let missedBets = self.calculateMissingBets(user: user, games: games, bets: bets, currentWeek: currentWeek)
-                        for currentWeek in 11...week {
+                        for currentWeek in 11 ... week - (uncomplete ? 1 : 0) {
                             let newPoints = await self.getWeeklyPoints(userID: userID, bets: userBets[userID] ?? [], parlays: parlays, week: currentWeek)
                             points += newPoints
                             points -= Double(missedBets) * 10

@@ -167,7 +167,7 @@ struct GameListingView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            SectionView(title: "NFL", games: allGameModels.sorted(by: {$0.date ?? Date() < $1.date ?? Date()}), first: true)
+            SectionView(title: "NFL", games: allGameModels.sorted(by: {$0.date < $1.date}), first: true)
         }
         .padding()
     }
@@ -211,7 +211,7 @@ struct SectionView: View {
             }
             
             ForEach(games, id: \.id) { game in
-                if Date() < game.date ?? Date() {
+                if Date() < game.date {
                     GameRow(game: game)
                 }
             }
@@ -234,7 +234,7 @@ struct GameRow: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(convertDateToDesiredFormat(game.date ?? Date()))
+            Text(convertDateToDesiredFormat(game.date))
                 .font(.system(.caption2, design: .rounded, weight: .semibold))
             
             HStack(alignment: .center) {

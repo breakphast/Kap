@@ -67,10 +67,10 @@ struct BetView: View {
         .padding(.horizontal, 12)
         .shadow(radius: 10)
         .task {
-            isValid = homeViewModel.userBets.filter({ $0.week == homeViewModel.currentWeek }).count < 10 && homeViewModel.userBets.filter({ $0.game.id == bet.game.id }).isEmpty
+            isValid = homeViewModel.userBets.filter({ $0.week == homeViewModel.currentWeek }).count < 10 && homeViewModel.userBets.filter({ $0.game.id == bet.game.id }).isEmpty && Date() < bet.game.date
         }
         .onChange(of: homeViewModel.userBets.count) { newValue in
-            isValid = homeViewModel.userBets.filter({ $0.week == homeViewModel.currentWeek }).count < 10 && homeViewModel.userBets.filter({ $0.game.id == bet.game.id }).isEmpty
+            isValid = homeViewModel.userBets.filter({ $0.week == homeViewModel.currentWeek }).count < 10 && homeViewModel.userBets.filter({ $0.game.id == bet.game.id }).isEmpty && Date() < bet.game.date
         }
     }
     
@@ -83,8 +83,8 @@ struct BetView: View {
                     .foregroundStyle(.lion)
                 Spacer()
                 HStack(spacing: 4) {
-                    Text(Utility.dayOfWeek(from: bet.game.date ?? Date()))
-                    Text(Utility.formattedTime(from: bet.game.date ?? Date()))
+                    Text(Utility.dayOfWeek(from: bet.game.date))
+                    Text(Utility.formattedTime(from: bet.game.date))
                 }
                 .font(.caption2)
                 .fontWeight(.semibold)
@@ -146,7 +146,7 @@ struct BetView: View {
                     }
                     
                     if let placedBet = BetViewModel().makeBet(for: bet.game, betOption: betOption.id ?? "", playerID: authViewModel.currentUser?.id ?? "", week: homeViewModel.currentWeek, leagueCode: homeViewModel.activeleagueCode ?? "") {
-                        if !homeViewModel.userBets.contains(where: { $0.game.documentID == placedBet.game.documentID && $0.leagueCode == homeViewModel.activeleagueCode! }) {
+                        if !homeViewModel.userBets.contains(where: { $0.game.documentID == placedBet.game.documentID && $0.leagueCode == homeViewModel.activeleagueCode! && Date() < $0.game.date }) {
                             try await BetViewModel().addBet(bet: placedBet, playerID: authViewModel.currentUser?.id ?? "", in: viewContext)
                             homeViewModel.leagueBets = Array(allBetModels).filter({$0.leagueCode == homeViewModel.activeleagueCode})
                             homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
@@ -400,8 +400,8 @@ struct PlacedBetView: View {
                         Text("\(bet.game.awayTeam ?? "") @ \(bet.game.homeTeam ?? "")")
                         Spacer()
                         HStack(spacing: 4) {
-                            Text(Utility.dayOfWeek(from: bet.game.date ?? Date()))
-                            Text(Utility.formattedTime(from: bet.game.date ?? Date()))
+                            Text(Utility.dayOfWeek(from: bet.game.date))
+                            Text(Utility.formattedTime(from: bet.game.date))
                         }
                         .font(.caption2)
                         .fontWeight(.semibold)
@@ -568,7 +568,7 @@ struct PlacedParlayView: View {
             .multilineTextAlignment(.leading)
             
             if let betsArray = parlay.bets.allObjects as? [Bet],
-               betsArray.filter({ Date() > ($0.game.date ?? Date()) }).isEmpty {
+               betsArray.filter({ Date() > ($0.game.date) }).isEmpty {
                 if deleteActive {
                     
                 }
