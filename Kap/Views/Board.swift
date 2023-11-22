@@ -107,10 +107,8 @@ struct Board: View {
                     Task {
                         do {
                             if let activeleagueCode = homeViewModel.activeleagueCode, let userID = authViewModel.currentUser?.id {
-                                #if !DEBUG
                                 try await homeViewModel.pedestrianRefresh(in: viewContext, games: Array(allGameModels), bets: Array(allBetModels), parlays: Array(allParlayModels), leagueCode: activeleagueCode, userID: userID)
-                                #endif
-                                await leaderboardViewModel.generateWeeklyUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets.filter({$0.week == homeViewModel.currentWeek}), parlays: homeViewModel.leagueParlays.filter({$0.week == homeViewModel.currentWeek}), games: Array(allGameModels), week: homeViewModel.currentWeek, leagueCode: homeViewModel.activeleagueCode ?? "", currentWeek: homeViewModel.currentWeek)                            }
+                            }
                         } catch {
                             
                         }
@@ -124,9 +122,9 @@ struct Board: View {
                             Color("lion")
                             
                             Text("Betslip")
-                            .font(.title.bold())
-                            .fontDesign(.rounded)
-                            .foregroundStyle(Color("oW"))
+                                .font(.title.bold())
+                                .fontDesign(.rounded)
+                                .foregroundStyle(Color("oW"))
                         }
                         .frame(height: 60)
                         .clipShape(TopRoundedRectangle(radius: 12))
@@ -151,11 +149,11 @@ struct Board: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .task {
-//                deleteAllData(ofEntity: "GameModel") { result in }
-//                deleteAllData(ofEntity: "BetOptionModel") { result in }
-//                deleteAllData(ofEntity: "Counter") { result in }
-//                deleteAllData(ofEntity: "BetModel") { result in }
-//                Utility.deleteAllData(ofEntity: "ParlayModel", in: viewContext) { result in }
+                //                deleteAllData(ofEntity: "GameModel") { result in }
+                //                deleteAllData(ofEntity: "BetOptionModel") { result in }
+                //                deleteAllData(ofEntity: "Counter") { result in }
+                //                deleteAllData(ofEntity: "BetModel") { result in }
+                //                Utility.deleteAllData(ofEntity: "ParlayModel", in: viewContext) { result in }
             }
         }
     }
@@ -164,7 +162,7 @@ struct Board: View {
 struct GameListingView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     let allGameModels: [GameModel]
-
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             SectionView(title: "NFL", games: allGameModels.sorted(by: {$0.date < $1.date}), first: true)
@@ -194,7 +192,7 @@ struct SectionView: View {
                 }
                 
                 Spacer()
-
+                
                 if first != nil {
                     HStack(spacing: 10) {
                         Text("Spread")
@@ -223,14 +221,14 @@ struct GameRow: View {
     var game: GameModel
     let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 3)
     @EnvironmentObject var homeViewModel: HomeViewModel
-    @State private var newGame: GameModel? // Use @State to manage the property
+    @State private var newGame: GameModel?
     @Environment(\.managedObjectContext) private var viewContext
     @FetchRequest(
-            entity: GameModel.entity(), // Replace 'YourEntity' with your actual entity class
-            sortDescriptors: [
-                NSSortDescriptor(keyPath: \GameModel.date, ascending: true) // Assume 'name' is a field of your entity
-            ]
-        ) var allGameModels: FetchedResults<GameModel>
+        entity: GameModel.entity(),
+        sortDescriptors: [
+            NSSortDescriptor(keyPath: \GameModel.date, ascending: true)
+        ]
+    ) var allGameModels: FetchedResults<GameModel>
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -248,11 +246,11 @@ struct GameRow: View {
                     }
                     Text("@")
                     HStack {
-                        Image("\(nflLogos[game.homeTeam ?? "lollllll"] ?? "")")
+                        Image("\(nflLogos[game.homeTeam ?? ""] ?? "")")
                             .resizable()
                             .scaledToFit()
                             .frame(width: 30)
-                        Text(nflTeams[game.homeTeam ?? "lollllll"] ?? "")
+                        Text(nflTeams[game.homeTeam ?? ""] ?? "")
                     }
                 }
                 .font(.caption.bold())
