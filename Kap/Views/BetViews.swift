@@ -399,13 +399,15 @@ struct PlacedBetView: View {
                     HStack {
                         Text("\(bet.game.awayTeam ?? "") @ \(bet.game.homeTeam ?? "")")
                         Spacer()
-                        HStack(spacing: 4) {
-                            Text(Utility.dayOfWeek(from: bet.game.date))
-                            Text(Utility.formattedTime(from: bet.game.date))
+                        if let _ = bet.game.awayTeam {
+                            HStack(spacing: 4) {
+                                Text(Utility.dayOfWeek(from: bet.game.date))
+                                Text(Utility.formattedTime(from: bet.game.date))
+                            }
+                            .font(.caption2)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.oW2)
                         }
-                        .font(.caption2)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.oW2)
                     }
                     .font(.caption2.bold())
                     .lineLimit(1)
