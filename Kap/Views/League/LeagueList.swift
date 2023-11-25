@@ -179,20 +179,6 @@ struct LeagueList: View {
     
     private func ignitionSequence(userID: String, leagueCode: String, week: Int, in context: NSManagedObjectContext) async throws {
         var currentTimestampOfficial: Date?
-        if allGameModels.isEmpty {
-            print("No games. Adding now...")
-            do {
-                try await GameService().addInitialGames(in: context)
-                homeViewModel.allGames = Array(allGameModels)
-                do {
-                    try await GameService().updateLocalGameOdds(games: Array(allGameModels).filter({$0.week == week}), week: week, in: context)
-                    homeViewModel.allGames = Array(allGameModels)
-                    print("Done adding games locally.")
-                } catch { }
-            } catch {
-                
-            }
-        }
         homeViewModel.userLeagues = try await LeagueViewModel().fetchLeaguesContainingID(id: userID)
         leagueViewModel.activeLeague = homeViewModel.leagues.first(where: {$0.code == leagueCode})
         homeViewModel.activeleagueCode = leagueCode

@@ -247,19 +247,17 @@ struct Login: View {
         if allGameModels.isEmpty {
             print("No games. Adding now...")
             do {
-                try await GameService().addInitialGames(in: viewContext)
-                homeViewModel.allGameModels = self.allGameModels
-                if let allGames = homeViewModel.allGameModels {
-                    do {
-                        try await GameService().updateLocalGameOdds(games: Array(allGames).filter({$0.week == homeViewModel.currentWeek}), week: week, in: viewContext)
-                        homeViewModel.allGameModels = self.allGameModels
-                        print("Done adding games.")
-                    } catch {
-                        
+                GameService().addInitialGames(in: viewContext) {
+                    
+                    homeViewModel.allGameModels = self.allGameModels
+                    if let allGames = homeViewModel.allGameModels {
+                        do {
+                            GameService().updateLocalGameOdds(games: Array(allGames).filter({$0.week == homeViewModel.currentWeek}), week: week, in: viewContext, viewModel: homeViewModel)
+                            homeViewModel.allGameModels = self.allGameModels
+                            print("Done adding games.")
+                        }
                     }
                 }
-            } catch {
-                
             }
         }
         homeViewModel.userLeagues = try await LeagueViewModel().fetchLeaguesContainingID(id: userID)

@@ -59,5 +59,20 @@ extension GameModel {
     @objc(removeBetOptions:)
     @NSManaged public func removeFromBetOptions(_ values: NSSet)
 
-    // ... any other additional methods or properties ...
+    func update(with newGame: Game) {
+        self.homeSpread = newGame.homeSpread
+        self.awaySpread = newGame.awaySpread
+        self.homeMoneyLine = Int16(newGame.homeMoneyLine)
+        self.awayMoneyLine = Int16(newGame.awayMoneyLine)
+        self.over = newGame.over
+        self.under = newGame.under
+        self.homeSpreadPriceTemp = newGame.homeSpreadPriceTemp
+        self.awaySpreadPriceTemp = newGame.awaySpreadPriceTemp
+        self.overPriceTemp = newGame.overPriceTemp
+        self.underPriceTemp = newGame.underPriceTemp
+        self.betOptions = [] // Assuming you want to reset this each time
+        self.homeScore = newGame.homeScore
+        self.awayScore = newGame.awayScore
+        self.completed = newGame.completed
+    }
 }

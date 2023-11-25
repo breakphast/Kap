@@ -153,48 +153,6 @@ class DataManager {
         self.managedObjectContext = context
     }
     
-    func convertToGameModel(games: [Game], in context: NSManagedObjectContext) -> [GameModel] {
-        var gameModels: [GameModel] = []
-        
-        for game in games {
-            let gameModel = GameModel(context: context)
-            
-            gameModel.id = game.id
-            gameModel.homeTeam = game.homeTeam
-            gameModel.awayTeam = game.awayTeam
-            gameModel.date = game.date
-            gameModel.homeSpread = game.homeSpread
-            gameModel.awaySpread = game.awaySpread
-            gameModel.homeMoneyLine = Int16(game.homeMoneyLine)
-            gameModel.awayMoneyLine = Int16(game.awayMoneyLine)
-            gameModel.over = game.over
-            gameModel.under = game.under
-            gameModel.completed = game.completed
-            gameModel.homeScore = game.homeScore
-            gameModel.awayScore = game.awayScore
-            gameModel.homeSpreadPriceTemp = game.homeSpreadPriceTemp
-            gameModel.awaySpreadPriceTemp = game.awaySpreadPriceTemp
-            gameModel.overPriceTemp = game.overPriceTemp
-            gameModel.underPriceTemp = game.underPriceTemp
-            gameModel.week = Int16(game.week ?? 0)
-            gameModel.documentID = game.documentId
-            
-            for betOption in game.betOptions {
-                let betOptionModel = BetOptionModel(context: context)
-                betOptionModel.id = betOption.id
-                betOptionModel.odds = Int16(betOption.odds)
-                betOptionModel.spread = betOption.spread ?? 0
-                betOptionModel.over = betOption.over
-                betOptionModel.under = betOption.under
-                betOptionModel.betType = betOption.betType.rawValue
-                betOptionModel.selectedTeam = betOption.selectedTeam
-                betOptionModel.betString = betOption.betString
-            }
-            
-            gameModels.append(gameModel)
-        }
-        return gameModels
-    }
 }
 
 struct Utility {

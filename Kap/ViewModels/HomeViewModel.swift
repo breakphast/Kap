@@ -122,7 +122,7 @@ class HomeViewModel: ObservableObject {
                 self.currentWeek = newWeek
             }
         }
-        try await GameService().updateLocalGameOdds(games: Array(games).filter({$0.week == currentWeek}), week: currentWeek, in: context)
+        GameService().updateLocalGameOdds(games: Array(games).filter({$0.week == currentWeek}), week: currentWeek, in: context, viewModel: self)
         fetchEntities(GameModel.self, in: context) { result in
             switch result {
             case .success(let games):
@@ -213,7 +213,7 @@ class HomeViewModel: ObservableObject {
     func updateOdds(context: NSManagedObjectContext) async throws {
         do {
             try await GameService().updateCloudGameOdds(week: currentWeek)
-            try await GameService().updateLocalGameOdds(games: self.allGames, week: currentWeek, in: context)
+            try await GameService().updateLocalGameOdds(games: self.allGames, week: currentWeek, in: context, viewModel: self)
         } catch {
             print("Error updating odds.")
         }

@@ -44,3 +44,19 @@ extension BetOptionModel {
 extension BetOptionModel : Identifiable {
 
 }
+
+extension BetOptionModel {
+    func update(with betOption: BetOption) {
+        self.id = betOption.id
+        self.odds = Int16(betOption.odds)
+        self.spread = betOption.spread ?? 0
+        self.over = betOption.over
+        self.under = betOption.under
+        self.betType = betOption.betType.rawValue
+        self.selectedTeam = betOption.selectedTeam
+        self.confirmBet = betOption.confirmBet
+        self.maxBets = Int16(betOption.maxBets ?? 0)
+        // self.game = game // This is set outside this function
+        self.betString = betOption.betString
+    }
+}
