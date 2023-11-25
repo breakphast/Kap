@@ -131,7 +131,7 @@ class HomeViewModel: ObservableObject {
                 print("Error \(error)")
             }
         }
-        try await BetViewModel().updateLocalBetResults(games: Array(games), bets: Array(bets), leagueCode: leagueCode, in: context)
+        try await BetViewModel().updateLocalBetResults(games: Array(games), bets: Array(bets), leagueCode: leagueCode, in: context, homeViewModel: self, userID: userID)
         fetchEntities(BetModel.self, in: context) { result in
             switch result {
             case .success(let bets):
@@ -144,7 +144,7 @@ class HomeViewModel: ObservableObject {
         try await BetViewModel().checkForNewBets(in: context, leagueCode: leagueCode, bets: Array(bets), parlays: Array(parlays), timestamp: counter?.timestamp, counter: counter, games: Array(allGames), userID: userID)
     }
     
-    func personalRefresh(in context: NSManagedObjectContext, games: [GameModel], bets: [BetModel], parlays: [ParlayModel], leagueCode: String) async throws {
+    func personalRefresh(in context: NSManagedObjectContext, games: [GameModel], bets: [BetModel], parlays: [ParlayModel], leagueCode: String, userID: String) async throws {
         fetchEntities(GameModel.self, in: context) { result in
             switch result {
             case .success(let games):
@@ -163,7 +163,7 @@ class HomeViewModel: ObservableObject {
                 print("Error \(error)")
             }
         }
-        try await GameService().updateLocalGameScores(in: context, week: currentWeek)
+        GameService().updateLocalGameScores(in: context, week: currentWeek)
         fetchEntities(GameModel.self, in: context) { result in
             switch result {
             case .success(let games):
@@ -182,7 +182,7 @@ class HomeViewModel: ObservableObject {
                 print("Error \(error)")
             }
         }
-        try await BetViewModel().updateLocalBetResults(games: Array(games), bets: Array(bets), leagueCode: leagueCode, in: context)
+        try await BetViewModel().updateLocalBetResults(games: Array(games), bets: Array(bets), leagueCode: leagueCode, in: context, homeViewModel: self, userID: userID)
         fetchEntities(BetModel.self, in: context) { result in
             switch result {
             case .success(let bets):
@@ -213,7 +213,7 @@ class HomeViewModel: ObservableObject {
     func updateOdds(context: NSManagedObjectContext) async throws {
         do {
             try await GameService().updateCloudGameOdds(week: currentWeek)
-            try await GameService().updateLocalGameOdds(games: self.allGames, week: currentWeek, in: context, viewModel: self)
+            GameService().updateLocalGameOdds(games: self.allGames, week: currentWeek, in: context, viewModel: self)
         } catch {
             print("Error updating odds.")
         }

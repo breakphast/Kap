@@ -172,12 +172,11 @@ struct JoinLeague: View {
                         // check for empties
                         if homeViewModel.leagueBets.isEmpty {
                             do {
-                                try await BetViewModel().addInitialBets(games: homeViewModel.allGames, leagueCode: code, in: viewContext)
-                                homeViewModel.allBetModels = self.allBetModels
-                                homeViewModel.leagueBets = homeViewModel.allBets.filter({$0.leagueCode == code})
-                                homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
-                            } catch {
-                                print("League bets are still empty.")
+                                BetViewModel().addInitialBets(games: homeViewModel.allGames, leagueCode: activeLeague.code, in: viewContext) {
+                                    homeViewModel.allBetModels = self.allBetModels
+                                    homeViewModel.leagueBets = homeViewModel.allBets.filter({$0.leagueCode == code})
+                                    homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
+                                }
                             }
                         }
                         

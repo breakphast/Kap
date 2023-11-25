@@ -95,7 +95,7 @@ class ParlayViewModel {
         parlayModel.timestamp = parlay.timestamp
         
         for bet in parlay.bets {
-            let betModel = BetModel(context: context)
+            let betModel = BetViewModel().createBetModel(from: bet, in: context)
             betModel.id = bet.betOption + bet.playerID + parlay.id + "parlayLeg"
             betModel.betOption = bet.betOption
             betModel.game = bet.game
@@ -535,7 +535,7 @@ class ParlayViewModel {
         parlayModel.timestamp = parlay.timestamp
         
         for bet in parlay.bets {
-            let betModel = BetModel(context: context)
+            let betModel = BetViewModel().createBetModel(from: bet, in: context)
             betModel.id = bet.betOption + bet.playerID + parlay.id + "parlayLeg"
             betModel.betOption = bet.betOption
             betModel.game = bet.game

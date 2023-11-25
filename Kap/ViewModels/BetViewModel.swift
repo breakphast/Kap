@@ -178,53 +178,47 @@ class BetViewModel: ObservableObject {
     }
 
     
-    func fetchBets(games: [GameModel], week: Int? = nil, leagueCode: String) async throws -> [Bet] {
+    func fetchBets(games: [GameModel], leagueCode: String, completion: @escaping ([Bet]) -> Void) {
         let db = Firestore.firestore()
-            let querySnapshot: QuerySnapshot?
-
-            if week == nil {
-                querySnapshot = try await db.collection("allBets2").whereField("leagueID", isEqualTo: leagueCode).getDocuments()
-            } else if let weekValue = week {
-                querySnapshot = try await db.collection("allBets2")
-                    .whereField("leagueID", isEqualTo: leagueCode)
-                    .whereField("week", isEqualTo: weekValue)
-                    .getDocuments()
-            } else {
-                throw NSError(domain: "InvalidArguments", code: 1001, userInfo: [NSLocalizedDescriptionKey: "Either provide both games and week or just games"])
-            }
-
-            guard let documents = querySnapshot?.documents else {
-                return []
-            }
         
-        let bets = documents.map { queryDocumentSnapshot -> Bet in
-            let data = queryDocumentSnapshot.data()
+        let processSnapshot: (QuerySnapshot?, Error?) -> Void = { snapshot, error in
+            guard let documents = snapshot?.documents else {
+                print("Error fetching documents: \(error!)")
+                return
+            }
             
-            let id = data["id"] as? String ?? ""
-            let game = data["game"] as? String ?? ""
-            let betOption = data["betOption"] as? String ?? ""
-            let type = data["type"] as? String ?? ""
-            let odds = data["odds"] as? Int ?? 0
-            let result = data["result"] as? String ?? ""
-            let selectedTeam = data["selectedTeam"] as? String ?? ""
-            let playerID = data["playerID"] as? String ?? ""
-            let week = data["week"] as? Int ?? 0
-            let betString = data["betString"] as? String
-            let foundGame = self.findBetGame(games: games, gameID: game)
-            let leagueID = data["leagueID"] as? String ?? ""
-            let timestamp = data["timestamp"] as? Timestamp
-            let deletedTimestamp = data["deletedTimestamp"] as? Timestamp
-            let isDeleted = data["isDeleted"] as? Bool ?? false
-            let date2 = GameService().convertTimestampToISOString(timestamp: timestamp ?? Timestamp(date: Date()))
-            let date = GameService().dateFromISOString(date2 ?? "")
-            let date3 = GameService().convertTimestampToISOString(timestamp: deletedTimestamp ?? Timestamp(date: Date()))
-            let date4 = GameService().dateFromISOString(date3 ?? "")
-            
-            let bet = Bet(id: id, betOption: betOption, game: foundGame!, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueID, timestamp: date ?? Date(), deletedTimestamp: date4 ?? Date(), isDeleted: isDeleted)
-            bet.betString = betString ?? ""
-            return bet
+            let bets = documents.compactMap { queryDocumentSnapshot -> Bet? in
+                let data = queryDocumentSnapshot.data()
+                let id = data["id"] as? String ?? ""
+                let game = data["game"] as? String ?? ""
+                let betOption = data["betOption"] as? String ?? ""
+                let type = data["type"] as? String ?? ""
+                let odds = data["odds"] as? Int ?? 0
+                let result = data["result"] as? String ?? ""
+                let selectedTeam = data["selectedTeam"] as? String ?? ""
+                let playerID = data["playerID"] as? String ?? ""
+                let week = data["week"] as? Int ?? 0
+                let betString = data["betString"] as? String
+                let foundGame = self.findBetGame(games: games, gameID: game)
+                let leagueID = data["leagueID"] as? String ?? ""
+                let timestamp = data["timestamp"] as? Timestamp
+                let deletedTimestamp = data["deletedTimestamp"] as? Timestamp
+                let isDeleted = data["isDeleted"] as? Bool ?? false
+                let date2 = GameService().convertTimestampToISOString(timestamp: timestamp ?? Timestamp(date: Date()))
+                let date = GameService().dateFromISOString(date2 ?? "")
+                let date3 = GameService().convertTimestampToISOString(timestamp: deletedTimestamp ?? Timestamp(date: Date()))
+                let date4 = GameService().dateFromISOString(date3 ?? "")
+                
+                let bet = Bet(id: id, betOption: betOption, game: foundGame!, type: BetType(rawValue: type)!, result: self.stringToBetResult(result)!, odds: odds, selectedTeam: selectedTeam, playerID: playerID, week: week, leagueCode: leagueID, timestamp: date ?? Date(), deletedTimestamp: date4 ?? Date(), isDeleted: isDeleted)
+                bet.betString = betString ?? ""
+                return bet
+            }.filter({ $0.isDeleted == false })
+            completion(bets)
         }
-        return bets.filter({$0.isDeleted == false})
+        
+        db.collection("allBets2")
+            .whereField("leagueID", isEqualTo: leagueCode)
+            .addSnapshotListener(processSnapshot)
     }
 
 
@@ -246,7 +240,7 @@ class BetViewModel: ObservableObject {
     }
     
     func addBetToLocalDatabase(bet: Bet, playerID: String, in context: NSManagedObjectContext) {
-        let betModel = BetModel(context: context)
+        let betModel = createBetModel(from: bet, in: context)
         betModel.id = bet.id
         betModel.betOption = bet.betOption
         betModel.game = bet.game
@@ -262,11 +256,13 @@ class BetViewModel: ObservableObject {
         betModel.leagueCode = bet.leagueCode
         betModel.timestamp = bet.timestamp
         
-        do {
-            try context.save()
-            print("Added bet locally:", betModel.id)
-        } catch {
-            print("Error saving context: \(error)")
+        if context.hasChanges {
+            do {
+                try context.save()
+                print("Added bet locally", bet.id)
+            } catch {
+                print("Error saving context: \(error)")
+            }
         }
     }
     
@@ -362,14 +358,14 @@ class BetViewModel: ObservableObject {
     }
     
     func updateDeletedParlay(parlay: ParlayModel) {
-        let newParlay = db.collection("allParlays").document(parlay.id ?? "")
+        let newParlay = db.collection("allParlays").document(parlay.id)
         
         newParlay.updateData([
             "isDeleted": true,
             "deletedTimestamp": Date()
         ]) { err in
             if let err = err {
-                print("Error updating BETTTT: \(err)", parlay.id ?? "")
+                print("Error updating BETTTT: \(err)", parlay.id)
             } else {
                 print("Document successfully updated")
             }
@@ -447,59 +443,80 @@ class BetViewModel: ObservableObject {
         }
     }
     
-    func updateLocalBetResults(games: [GameModel], bets: [BetModel], leagueCode: String, in context: NSManagedObjectContext) async throws {
+    func updateLocalBetResults(games: [GameModel], bets: [BetModel], leagueCode: String, in context: NSManagedObjectContext, homeViewModel: HomeViewModel, userID: String) async throws {
         var updateCount = 0
-        let updatedBets = try await fetchBets(games: games, leagueCode: leagueCode).filter({ $0.result != .pending })
-        print("Starting local result updates...")
-        for bet in bets.filter({$0.result == BetResult.pending.rawValue}) {
-            if let newBet = updatedBets.first(where: {$0.id == bet.id}) {
-                bet.result = newBet.result?.rawValue ?? ""
-                if bet.result != "Pending" {
-                    updateCount += 1
-                }
-                bet.points = newBet.result?.rawValue == BetResult.push.rawValue ? 0 : newBet.result?.rawValue == BetResult.loss.rawValue ? -10 : bet.points
-            }
-        }
-        do {
-            try context.save() 
-            if updateCount > 0 {
-                print("\(updateCount) Bet results successfully updated locally")
-            } else {
-                print("No bets updated.")
-            }
-        } catch {
+        
+        fetchBets(games: games, leagueCode: leagueCode) { [weak self] updatedBets in
+            guard let _ = self else { return }
             
+            for bet in bets.filter({$0.result == BetResult.pending.rawValue}) {
+                if let newBet = updatedBets.first(where: {$0.id == bet.id}) {
+                    print(newBet.odds, "ODSDSSDDS")
+                    bet.result = newBet.result?.rawValue ?? ""
+                    if bet.result != "Pending" {
+                        updateCount += 1
+                    }
+                    bet.points = newBet.result?.rawValue == BetResult.push.rawValue ? 0 : newBet.result?.rawValue == BetResult.loss.rawValue ? -10 : bet.points
+                    bet.odds = bet.odds
+                }
+            }
+            if context.hasChanges {
+                do {
+                    try context.save()
+                    HomeViewModel().fetchEntities(BetModel.self, in: context) { result in
+                        DispatchQueue.main.async {
+                            switch result {
+                            case .success(let bets):
+                                homeViewModel.allBets = bets
+                                homeViewModel.leagueBets = homeViewModel.allBets.filter({$0.leagueCode == homeViewModel.activeleagueCode})
+                                homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == userID})
+                            case .failure(let error):
+                                print("Error \(error)")
+                            }
+                        }
+                    }
+                    if updateCount > 0 {
+                        print("\(updateCount) Bet results successfully updated locally")
+                    } else {
+                        print("No bets updated.")
+                    }
+                } catch {
+                    
+                }
+            }
         }
     }
     
-    func updateLocalBets(games: [GameModel], bets: [BetModel], leagueCode: String, in context: NSManagedObjectContext) async throws {
-        do {
-            try await BetViewModel().updateLocalBetResults(games: games, bets: Array(bets), leagueCode: leagueCode, in: context)
-        } catch {
+    func addInitialBets(games: [GameModel], leagueCode: String, in context: NSManagedObjectContext, completion: @escaping () -> Void) {
+        fetchBets(games: games, leagueCode: leagueCode) { [weak self] fetchedBets in
+            guard let self = self else { return }
             
+            if context.concurrencyType == .mainQueueConcurrencyType {
+                self.processBets(fetchedBets, in: context, completion: completion)
+            } else {
+                context.perform {
+                    self.processBets(fetchedBets, in: context, completion: completion)
+                }
+            }
         }
     }
     
-    func addInitialBets(games: [GameModel], leagueCode: String, in context: NSManagedObjectContext) async throws {
-        do {
-            let fetchedBets = try await BetViewModel().fetchBets(games: games, leagueCode: leagueCode)
-            print(fetchedBets.map({$0.timestamp}))
-            if fetchedBets.isEmpty {
-                print("No league bets have been placed yet.")
-            } else {
-                for bet in fetchedBets {
-                    BetViewModel().addBetToLocalDatabase(bet: bet, playerID: bet.playerID, in: context)
-                }
+    private func processBets(_ bets: [Bet], in context: NSManagedObjectContext, completion: @escaping () -> Void) {
+        if bets.isEmpty {
+            print("No league bets have been placed yet.")
+        } else {
+            for bet in bets {
+                BetViewModel().addBetToLocalDatabase(bet: bet, playerID: bet.playerID, in: context)
             }
-        } catch {
-            
+        }
+        DispatchQueue.main.async {
+            completion()
         }
     }
     
     func createBetModel(from bet: Bet, in context: NSManagedObjectContext) -> BetModel {
         let betModel = BetModel(context: context)
         
-        // Set the attributes on the GameModel from the Game
         betModel.id = bet.id
         betModel.betOption = bet.betOption
         betModel.game = bet.game
@@ -520,7 +537,7 @@ class BetViewModel: ObservableObject {
     }
     
     func convertToBetModels(bets: [Bet], counter: Counter?, in context: NSManagedObjectContext) {
-        for bet in bets.sorted(by: {$0.game.date ?? Date() < $1.game.date ?? Date()}) {
+        for bet in bets.sorted(by: {$0.game.date < $1.game.date}) {
             let betModel = createBetModel(from: bet, in: context)
             
             if bets.last?.id == bet.id {

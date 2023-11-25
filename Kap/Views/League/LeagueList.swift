@@ -208,8 +208,7 @@ struct LeagueList: View {
             }
             
             if homeViewModel.leagueBets.isEmpty {
-                do {
-                    try await BetViewModel().addInitialBets(games: homeViewModel.allGames, leagueCode: activeLeague.code, in: viewContext)
+                BetViewModel().addInitialBets(games: homeViewModel.allGames, leagueCode: activeLeague.code, in: viewContext) {
                     homeViewModel.allBets = Array(allBetModels).filter({!$0.id.contains("parlayLeg")})
                     homeViewModel.leagueBets = homeViewModel.allBets.filter({$0.leagueCode == homeViewModel.activeleagueCode})
                     homeViewModel.userBets = homeViewModel.leagueBets.filter({$0.playerID == authViewModel.currentUser?.id})
@@ -220,8 +219,6 @@ struct LeagueList: View {
                         currentTimestamp = lastBetTimestamp
                         homeViewModel.updateLocalTimestamp(in: viewContext, timestamp: currentTimestamp)
                     }
-                } catch {
-                    print("League bets are still empty.")
                 }
             } else {
                 do {

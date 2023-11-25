@@ -278,10 +278,9 @@ struct Login: View {
                 homeViewModel.userParlays = homeViewModel.leagueParlays.filter({$0.playerID == authViewModel.currentUser?.id})
                 if homeViewModel.leagueBets.isEmpty {
                     do {
-                        try await BetViewModel().addInitialBets(games: homeViewModel.allGames, leagueCode: activeLeague.code, in: viewContext)
-                        homeViewModel.allBetModels = self.allBetModels
-                    } catch {
-                        print("League bets are still empty.")
+                        BetViewModel().addInitialBets(games: homeViewModel.allGames, leagueCode: activeLeague.code, in: viewContext) {
+                            homeViewModel.allBetModels = self.allBetModels
+                        }
                     }
                 }
                 if let last = homeViewModel.leagueBets.last {

@@ -68,7 +68,7 @@ struct Board: View {
                             ToolbarItem(placement: .automatic) {
                                 Button("UPDATE SCORES") {
                                     Task {
-                                        try await homeViewModel.personalRefresh(in: viewContext, games: Array(allGameModels), bets: Array(allBetModels), parlays: Array(allParlayModels), leagueCode: homeViewModel.activeleagueCode ?? "")
+                                        try await homeViewModel.personalRefresh(in: viewContext, games: Array(allGameModels), bets: Array(allBetModels), parlays: Array(allParlayModels), leagueCode: homeViewModel.activeleagueCode ?? "", userID: authViewModel.currentUser?.id ?? "")
                                         await leaderboardViewModel.generateWeeklyUserPoints(users: homeViewModel.users, bets: homeViewModel.leagueBets.filter({$0.week == homeViewModel.currentWeek}), parlays: homeViewModel.leagueParlays.filter({$0.week == homeViewModel.currentWeek}), games: Array(allGameModels), week: homeViewModel.currentWeek, leagueCode: homeViewModel.activeleagueCode ?? "", currentWeek: homeViewModel.currentWeek)
                                     }
                                 }
